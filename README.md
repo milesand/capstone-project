@@ -11,7 +11,7 @@
 
 
 필요한 모듈
+- django
 - pythonrestframework
 - python-rest-knox
-- python
 </body>
