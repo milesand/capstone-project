@@ -1,11 +1,22 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, generics, status
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from knox.models import AuthToken # 토큰 기반의 django rest 인증 모듈
 #from .serializers import UserAccountSerializer, UserSerializer, UserLoginSerializer, ProfileSerializer
 from .serializers import UserAccountSerializer, UserSerializer, UserLoginSerializer
 from .models import User
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
+#이메일 인증에 사용하는 모듈
+from django.core.mail import EmailMessage
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import EmailMessage
+from django.utils.encoding import force_bytes, force_text
+from .tokens import account_activation_token
 
 #소셜 로그인에 사용하는 모듈
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
@@ -14,6 +25,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from rest_auth.registration.views import SocialLoginView
 # Create your views here.
 
+hostIP='localhost:8000' # 호스트 IP, 추후에 수정
 #소셜 로그인
 #페이스북
 class FacebookLogin(SocialLoginView):
@@ -32,12 +44,25 @@ class RegistrationAPI(generics.GenericAPIView):
             return Response(body, status=status.HTTP_400_BAD_REQUEST)
 
         if len(request.data['password'])<7 or len(request.data['password'])>=15:
-            body={"message" : 'too short or too long field'}
+            body={"message" : '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)
-        serializer=self.get_serializer(data=request.data) # get_serializer(self, instance=None, data=None, many=False, partial=False)
+
+        serializer=UserAccountSerializer(data=request.data) # get_serializer(self, instance=None, data=None, many=False, partial=False)
                                                           # serializer 인스턴스를 반환한다. 여기서는 요청으로 들어온 serializer를 구하기 위해 사용
         if serializer.is_valid():
             user=serializer.save()
+
+            message=render_to_string('account/user_active_email.html', {
+                'user' : user,
+                'domain' : hostIP,
+                'uid' : urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
+                'token' : account_activation_token.make_token(user)
+            })
+
+            mail_title='test'
+            to_email='sung9255@gmail.com' # to_email=request.data['email']로 변경
+            email=EmailMessage(mail_title, message, to=[to_email])
+            email.send()
             return Response( #Response(data, status=None, template_name=None, headers=None, content_type=None)
                              # data : response를 위한 직렬화된 데이터(만들어놓은 Serailizer 클래스 사용)
                              # status : 응답으로 보내는 상태 코드
@@ -78,6 +103,28 @@ class RegistrationAPI(generics.GenericAPIView):
                 }
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)'''
+
+class ActivateUserAPI(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user=None
+
+        try:
+            if user is not None and account_activation_token.check_token(user, token):
+                user.is_mail_authenticated=True
+                user.save()
+                return Response(user.email + '계정이 활성화 되었습니다.', status=status.HTTP_200_OK)
+            else:
+                return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print('error')
+
+
 
 
 class LoginAPI(generics.GenericAPIView):

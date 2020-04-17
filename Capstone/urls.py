@@ -21,7 +21,7 @@ from Account.views import RegistrationAPI, UserAPI, LoginAPI, FacebookLogin
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('Account.urls')),
+    path('', include('Account.urls')),
     path('api/auth/', include('knox.urls')),
     path('rest-auth/', include('rest_auth.urls')),
     path('rest-auth/facebook/', FacebookLogin.as_view(), name='facebook_login'),

@@ -1,7 +1,5 @@
 from rest_framework import serializers
-#from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-#from .models import Profile
 from .models import User
 
 #회원가입
@@ -11,11 +9,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
         fields=('id', 'username', 'password', 'password_val', 'email', 'phone_num') #사용자 닉네임, 비밀번호, 비밀번호 확인, 이메일, 전화번호
         #extra_kwargs={"password" : {'write_only' : True}}
 
-    '''def create(self, validated_data):
-        user = User.objects.create_user(
-            validated_data["username"], None, validated_data["password"]
-        )
-        return user'''
     def create(self, validated_data):
         user=User.objects.create_user( #User.objects.create_user(username, email=None, password=None, **extra_fields) :
                                        # 새로운 사용자를 만들어서 저장한 뒤 만든 사용자(User object)를 리턴한다. 이 User 객체는
@@ -28,9 +21,11 @@ class UserAccountSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             password_val=validated_data["password_val"],
             phone_num=validated_data["phone_num"],
-            #is_active=validated_data['is_active'],
         )
+        #user.is_active=False
+        user.save()
         return user
+
 
 #접속 유지중인지 확인
 class UserSerializer(serializers.ModelSerializer):
