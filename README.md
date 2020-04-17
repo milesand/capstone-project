@@ -4,6 +4,7 @@
 <h2> 실행방법 </h2>
   <div>
     <ol>
+      <li> manage.py가 위치한 폴더에 googleAccount.txt 생성 후, 이메일주소와 비밀번호를 한줄씩 입력해주세요.
       <li> manage.py가 위치한 폴더에서 python manage.py makemigations 실행 </li>
       <li> python manage.py migrate 실행 </li>
       <li> python manage.py runserver </li>
