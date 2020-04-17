@@ -60,7 +60,7 @@ class RegistrationAPI(generics.GenericAPIView):
             })
 
             mail_title='test'
-            to_email='sung9255@gmail.com' # to_email=request.data['email']로 변경
+            to_email=request.data['email'] # to_email=request.data['email']로 변경
             email=EmailMessage(mail_title, message, to=[to_email])
             email.send()
             return Response( #Response(data, status=None, template_name=None, headers=None, content_type=None)
