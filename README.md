@@ -26,7 +26,7 @@
     <ul>
         <li> django </li>
         <li> pythonrestframework </li>
-        <li> python-rest-knox </li>
+        <li> django-rest-knox </li>
     </ul>
   <block>
 </body>
