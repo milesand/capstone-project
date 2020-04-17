@@ -1,7 +1,13 @@
 # Capstone-project
 
 <body>
-<h4>Capstone 폴더에서 python manage.py runserver를 실행한 뒤, 주소창에서 localhost:8000으로 진입하면 됩니다.</h4>
+<h1> 실행방법 </h1>
+  <li>
+    1. manage.py가 위치한 폴더에서 python manage.py makemigations 실행
+    2. python manage.py migrate 실행
+    3. python manage.py runserver
+    4. localhost:8000/register나 localhost:8000/login, localhost:8000/users로 진입하면 됩니다.
+  </li>
 
 - /register - 회원가입
 - /login - 로그인
