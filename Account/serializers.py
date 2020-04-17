@@ -47,8 +47,3 @@ class UserLoginSerializer(serializers.Serializer):
             else:
                 raise serializers.ValidationError("메일 인증이 필요합니다. 가입 시 입력한 이메일을 통해 인증 절차를 진행해주세요.") # 메일인증 미수행
         raise serializers.ValidationError("아이디나 비밀번호가 일치하지 않습니다.")
-
-'''class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Profile
-        fields=('user', 'nickname', 'email', 'phone')'''

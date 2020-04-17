@@ -17,14 +17,9 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from django.contrib import admin
 from django.urls import path, include
-from Account.views import RegistrationAPI, UserAPI, LoginAPI, FacebookLogin
+from Account.views import RegistrationAPI, UserAPI, LoginAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('Account.urls')),
-    path('api/auth/', include('knox.urls')),
-    path('rest-auth/', include('rest_auth.urls')),
-    path('rest-auth/facebook/', FacebookLogin.as_view(), name='facebook_login'),
-    path('rest-auth/registration/', include('rest_auth.registration.urls')),
-    path('accounts/', include('allauth.urls')),
 ]

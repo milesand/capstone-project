@@ -19,20 +19,20 @@ from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 
 #소셜 로그인에 사용하는 모듈
-from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+'''from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from allauth.socialaccount.providers.github.views import GitHubOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from rest_auth.registration.views import SocialLoginView
+from rest_auth.registration.views import SocialLoginView'''
 # Create your views here.
 
 hostIP='localhost:8000' # 호스트 IP, 추후에 수정
-#소셜 로그인
+'''#소셜 로그인
 #페이스북
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
 
 #Github
-'''class GithubLogin(SocialLoginView):
+class GithubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter'''
 
 class RegistrationAPI(generics.GenericAPIView):
@@ -59,8 +59,8 @@ class RegistrationAPI(generics.GenericAPIView):
                 'token' : account_activation_token.make_token(user)
             })
 
-            mail_title='test'
-            to_email=request.data['email'] # to_email=request.data['email']로 변경
+            mail_title='사이트 회원가입 인증 메일입니다.' #인증 메일 제목, 추후에 수정
+            to_email=request.data['email'] # 인증 메일을 받는 주소
             email=EmailMessage(mail_title, message, to=[to_email])
             email.send()
             return Response( #Response(data, status=None, template_name=None, headers=None, content_type=None)
@@ -74,36 +74,11 @@ class RegistrationAPI(generics.GenericAPIView):
                         user, context=self.get_serializer_context()
                     ).data,
                     "token" : AuthToken.objects.create(user)[1],
-                }
+                } # 가입을 수행한 뒤 확인을 위해 유저 정보 및 토큰 정보 출력
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-'''class RegistrationAPI(generics.GenericAPIView):
-    serializer_class = UserAccountSerializer
-
-    def post(self, request, *args, **kwargs):
-        if len(request.data['password'])<7 or len(request.data['password'])>=15:
-            body={"message" : 'too short or too long field'}
-            return Response(body, status=status.HTTP_400_BAD_REQUEST)
-        serializer=self.get_serializer(data=request.data) # get_serializer(self, instance=None, data=None, many=False, partial=False)
-                                                          # serializer 인스턴스를 반환한다. 여기서는 요청으로 들어온 serializer를 구하기 위해 사용
-        if serializer.is_valid():
-            user=serializer.save()
-            return Response( #Response(data, status=None, template_name=None, headers=None, content_type=None)
-                             # data : response를 위한 직렬화된 데이터(만들어놓은 Serailizer 클래스 사용)
-                             # status : 응답으로 보내는 상태 코드
-                             # template_name : HTMLRenderer가 선택되어 있을 경우 사용하는 template 이름
-                             # headers : 응답에 넣을 HTTP 헤더, dictionary 형태
-                             # content_type : 응답의 content type. 보통 자동적으로 정해진다.
-                {
-                    "user" : UserSerializer(
-                        user, context=self.get_serializer_context()
-                    ).data,
-                    "token" : AuthToken.objects.create(user)[1],
-                }
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)'''
-
+#이메일 인증 API
 class ActivateUserAPI(APIView):
     permission_classes = (AllowAny, )
 
@@ -124,9 +99,7 @@ class ActivateUserAPI(APIView):
         except Exception as e:
             print('error')
 
-
-
-
+#유저 로그인 API
 class LoginAPI(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
 
@@ -145,13 +118,9 @@ class LoginAPI(generics.GenericAPIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#유저 목록 출력하는 API
 class UserAPI(generics.ListAPIView):
     #permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-
-'''class ProfileUpdateAPI(generics.UpdateAPIView):
-    lookup_field = "user_pk"
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer'''
