@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'Account.apps.AccountConfig',
     'knox',
-    'rest_auth',
 ]
 
+REST_USE_JWT=True
 SITE_ID=1
 
 REST_FRAMEWORK={

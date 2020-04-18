@@ -17,9 +17,11 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from django.contrib import admin
 from django.urls import path, include
-from Account.views import RegistrationAPI, UserAPI, LoginAPI
+from Account.views import RegistrationAPI, UserAPI, LoginAPI, testAPI
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('Account.urls')),
+    path('', testAPI),
+    path('admin', admin.site.urls),
+    path('api/', include('Account.urls')),
+    path('api/auth/', include('knox.urls')),
 ]

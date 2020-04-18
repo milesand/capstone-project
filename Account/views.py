@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from knox.models import AuthToken # 토큰 기반의 django rest 인증 모듈
-#from .serializers import UserAccountSerializer, UserSerializer, UserLoginSerializer, ProfileSerializer
+from django.contrib.auth import logout
 from .serializers import UserAccountSerializer, UserSerializer, UserLoginSerializer
 from .models import User
 from rest_framework.views import APIView
@@ -118,9 +118,25 @@ class LoginAPI(generics.GenericAPIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#유저 목록 출력하는 API
-class UserAPI(generics.ListAPIView):
+#유저 로그아웃 API
+class LogoutAPI(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message' : '성공적으로 로그아웃되었습니다.'}, status=status.HTTP_200_OK)
+
+#전체 유저 목록 출력하는 API
+class AllUserAPI(generics.ListAPIView):
     #permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
+#접속 유저 목록 출력하는 API
+class UserAPI(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+def testAPI(request):
+    return render(request, 'account/login.html')

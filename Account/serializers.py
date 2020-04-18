@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from .models import User
 
 #회원가입
@@ -19,7 +20,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data['email'],
             password=validated_data["password"],
-            password_val=validated_data["password_val"],
+            password_val=make_password(validated_data["password_val"]), # 패스워드 확인 필드도 암호화시켜준다.
             phone_num=validated_data["phone_num"],
         )
         #user.is_active=False
