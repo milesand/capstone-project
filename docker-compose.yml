@@ -13,7 +13,8 @@ services:
     
     web:
         image: app
-        command: python manage.py runserver 0.0.0.0:8000
+        command: uwsgi --http :8000 --module capstone.wsgi
+
         volumes:
             - .:/code
         ports:
