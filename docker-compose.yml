@@ -9,7 +9,7 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: examplepassword
             MONGO_INITDB_DATABASE: exampledb
         ports:
-            - 27017:27017
+            - "27017:27017"
     
     web:
         image: app
