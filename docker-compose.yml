@@ -1,0 +1,40 @@
+version: '3'
+    
+services:
+    db:
+        image: mongo:3.6.17
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: examplepassword
+            MONGO_INITDB_DATABASE: exampledb
+        ports:
+            - 27017:27017
+    
+    web:
+        image: app
+        command: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - .:/code
+        ports:
+            - "8000:8000"
+        depends_on:
+            - migrate
+    
+    migrate:
+        build: .
+        image: app
+        command: python manage.py migrate
+        volumes:
+            - .:/code
+        depends_on:
+            - make_migrations
+
+    make_migrations:
+        build: .
+        image: app
+        command: python manage.py makemigrations
+        volumes:
+            - .:/code
+        depends_on:
+            - db
