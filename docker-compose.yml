@@ -8,13 +8,15 @@ services:
             MONGO_INITDB_ROOT_USERNAME: root
             MONGO_INITDB_ROOT_PASSWORD: examplepassword
             MONGO_INITDB_DATABASE: exampledb
+        volumes:
+            - ./db-data:/data/db
+            - ./db-init:/docker-entrypoint-initdb.d
         ports:
             - "27017:27017"
     
     web:
         image: app
         command: uwsgi --http :8000 --module capstone.wsgi
-
         volumes:
             - .:/code
         ports:
