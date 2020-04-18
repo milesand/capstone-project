@@ -8,7 +8,7 @@
       <li> manage.py가 위치한 폴더에서 python manage.py makemigations 실행 </li>
       <li> python manage.py migrate 실행 </li>
       <li> python manage.py runserver </li>
-      <li> localhost:8000/register나 localhost:8000/login, localhost:8000/users로 진입하면 됩니다. </li>
+      <li> localhost:8000으로 진입하면 로그인, localhost:8000/api/register는 회원가입 localhost:8000/api/users는 유저 목록입니다. </li>
     </ol>
   </div>
   <br><br>
