@@ -30,26 +30,27 @@ services:
         image: app
         command: uwsgi --socket :8000 --module capstone.wsgi
         volumes:
-            - .:/code
+            - ./app:/app
         expose:
             - 8000
         depends_on:
             - migrate
     
     migrate:
-        build: .
+        build: 
+            context: ./app
         image: app
         command: python manage.py migrate
         volumes:
-            - .:/code
+            - ./app:/app
         depends_on:
             - make_migrations
 
     make_migrations:
-        build: .
+        build: ./app
         image: app
         command: python manage.py makemigrations
         volumes:
-            - .:/code
+            - ./app:/app
         depends_on:
             - db
