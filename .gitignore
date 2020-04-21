@@ -1,8 +1,9 @@
-<<<<<<< HEAD
+# 구글계정
 googleAccount.txt
+
+#웹페이지 테스트용
 Account_static/
 static/
-=======
-*sqlite3
-googleAccount.txt
->>>>>>> 624f2356a837948f5cb0eeaa2ecc79545820ff4b
+
+#DB
+*.sqlite3
