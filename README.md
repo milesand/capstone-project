@@ -28,6 +28,7 @@ localhost:8000/ 뒤에 아래의 URL을 붙이면 됩니다.
 * GET /api/user/<사용자 번호> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다.
 
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
+  social_auth 필드와 is_mail_authenticated 필드는 빈칸으로 해서 보내주시면 됩니다.
 
 * POST /api/login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, response로 로그인 토큰을 받을 수 있습니다.
 
