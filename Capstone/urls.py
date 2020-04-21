@@ -22,7 +22,7 @@ from Account.views import login
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns # html 테스트용
 urlpatterns = [
-    path('', include('Account_static.urls')), # 로그인 테스트 페이지
+    #path('', include('Account_static.urls')), # 로그인 테스트 페이지
     path('fb-login/', login, name='login_fb'),
     path('admin', admin.site.urls),
     path('api/', include('Account.urls')),
