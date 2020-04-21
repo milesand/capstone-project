@@ -10,5 +10,5 @@ class User(AbstractUser):
     is_mail_authenticated = models.BooleanField(default=False, blank=True) # 메일 인증 수행 시 True로 변환됨. 기본값 False
     phone_num = models.CharField(_('전화 번호(선택)'), max_length=20, default="", blank=True) #선택사항
     password = models.CharField(_('비밀번호'), max_length=100)
-    social_auth=models.CharField(max_length=20, default="", blank=True)
+    social_auth=models.CharField(max_length=20, default="None", blank=True)
     #password_val = models.CharField(_('비밀번호 확인'), max_length=15) #프론트엔드 쪽에서 처리

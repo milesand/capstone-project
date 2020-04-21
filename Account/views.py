@@ -36,7 +36,7 @@ class RegistrationAPI(generics.GenericAPIView):
             request.data['phone_num']=""
 
         #소셜 로그인이 아닌 경우
-        if len(request.data['social_auth'])==0:
+        if 'social_auth' not in request.data.keys() or len(request.data['social_auth'])==0:
             if len(request.data['password'])<7 or len(request.data['password'])>=16: #비밀번호가 7자 이하이거나 16자 이상인 경우
                 body={"message" : '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
                 return Response(body, status=status.HTTP_400_BAD_REQUEST)
@@ -49,7 +49,8 @@ class RegistrationAPI(generics.GenericAPIView):
         if serializer.is_valid():
             user=serializer.save()
 
-            if 'is_mail_authenticated' not in request.data.keys(): # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다. 이메일 인증 유효기간은
+            # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다.
+            if 'is_mail_authenticated' not in request.data.keys() or request.data['is_mail_authenticated']==False:
                 message=render_to_string('account/user_active_email.html', {
                     'user' : user,
                     'domain' : hostIP,
@@ -109,6 +110,9 @@ class LoginAPI(generics.GenericAPIView):
             user=serializer.validated_data
             return Response(
                 {
+                    "user": UserSerializer(
+                        user, context=self.get_serializer_context()
+                    ).data,
                     "token" : AuthToken.objects.create(user)[1],
                 }
             )
