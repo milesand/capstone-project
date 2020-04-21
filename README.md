@@ -41,4 +41,9 @@ localhost:8000/ 뒤에 아래의 URL을 붙이면 됩니다.
 
 사용예
 ------------------
+1. 전체 유저 목록 출력
+![1  전체 유저 목록 출력](https://user-images.githubusercontent.com/49271247/79839313-4f5ae200-83ef-11ea-99c1-f62e9c794d90.png)
+
+
+
 
