@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'rest_framework', # rest framework
     'Account.apps.AccountConfig',
-    'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
+    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
     'knox', # 로그인 인증 토큰 발급용
 
     #소셜 로그인용
