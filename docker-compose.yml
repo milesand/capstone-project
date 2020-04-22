@@ -28,7 +28,7 @@ services:
     
     web:
         image: app
-        command: uwsgi --socket :8000 --module capstone.wsgi
+        command: uwsgi --socket :8000 --module Capstone.wsgi
         volumes:
             - ./app:/app
         expose:
@@ -37,8 +37,7 @@ services:
             - migrate
     
     migrate:
-        build: 
-            context: ./app
+        build: ./app
         image: app
         command: python manage.py migrate
         volumes:
