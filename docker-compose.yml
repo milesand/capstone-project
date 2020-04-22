@@ -1,11 +1,14 @@
 version: '3'
+
+volumes:
+    socket:
     
 services:
     nginx:
-        image: nginx:1.16.1
+        build: ./nginx
         restart: always
         volumes:
-           - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - socket:/socket
         environment:
             NGINX_PORT: "80"
         ports:
@@ -28,11 +31,10 @@ services:
     
     web:
         image: app
-        command: uwsgi --socket :8000 --module Capstone.wsgi
+        command: uwsgi --ini Capstone.ini
         volumes:
+            - socket:/socket
             - ./app:/app
-        expose:
-            - 8000
         depends_on:
             - migrate
     
