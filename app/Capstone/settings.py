@@ -112,8 +112,14 @@ WSGI_APPLICATION = 'Capstone.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'djongo',
+        'NAME': 'exampledb',
+        'CLIENT': {
+            'host': 'db',
+            'port': 27017,
+            'username': 'root',
+            'password': 'examplepassword',
+        }
     }
 }
 
@@ -142,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/seoul'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 

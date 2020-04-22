@@ -1,3 +1,5 @@
+__pycache__/
+
 # 구글계정
 googleAccount.txt
 
@@ -6,4 +8,5 @@ Account_static/
 static/
 
 #DB
-*.sqlite3
+db-data/*
+!db-data/.gitkeep
