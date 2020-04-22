@@ -27,30 +27,30 @@ class RegistrationAPI(generics.GenericAPIView):
     permission_classes = (AllowAny, )
     serializer_class = UserAccountSerializer
 
+    support_social_login=['google', 'facebook']
     def post(self, request, *args, **kwargs):
         '''if request.data['password']!=request.data['password_val']: # 프론트엔드에서 처리
             body={"message" : '비밀번호가 일치하지 않습니다.'}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)'''
         print(request.data)
-        if 'phone_num' not in request.data.keys():
-            request.data['phone_num']=""
 
         #소셜 로그인이 아닌 경우
-        if 'social_auth' not in request.data.keys() or len(request.data['social_auth'])==0:
+        if 'social_auth' not in request.data.keys():
             if len(request.data['password'])<7 or len(request.data['password'])>=16: #비밀번호가 7자 이하이거나 16자 이상인 경우
                 body={"message" : '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
                 return Response(body, status=status.HTTP_400_BAD_REQUEST)
 
-        #소셜 로그인인 경우 이메일 인증 필요없게 수정
-        else :
-            request.data['is_mail_authenticated'] = True
+        else:
+            # 지원하는 소셜 로그인이 아닌 경우
+            if  request.data['social_auth'] not in self.support_social_login:
+                return Response({'message' : '잘못된 접근입니다.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         serializer=UserAccountSerializer(data=request.data)
         if serializer.is_valid():
-            user=serializer.save()
+            user=serializer.save() # 여기서 UserAccountSerializer의 create 메소드가 실행된다.
 
             # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다.
-            if 'is_mail_authenticated' not in request.data.keys() or request.data['is_mail_authenticated']==False:
+            if UserSerializer(user)['is_mail_authenticated']==False:
                 message=render_to_string('account/user_active_email.html', {
                     'user' : user,
                     'domain' : hostIP,
