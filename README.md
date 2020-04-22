@@ -2,15 +2,9 @@
 
 실행방법
 ==================
-1. manage.py가 위치한 폴더에 googleAccount.txt 추가 (카톡방에 올려드릴게요)
-2. pip install -r requirements.txt 실행
-3. manage.py가 위치한 폴더에서 python manage.py makemigations
-4. python manage.py migrate 실행
-5. python manage.py runserver
-6. 아래에 적혀있는 URL 사용방법대로 사용하면 됩니다.
-
-
-
+1. manage.py가 위치한 폴더(`./app`)에 `googleAccount.txt` 추가 (카톡방에 올려드릴게요)
+2. docker-compose.yml이 위치한 폴더(`.`)에서 `docker-compose up --build`
+3. 아래에 적혀있는 URL 사용방법대로 사용하면 됩니다.
 
 URL 사용법
 ------------------
