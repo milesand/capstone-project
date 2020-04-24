@@ -39,9 +39,10 @@ INSTALLED_APPS = [
     'rest_framework', # rest framework
     'Account.apps.AccountConfig',
     #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
-    'knox', # 로그인 인증 토큰 발급용
 
     #소셜 로그인용
+    'rest_framework.authtoken',
+    'rest_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -50,6 +51,9 @@ INSTALLED_APPS = [
 
     #react 연동
     'corsheaders',
+
+    #SSL 지원
+    'sslserver',
 ]
 
 REST_KNOX = {
@@ -57,14 +61,36 @@ REST_KNOX = {
     'AUTO_REFRESH' : True, # 토큰 만료시 자동으로 토큰 재발급
 }
 
+#JWT 토큰 테스트용
 REST_USE_JWT=True
-SITE_ID=1
+ACCOUNT_EMAIL_REQUIRED=False
+ACCOUNT_EMAIL_VERIFICATION=None
+ACCOUNT_LOGOUT_ON_GET=True
+import datetime
+JWT_AUTH = {
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=28),
+    #'JWT_AUTH_COOKIE' : 'Test', JWT 토큰을 쿠키 저장 방식으로 저장할 때 사용.
+}
 
 REST_FRAMEWORK={
+    "DEFAULT_AUTHENTICATION_CLASSES": ('rest_framework_jwt.authentication.JSONWebTokenAuthentication',),
+}
+
+
+
+SITE_ID=1
+
+'''REST_FRAMEWORK={
     "DEFAULT_AUTHENTICATION_CLASSES": ("knox.auth.TokenAuthentication",),
                                        #"oauth2_provider.contrib.rest_framework.OAuth2Authentication",
                                        #"rest_framework_social_oauth2.authentication.SocialAuthentication",),
-}
+}'''
+
+
 
 AUTH_USER_MODEL='Account.User' # custom user model 설정
 
@@ -114,15 +140,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'exampledb',
-        'CLIENT': {
-            'host': 'db',
-            'port': 27017,
-            'username': 'root',
-            'password': 'examplepassword',
-        }
     }
 }
 
+
+'''DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}'''
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

@@ -15,17 +15,16 @@ localhost:8000/ 뒤에 아래의 URL을 붙이면 됩니다.
 | api/users | - | 전체 사용자 출력 |      -     |
 | api/user/<사용자 번호>| - | 해당 회원의 정보 출력 | 해당 회원의 정보 제거 |
 | api/register | 회원가입 |-|-|
-| api/login | 로그인 |-|-|
-| api/logout | 로그아웃 |-|-|
+| api-jwt-auth-login | 로그인 |-|-|
 | /active/<str:uidb64>/<str:token> |-| 인증메일에 사용하는 URL |-|
 
 * GET /api/user/<사용자 번호> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다.
 
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
 
-* POST /api/login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, response로 로그인 토큰을 받을 수 있습니다.
-
-   로그인이 필요한 모든 서비스들은 HTTP 헤더에 Authorization : Token <로그인 토큰> 을 넣는 것으로 접근할 수 있습니다.
+* POST /api-jwt-auth-login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, response로 JWT 토큰을 받을 수 있습니다.
+   로그인이 필요한 모든 서비스들은 HTTP 헤더에 Authorization : jwt <발급받은 jwt 토큰> 을 넣는 것으로 접근할 수 있습니다. 발급받은 jwt 토큰은 웹페이지의
+   로컬 저장소에 저장해두고 인증이 필요한 HTTP request를 보낼 때마다 헤더에 넣어서 보내주면 됩니다.
    한번 로그인했을 때 토큰의 유효시간은 30분입니다.
    
 * POST /api/logout은 HTTP 헤더에 Authorization : Token <로그인 토큰>을 넣고 HTTP request를 보내야 합니다. 보내면 해당 로그인 토큰이
