@@ -17,19 +17,17 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from django.contrib import admin
 from django.urls import path, include
-from Account.views import login
-
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns # html 테스트용
+
+
+
 urlpatterns = [
     #path('', include('Account_static.urls')), # 로그인 테스트 페이지
-    path('fb-login/', login, name='login_fb'),
     path('admin', admin.site.urls),
     path('api/', include('Account.urls')),
-    path('api/auth/', include('knox.urls')), # POST api/auth/login : 로그인한 사용자의 토큰 만료기간과 토큰 정보를 얻을 수 있다. GET으로 바꾸기
-                                             # POST api/auth/logout : 로그인한 사용자를 로그아웃시킨다.
-                                             # POST api/auth/logoutall : 로그인한 모든 사용자 로그아웃
     path('accounts/', include('allauth.urls')),
 ]
+
 
 urlpatterns += staticfiles_urlpatterns() # html 테스트용

@@ -1,7 +1,7 @@
 __pycache__/
 
 # 구글계정
-googleAccount.txt
+app/googleAccount.txt
 
 #웹페이지 테스트용
 Account_static/
@@ -10,3 +10,11 @@ static/
 #DB
 db-data/*
 !db-data/.gitkeep
+*.sqlite3
+
+#SSL 테스트용
+app/stunnel/*
+stunnel.*
+
+#docker 테스트용
+dockerTest
