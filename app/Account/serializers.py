@@ -10,6 +10,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'password', 'email', 'phone_num', 'social_auth', 'is_mail_authenticated')
 
     def create(self, validated_data):
+
         phone = ""
         social = ""
         mail_auth = False
@@ -30,6 +31,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # username : set
             # password : set
             # email : 자동으로 소문자로 변환됨.
+
             username=validated_data["username"],
             email=validated_data['email'],
             password=validated_data["password"],
