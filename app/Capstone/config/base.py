@@ -11,7 +11,7 @@ import os
 from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -136,13 +136,23 @@ WSGI_APPLICATION = 'Capstone.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'exampledb',
     }
-}
+}'''
 
+DATABASES = { # docker에서 사용할 때 mongoDB 컨테이너와 연결하기 위해 사용한다.
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'exampledb',
+        'CLIENT' : {
+            'host' : 'db',
+            'port' : 27017,
+        }
+    }
+}
 
 '''DATABASES = {
     'default': {

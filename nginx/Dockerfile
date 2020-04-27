@@ -1,3 +1,4 @@
-FROM nginx:1.16.1
+FROM nginx
 
-COPY nginx.conf /etc/nginx
+WORKDIR /etc/nginx/conf.d
+COPY default.conf .

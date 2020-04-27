@@ -1,16 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User
-
-
+from bson.objectid import ObjectId
 # 회원가입
+
 class UserAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email', 'phone_num', 'social_auth', 'is_mail_authenticated')
+        fields = ('username', 'password', 'email', 'phone_num', 'social_auth', 'is_mail_authenticated')
 
     def create(self, validated_data):
-
         phone = ""
         social = ""
         mail_auth = False
@@ -20,7 +19,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             phone = validated_data['phone_num']
 
         # 소셜 로그인일 경우 메일 인증 안받도록 수정
-        if 'social_auth' in validated_data:
+        if 'social_auth' in validated_data and validated_data['social_auth'] != '':
             social = validated_data['social_auth']
             mail_auth = True
 
@@ -31,7 +30,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # username : set
             # password : set
             # email : 자동으로 소문자로 변환됨.
-
+            _id=ObjectId(),
             username=validated_data["username"],
             email=validated_data['email'],
             password=validated_data["password"],
@@ -40,6 +39,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # password_val=make_password(validated_data["password_val"]), # 패스워드 확인 필드도 암호화시켜준다. 프론트엔드쪽에서 처리.
             social_auth=social,
         )
+        print(user.pk)
         # user.is_active=False
         user.save()
         return user
@@ -49,7 +49,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
+        fields = ('_id', 'username', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
 
 
 # 로그인
