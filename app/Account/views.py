@@ -34,6 +34,7 @@ class RegistrationAPI(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserAccountSerializer
 
+
     support_social_login = ['google', 'facebook']
 
     def post(self, request, *args, **kwargs):
@@ -45,10 +46,10 @@ class RegistrationAPI(generics.GenericAPIView):
         if 'social_auth' not in request.data.keys():
             if len(request.data['password']) < 7 or len(request.data['password']) >= 16:  # 비밀번호가 7자 이하이거나 16자 이상인 경우
                 body = {"message": '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
-                return Response(body, status=status.HTTP_400_BAD_REQUEST)
 
         else:
             # 지원하는 소셜 로그인이 아닌 경우
+
             if request.data['social_auth'] not in self.support_social_login:
                 return Response({'message': '잘못된 접근입니다.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
