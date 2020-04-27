@@ -1,57 +1,42 @@
-version: '3'
+version : '3.4'
 
+# 윈도우에서 사용하는 docker는 virtualbox를 사용하는데, 몽고DB는 virtualbox의 shared folder를 지원하지 않는다.
+# 따라서 docker에서 지원하는 Data Volume Container를 이용해야 한다.
 volumes:
-    socket:
-    
+  my-mongodb-data:
+    external: false
+
+  my-mongodb-init:
+    external: false
+
 services:
-    nginx:
-        build: ./nginx
-        restart: always
-        volumes:
-            - socket:/socket
-        environment:
-            NGINX_PORT: "80"
-        ports:
-            - "8000:80"
-        depends_on:
-            - web
+  db:
+    image : mongo
+    container_name : "db"
+    environment:
+      MONGO_INITDB_DATABASE: exampledb
+    volumes:
+      - my-mongodb-data:/data/db
+      - my-mongodb-init:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
+    expose :
+      - 27017
 
-    db:
-        image: mongo:3.6.17
-        restart: always
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: examplepassword
-            MONGO_INITDB_DATABASE: exampledb
-        volumes:
-            - ./db-data:/data/db
-            - ./db-init:/docker-entrypoint-initdb.d
-        expose:
-            - 27017
-    
-    web:
-        image: app
-        command: uwsgi --ini Capstone.ini
-        volumes:
-            - socket:/socket
-            - ./app:/app
-        depends_on:
-            - migrate
-    
-    migrate:
-        build: ./app
-        image: app
-        command: python manage.py migrate
-        volumes:
-            - ./app:/app
-        depends_on:
-            - make_migrations
+  django:
+    build:
+      context: .
+      network: host
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/app/
 
-    make_migrations:
-        build: ./app
-        image: app
-        command: python manage.py makemigrations
-        volumes:
-            - ./app:/app
-        depends_on:
-            - db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+    command: >
+      sh -c "/wait-for-it.sh db:27017 -t 10 &&
+             export DJANGO_SETTINGS_MODULE=Capstone.config.deploy&&
+             uwsgi --ini Capstone.ini"
