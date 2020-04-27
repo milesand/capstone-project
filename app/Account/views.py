@@ -20,11 +20,14 @@ from google.auth.transport import requests
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_auth.registration.views import SocialLoginView
 
-#JWT 테스트용
+# JWT 테스트용
 from rest_framework_jwt.views import ObtainJSONWebToken
 
+
 class GoogleLoginAPI(SocialLoginView):
-    adapter_class=GoogleOAuth2Adapter
+    adapter_class = GoogleOAuth2Adapter
+
+
 # Create your views here.
 
 hostIP = 'localhost:8000'  # 호스트 IP, 추후에 수정
@@ -34,7 +37,6 @@ class RegistrationAPI(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserAccountSerializer
 
-
     support_social_login = ['google', 'facebook']
 
     def post(self, request, *args, **kwargs):
@@ -43,7 +45,7 @@ class RegistrationAPI(generics.GenericAPIView):
             return Response(body, status=status.HTTP_400_BAD_REQUEST)'''
 
         # 소셜 로그인이 아닌 경우
-        if 'social_auth' not in request.data.keys():
+        if 'social_auth' not in request.data.keys() or request.data['social_auth']=='':
             if len(request.data['password']) < 7 or len(request.data['password']) >= 16:  # 비밀번호가 7자 이하이거나 16자 이상인 경우
                 body = {"message": '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
 
@@ -56,17 +58,15 @@ class RegistrationAPI(generics.GenericAPIView):
         serializer = UserAccountSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # 여기서 UserAccountSerializer의 create 메소드가 실행된다.
-
+            
             # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다.
             if UserSerializer(user)['is_mail_authenticated'].value == False:
-                print("checK!!")
                 message = render_to_string('account/user_active_email.html', {
-                    'user': user,
+                    'username': user.username,
                     'domain': hostIP,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
+                    'uid': urlsafe_base64_encode(force_bytes(user.username)).encode().decode(),
                     'token': account_activation_token.make_token(user)
                 })
-
                 mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
                 to_email = request.data['email']  # 인증 메일을 받는 주소
                 email = EmailMessage(mail_title, message, to=[to_email])
@@ -93,8 +93,8 @@ class ActivateUserAPI(APIView):
 
     def get(self, request, uidb64, token):
         try:
-            uid = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            uname = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(username=uname)
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
@@ -112,7 +112,6 @@ class ActivateUserAPI(APIView):
 # 유저 로그인 API
 '''class LoginAPI(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
-
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         print('request ' + str(serializer))
@@ -129,11 +128,12 @@ class ActivateUserAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)'''
 
 
+#유저 JWT 로그인
 class LoginAPI(ObtainJSONWebToken):
     def post(self, request, *args, **kwargs):
-        user=User.objects.get(username=request.data['username'])
-        if user.is_mail_authenticated==False:
-            return Response({"message" : "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = User.objects.get(username=request.data['username'])
+        if user.is_mail_authenticated == False:
+            return Response({"message": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return super(LoginAPI, self).post(request, *args, **kwargs)
 
@@ -149,25 +149,30 @@ class UserAPI(generics.GenericAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, ]
 
-    def get(self, request, pk):
-        user = User.objects.get(pk=pk)
+    def permission_check(self, request, id):
+        user = User.objects.get(_id=id)
 
-        # 다른 사용자의 계정정보를 보려고 시도하는 경우 에러 발생시키기
+        # 다른 사용자의 계정정보에 접근하려고 시도하는 경우 에러 발생시키기
         if request.user != user:
+            return False
+
+        return True
+
+    def get(self, request, id):
+        check=self.permission_check(request, id)
+        if check:
+            return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+        else:
             return Response({"message : ": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
-
-    def delete(self, request, pk):
-        user = User.objects.get(pk=pk)
-
-        # 다른 사용자의 계정을 지우려고 시도하는 경우 에러 발생시키기
-        if request.user != user:
-            return Response({"message : ": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-
+    def delete(self, request, id):
+        check=self.permission_check(request, id)
         # 자신의 계정을 삭제하려 할경우 정상적으로 삭제
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if check:
+            request.user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message : ": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 '''class GoogleLoginAPI(APIView):
@@ -175,16 +180,13 @@ class UserAPI(generics.GenericAPIView):
         payload = {'access_token': request.data.get('token')}
         r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', params=payload)
         data = json.loads(r.text)
-
         if 'error' in data:
             content = {'message': 'wrong google token / this google token is already expired.'}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
             return Response({'message': 'User does not exist.'})
-
         token = RefreshToken.for_user(user)
         response = {}
         response['username'] = user.username

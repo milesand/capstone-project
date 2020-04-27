@@ -27,10 +27,11 @@ services:
     build:
       context: .
       network: host
-      dockerfile: Dockerfile
-    volumes:
-      - ./app:/app/
+      dockerfile: ./app/Dockerfile
+    #volumes:     # 볼륨을 사용하면 unix socket의 접근권한 변경이 불가능하다.
+    # - ./app:/app/
 
+    container_name : "myDjangoApp"
     ports:
       - "8000:8000"
     depends_on:
@@ -39,4 +40,19 @@ services:
     command: >
       sh -c "/wait-for-it.sh db:27017 -t 10 &&
              export DJANGO_SETTINGS_MODULE=Capstone.config.deploy&&
-             uwsgi --ini Capstone.ini"
+             python manage.py makemigrations&&
+             python manage.py migrate&&
+             uwsgi --ini ./uwsgi/Capstone.ini"
+
+  nginx:
+    build:
+      context: ./nginx
+      network: host
+      dockerfile: Dockerfile
+
+    container_name : "myNginx"
+    ports :
+      - "80:80"
+    image : nginx
+    command: ['nginx', '-g', 'daemon off;']
+

@@ -4,7 +4,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify
 urlpatterns=[
     path('users', AllUserAPI.as_view()),
     path("register", RegistrationAPI.as_view()),
-    path("user/<int:pk>", UserAPI.as_view()),
+    path("user/<str:id>", UserAPI.as_view()),
     path("activate/<str:uidb64>/<str:token>", ActivateUserAPI.as_view(), name='activate'),
 
     #JWT 토큰 발급 및 재발급용

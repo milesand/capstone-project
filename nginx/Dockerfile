@@ -1,4 +1,4 @@
 FROM nginx
 
-
-COPY default.conf /etc/nginx/conf.d
+WORKDIR /etc/nginx/conf.d
+COPY default.conf .
