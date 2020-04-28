@@ -18,3 +18,9 @@ stunnel.*
 
 #docker 테스트용
 dockerTest
+
+#static file
+app/static/*
+
+#socket file
+app/socket/*.sock

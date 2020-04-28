@@ -30,8 +30,8 @@ class GoogleLoginAPI(SocialLoginView):
 
 # Create your views here.
 
-hostIP = 'localhost:8000'  # 호스트 IP, 추후에 수정
-
+#hostIP = 'localhost:8000'  # 호스트 IP, 추후에 수정
+hostIP='127.0.0.1'
 
 class RegistrationAPI(generics.GenericAPIView):
     permission_classes = (AllowAny,)
@@ -64,7 +64,7 @@ class RegistrationAPI(generics.GenericAPIView):
                 message = render_to_string('account/user_active_email.html', {
                     'username': user.username,
                     'domain': hostIP,
-                    'uid': urlsafe_base64_encode(force_bytes(user.username)).encode().decode(),
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
                     'token': account_activation_token.make_token(user)
                 })
                 mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
@@ -93,8 +93,8 @@ class ActivateUserAPI(APIView):
 
     def get(self, request, uidb64, token):
         try:
-            uname = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(username=uname)
+            pk = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=pk)
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
@@ -135,7 +135,8 @@ class LoginAPI(ObtainJSONWebToken):
         if user.is_mail_authenticated == False:
             return Response({"message": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return super(LoginAPI, self).post(request, *args, **kwargs)
+            token=super(LoginAPI, self).post(request, *args, **kwargs)
+            return Response({'id' : user._id, 'token' : token.data['token']}, status=status.HTTP_200_OK)
 
 
 # 전체 유저 목록 출력하는 API

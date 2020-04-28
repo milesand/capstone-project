@@ -1,4 +1,4 @@
 FROM nginx
 
-WORKDIR /etc/nginx/conf.d
-COPY default.conf .
+WORKDIR /
+RUN mkdir -p socket

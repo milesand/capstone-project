@@ -1,9 +1,7 @@
 FROM python:3.6
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir /app && \
-    mkdir /app/socket && \
-    touch /app/socket/capstone.sock
+RUN mkdir /app
 
 WORKDIR /app
 COPY ./app .
