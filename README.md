@@ -13,13 +13,14 @@ URL 사용법
 |           | POST    | GET        | DELETE  |
 |:--------------:|:-------:|:--------------------------: |:-------:|
 | api/users | - | 전체 사용자 출력 |      -     |
-| api/user/<사용자 번호>| - | 해당 회원의 정보 출력 | 해당 회원의 정보 제거 |
+| api/user/<사용자 pk>| - | 해당 회원의 정보 출력 | 해당 회원의 정보 제거 |
 | api/register | 회원가입 |-|-|
 | api/jwt-login | 로그인 |-|-|
 | api/jwt-refresh | JWT 토큰 재발급|-|-|
 | /active/<str:uidb64>/<str:token> |-| 인증메일에 사용하는 URL |-|
 
-* GET /api/user/<사용자 번호> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다.
+* GET /api/user/<사용자 pk> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다. 사용자 pk는 로그인
+  수행 시 jwt 토큰과 함께 HTTP response로 주어집니다. 
 
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
 
