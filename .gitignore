@@ -24,3 +24,5 @@ app/static/*
 
 #socket file
 app/socket/*.sock
+
+./idea/
