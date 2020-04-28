@@ -20,8 +20,8 @@ URL 사용법
 | /active/<str:uidb64>/<str:token> |-| 인증메일에 사용하는 URL |-|
 
 * GET /api/user/<사용자 pk> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다. 사용자 pk는 로그인
-  수행 시 jwt 토큰과 함께 HTTP response로 주어집니다. 
-
+  수행 시 jwt 토큰과 함께 HTTP response로 주어집니다. 프론트엔드쪽에서 저장하고 있다가 필요할 때 URL에 넣어서 API 요청하면 됩니다.
+ㄴ
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
 
 * POST /api/jwt-login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, response로 JWT 토큰을 받을 수 있습니다.
