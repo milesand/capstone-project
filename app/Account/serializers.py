@@ -39,7 +39,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # password_val=make_password(validated_data["password_val"]), # 패스워드 확인 필드도 암호화시켜준다. 프론트엔드쪽에서 처리.
             social_auth=social,
         )
-        print(user.pk)
         # user.is_active=False
         user.save()
         return user

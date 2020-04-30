@@ -8,18 +8,19 @@
 
 URL 사용법
 ------------------
-localhost:8000/ 뒤에 아래의 URL을 붙이면 됩니다.
+127.0.0.1/ 뒤에 아래의 URL을 붙이면 됩니다.
 
 |           | POST    | GET        | DELETE  |
 |:--------------:|:-------:|:--------------------------: |:-------:|
 | api/users | - | 전체 사용자 출력 |      -     |
-| api/user/<사용자 번호>| - | 해당 회원의 정보 출력 | 해당 회원의 정보 제거 |
+| api/user/<사용자 pk>| - | 해당 회원의 정보 출력 | 해당 회원의 정보 제거 |
 | api/register | 회원가입 |-|-|
 | api/jwt-login | 로그인 |-|-|
 | api/jwt-refresh | JWT 토큰 재발급|-|-|
 | /active/<str:uidb64>/<str:token> |-| 인증메일에 사용하는 URL |-|
 
-* GET /api/user/<사용자 번호> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다.
+* GET /api/user/<사용자 pk> 와 DELETE /api/user/<사용자 번호> 을 통해서 타인의 계정 정보를 참조하거나 삭제할 수 없습니다. 사용자 pk는 로그인
+  수행 시 jwt 토큰과 함께 HTTP response로 주어집니다. 프론트엔드쪽에서 저장하고 있다가 필요할 때 URL에 넣어서 API 요청하면 됩니다.
 
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
 
@@ -31,8 +32,7 @@ localhost:8000/ 뒤에 아래의 URL을 붙이면 됩니다.
 * POST /api/jwt-refresh는 HTTP body에 json 형식으로 token : <발급받은 토큰>을 넣어주면 유효 시간이 갱신된 새로운 토큰을 받을 수 있습니다.
   발급받은 토큰이 만료되면 새로운 토큰을 받을 수 없으니, 만료 되기 전에 이 URL을 통해 새로운 토큰을 발급받으면 됩니다(페이지에 버튼을 따로 만들거나 하면 될것같아요).
 
-* POST /api/logout은 HTTP 헤더에 Authorization : Token <로그인 토큰>을 넣고 HTTP request를 보내야 합니다. 보내면 해당 로그인 토큰이
-   비활성화되어 해당 토큰으로는 로그인이 필요한 서비스에 접근할 수 없습니다(로그아웃).
+* 로그아웃 기능은 JWT 토큰의 특성 상 따로 구현하지 않고, 로그아웃 했을 때 해당 사용자의 JWT토큰을 폐기하면 됩니다.
    
 * /active/<str:uidb64>/<str:token>은 인증메일용 URL로, 이메일 인증에만 사용됩니다.
 

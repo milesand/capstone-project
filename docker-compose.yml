@@ -3,10 +3,7 @@ version : '3.4'
 # 윈도우에서 사용하는 docker는 virtualbox를 사용하는데, 몽고DB는 virtualbox의 shared folder를 지원하지 않는다.
 # 따라서 docker에서 지원하는 Data Volume Container를 이용해야 한다.
 volumes:
-  my-mongodb-data:
-    external: false
-
-  my-mongodb-init:
+  socket:
     external: false
 
 services:
@@ -16,43 +13,36 @@ services:
     environment:
       MONGO_INITDB_DATABASE: exampledb
     volumes:
-      - my-mongodb-data:/data/db
-      - my-mongodb-init:/docker-entrypoint-initdb.d
-    ports:
-      - "27017:27017"
-    expose :
+      - ./db-data:/data/db/
+      - ./db-init:/docker-entrypoint-initdb.d/
+    expose:
       - 27017
 
   django:
     build:
-      context: .
-      network: host
-      dockerfile: ./app/Dockerfile
-    #volumes:     # 볼륨을 사용하면 unix socket의 접근권한 변경이 불가능하다.
-    # - ./app:/app/
-
-    container_name : "myDjangoApp"
-    ports:
-      - "8000:8000"
+      context: ./app
+    volumes:
+     - ./app:/app/
+     - socket:/socket/
+    expose:
+      - 8000
     depends_on:
       - db
-
     command: >
       sh -c "/wait-for-it.sh db:27017 -t 10 &&
-             export DJANGO_SETTINGS_MODULE=Capstone.config.deploy&&
-             python manage.py makemigrations&&
-             python manage.py migrate&&
+             export DJANGO_SETTINGS_MODULE=Capstone.config.deploy &&
+             python manage.py makemigrations &&
+             python manage.py migrate &&
              uwsgi --ini ./uwsgi/Capstone.ini"
-
   nginx:
     build:
       context: ./nginx
-      network: host
-      dockerfile: Dockerfile
-
-    container_name : "myNginx"
-    ports :
+    #restart: always 서버가 다운되었을 때 자동으로 재시작하게 해준다.
+    volumes:
+      - socket:/socket/
+      - ./app/static:/static/
+    ports:
       - "80:80"
-    image : nginx
-    command: ['nginx', '-g', 'daemon off;']
+    depends_on:
+      - django
 
