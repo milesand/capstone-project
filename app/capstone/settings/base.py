@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'sslserver',
 
     # 내부 앱
-    'capstone.apps.account.apps.AccountConfig',
+    'capstone.account.apps.AccountConfig',
     #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
 ]
 
