@@ -110,7 +110,7 @@ CORS_ORIGIN_WHITELIST=[ #react 연동
     'http://localhost:3000',
 ]
 
-ROOT_URLCONF = 'Capstone.urls'
+ROOT_URLCONF = 'capstone.urls'
 
 TEMPLATES = [
     {
@@ -130,7 +130,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Capstone.wsgi.application'
+WSGI_APPLICATION = 'capstone.wsgi.application'
 
 
 # Database
