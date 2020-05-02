@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class AccountConfig(AppConfig):
-    name = 'Account'
+    name = 'capstone.apps.account'
+    label = 'capstone_account'
