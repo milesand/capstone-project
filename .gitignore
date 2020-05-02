@@ -7,9 +7,7 @@ app/googleAccount.txt
 Account_static/
 
 # DB
-db-data/*
-!db-data/.gitkeep
-db-init/*
+db-data
 
 # SSL 테스트용
 app/stunnel/*
