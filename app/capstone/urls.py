@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-"""Capstone URL Configuration
-=======
 """capstone URL Configuration
->>>>>>> 이메일 인증페이지 및 회원가입 기능, 로그인 기능 점검.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.0/topics/http/urls/
@@ -25,10 +21,6 @@ from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns # html 테스트용
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 이메일 인증페이지 및 회원가입 기능, 로그인 기능 점검.
 urlpatterns = [
     #path('', include('Account_static.urls')), # 로그인 테스트 페이지
     path('admin', admin.site.urls),
