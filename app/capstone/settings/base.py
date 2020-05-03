@@ -54,6 +54,11 @@ INSTALLED_APPS = [
 
     #SSL 지원
     'sslserver',
+
+    # 내부 앱
+    'capstone.account.apps.AccountConfig',
+    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
+    'capstone.upload',
 ]
 
 REST_KNOX = {
