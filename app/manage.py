@@ -5,7 +5,11 @@ import sys
 
 
 def main():
+<<<<<<< HEAD
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'capstone.settings.deploy')
+=======
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'capstone.settings')
+>>>>>>> 이메일 인증페이지 및 회원가입 기능, 로그인 기능 점검.
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

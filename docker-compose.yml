@@ -30,6 +30,7 @@ services:
       - db
     environment:
       DJANGO_SETTINGS_MODULE: capstone.settings.deploy
+    #wait-for-it.sh는 db가 켜질 때까지 기다렸다가 django 앱이 켜지게 해줍니다.
     command: >
       sh -c "/wait-for-it.sh db:27017 -t 10 &&
              python manage.py makemigrations &&
@@ -42,8 +43,9 @@ services:
     volumes:
       - socket:/socket/
       - ./app/static:/static/
+      - ./React:/React/
+      - ./nginx/app.conf:/etc/nginx/conf.d/app.conf #nginx 테스트용입니다. 나중에 지워주세요.
     ports:
       - "80:80"
     depends_on:
       - django
-

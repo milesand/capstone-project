@@ -1,0 +1,3 @@
+
+POST http://127.0.0.1:8000/api/auth/login
+Authorization: Token b2e1073364d813948d2d756965f1d47760add04aada2f7f101230dbe0c0cdc2f
