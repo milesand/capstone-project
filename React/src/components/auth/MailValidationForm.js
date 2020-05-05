@@ -3,7 +3,7 @@ import './style2.css';
 import {Col} from 'react-bootstrap';
 import logo from './login4.png';
 
-const MailValidationForm=({toHome}) => {
+const MailValidationForm=({guideText, toHome, isValid}) => {
     console.log("vali test.");
     return(
         <div className="wrapper fadeInDown">
@@ -13,17 +13,21 @@ const MailValidationForm=({toHome}) => {
               <img src={logo} id="usericon" alt="User Icon" />
             </Col>
                 <div className="authTextContainer">
-                    <span className="authFormTextS" >메일 인증이 완료되었습니다. 사이트 이름(추후에 수정)의 기능을 즐겨보세요!</span>        
+                    <span className="authFormTextS" >{guideText}</span>        
                     
                 </div>
             <form>
-              <input
-                type="button"
-                className="fadeIn"
-                value="홈화면으로 이동"
-                onClick={toHome}
+              {isValid
+                ?
+                <input
+                  type="button"
+                  className="fadeIn"
+                  value="홈화면으로 이동"
+                  onClick={toHome}
 
-              />  
+                />
+                : null
+              }  
             </form>
 
           

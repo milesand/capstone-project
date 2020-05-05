@@ -17,6 +17,6 @@ export default ({ childProps }) =>
     <AppliedRoute path="/login" exact component={Login} props={childProps} />
     <AppliedRoute path="/signup" exact component={Signup} props={childProps} />
     <MailAuthRoute path="/mail-resend" exact component={MailResend} props={childProps} />
-    <AppliedRoute path="/mail-validation" exact component={MailValidation} props={childProps} />
+    <AppliedRoute path="/mail-validation/*" exact component={MailValidation} props={childProps} />
     <Route component={NotFound} />
 </Switch>;

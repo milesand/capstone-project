@@ -7,12 +7,9 @@ export default ({ component: C, props: cProps, ...rest }) =>
     {...rest}
     render={props =>
         !cProps.isAuthenticated
-          ?
-          <Redirect to={'/login'}/>
+          ? <Redirect to={'/login'}/>
           : !cProps.isMailAuthenticated
-            ?
-            <C {...props} {...cProps} />
-            :
-            <Redirect to={'/'}/>
+            ? <C {...props} {...cProps} />
+            : <Redirect to={'/'}/>
     }
   />;

@@ -35,7 +35,6 @@ export default class Signup extends Component {
     const phoneNumberTest = /^\d{3}-\d{3,4}-\d{4}$/;
     
     if(id=='username'){
-      console.log(this.state.username);
       if(!this.state.username||!idPasswordTest.test(this.state.username)) val=false;
     }
     else if(id=='password'){
@@ -118,7 +117,6 @@ export default class Signup extends Component {
       is_mail_authenticated: false,
     };
     
-    console.log("data : " + JSON.stringify(data))
     submitEvent.preventDefault();
 
     let handleErrors = response => {
@@ -141,12 +139,9 @@ export default class Signup extends Component {
     .then(res => res.json())
     .then(handleErrors)
     .then(json => {
-      console.log(json);
       if (json.user.username) {
-        console.log("회원가입 완료!");
         this.props.userHasAuthenticated(true, false, json.user.username, json.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
         let mailPage = response => {
-          console.log(response);
           this.props.history.push('/mail-resend');
           return response;
         }
