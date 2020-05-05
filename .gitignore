@@ -9,6 +9,9 @@ Account_static/
 # DB
 db-data
 
+# 업로드된 파일
+files
+
 # SSL 테스트용
 app/stunnel/*
 stunnel.*

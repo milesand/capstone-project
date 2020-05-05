@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
-
 class UploadConfig(AppConfig):
-    name = 'upload'
+    name = 'capstone.upload'
+
+    def ready(self):
+        import capstone.upload.signals
