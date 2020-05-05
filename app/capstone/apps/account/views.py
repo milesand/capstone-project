@@ -75,7 +75,7 @@ class RegistrationAPI(generics.GenericAPIView):
                 body = {"message": '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
                 return Response({'message': '비밀번호가 너무 짧습니다.'}, status=status.HTTP_400_BAD_REQUEST);
 
-        else:
+        elif 'social_auth' in request.data.key() and (request.data['social_auth'] not in self.support_social_login):
             # 지원하는 소셜 로그인이 아닌 경우
 
             if request.data['social_auth'] not in self.support_social_login:
@@ -122,7 +122,8 @@ class SendMailAPI(generics.GenericAPIView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
-        user=find_user(request)
+        #user=find_user(request)
+        user=request.user
         message = render_to_string('account/user_active_email.html', {
             'username': user.username,
             'domain': hostIP,
@@ -182,14 +183,15 @@ class LoginAPI(ObtainJSONWebToken):
         #존재하는 아이디인지 확인
         user=authenticate(username=request.data['username'], password=request.data['password'])
         response=Response()
+        if user is None:
+            response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
+            response.state_code=status.HTTP_404_NOT_FOUND
+            return response
+
         token = super(LoginAPI, self).post(request, *args, **kwargs)
         response.set_cookie('jwt', token.data['token'], domain=None,
                             expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
                             httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
-        if user is None:
-            response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
-            response.status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            return response
 
         if user.is_mail_authenticated == False:
             response.data={"error": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요.", "email" : user.email}
@@ -197,7 +199,7 @@ class LoginAPI(ObtainJSONWebToken):
             return response
         else:
             #response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
-            response.data={'id': user._id, 'username': user.username}
+            response.data={'username': user.username, 'email' : user.email}
             response.status=status.HTTP_200_OK
             return response
 
@@ -207,7 +209,6 @@ class LogoutAPI(generics.GenericAPIView):
     def post(self, request):
         response=Response({"message": "로그아웃 완료."}, status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie('jwt')
-        print(response)
         return response
 
 # 전체 유저 목록 출력하는 API
@@ -222,20 +223,18 @@ class UserAPI(generics.GenericAPIView):
     #permission_classes = [IsAuthenticated, ]
     permission_classes = [AllowAny, ] #임시 설정
 
-
     def get(self, request):
-        try:
-            user=find_user(request)
-        except:
-            return Response({"error" : "잘못된 접근입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        #user=find_user(request)
+        user=request.user
+        if not user.is_authenticated:
+            return Response({"error" : "로그인 중이 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
     def delete(self, request):
-        try:
-            user = find_user(request)
-        except:
-            return Response({"error": "잘못된 접근입니다."}, status=status.HTTP_400_BAD_REQUEST)
-        # 자신의 계정을 삭제하려 할경우 정상적으로 삭제
+        #user = find_user(request)
+        user=request.user
+        if not user.is_authenticated:
+            return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
