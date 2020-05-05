@@ -38,8 +38,7 @@ class GoogleLoginAPI(SocialLoginView):
 
 # Create your views here.
 
-#hostIP = 'localhost:8000'  # 호스트 IP, 추후에 수정
-hostIP='127.0.0.1'
+hostIP='localhost'
 
 #클라이언트에서 보내준 JWT 토큰을 해독하여 사용자를 식별한다.
 def decodeJWTToken(token):
@@ -149,10 +148,10 @@ class ActivateUserAPI(APIView):
             user = None
 
         try:
-            if user is not None and account_activation_token.check_token(user, token):
+            if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
                 user.is_mail_authenticated = True
                 user.save()
-                return Response(user.email + '계정이 활성화 되었습니다.', status=status.HTTP_200_OK)
+                return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
             else:
                 return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -226,8 +225,9 @@ class UserAPI(generics.GenericAPIView):
     def get(self, request):
         #user=find_user(request)
         user=request.user
+        print(user)
         if not user.is_authenticated:
-            return Response({"error" : "로그인 중이 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error" : "로그인 중이 아닙니다."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
     def delete(self, request):

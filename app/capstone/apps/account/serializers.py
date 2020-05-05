@@ -14,13 +14,11 @@ VerifyJSONWebTokenSerializer._declared_fields.pop('token')
 class VerifyJSONWebTokenSerializerCookieBased(VerifyJSONWebTokenSerializer):
     def validate(self, data):
         data['token'] = JSONWebTokenAuthentication().get_jwt_value(self.context['request'])
-        print(self.context['request'].COOKIES)
         return super(VerifyJSONWebTokenSerializerCookieBased, self).validate(data)
 
 class RefreshJSONWebTokenSerializerCookieBased(RefreshJSONWebTokenSerializer):
     def validate(self, data):
         data['token'] = JSONWebTokenAuthentication().get_jwt_value(self.context['request'])
-        print(self.context['request'].COOKIES)
         return super(RefreshJSONWebTokenSerializerCookieBased, self).validate(data)
 
 VerifyJSONWebToken.serializer_class = RefreshJSONWebTokenSerializerCookieBased

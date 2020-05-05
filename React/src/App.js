@@ -120,7 +120,8 @@ class App extends Component {
 
           })
           .catch(error => {
-            console.log("에러발생2!!!!!!!!");
+            console.log("에러발생!!!!!!!!!!!!!!!!!!!!!!2");
+            console.log(json);
             this.handleLogout();
 
           });
@@ -135,6 +136,9 @@ class App extends Component {
   }
 
   userHasAuthenticated = (authenticated, mailAuthenticated, username, email) => {
+    console.log("thisStateTest.", this.state);
+    if((!this.state.isAuthenticated||this.state.isAuthenticated==false) && authenticated==true) localStorage.setItem('isLogin', true);
+    if((!this.state.isMailAuthenticated||this.state.isMailAuthenticated==false) && mailAuthenticated==true) localStorage.setItem('isMailAuthenticated', true);
     if(email=='google'||email=='facebook'){ //소셜 로그인
       this.setState({
         isAuthenticated: authenticated,
