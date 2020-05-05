@@ -17,7 +17,6 @@ const LoginForm = ({
     handleChangePassword, 
     handleSubmit,
     handleGoogleSignIn,
-    validate,
     isAuthenticated
   }) => {
     return (
@@ -75,7 +74,6 @@ const LoginForm = ({
                 id="submit"
                 className="fadeIn"
                 value="로그인"
-                disabled={!validate(username, password)}
               />
 
              
