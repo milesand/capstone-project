@@ -9,12 +9,13 @@ export default class Login extends Component { //export default : 다른 모듈�
       username: "",
       password: ""
     };
+    console.log("로그인 시작.");
   }
 
   // 만약 유저가 이미 로그인된 상태라면 home으로 이동
   componentDidMount() {
     if (this.props.isAuthenticated) {
-      this.props.history.push("/login-test");
+      this.props.history.push("/");
     }
   }
 
@@ -68,8 +69,7 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(json => {
       if (json.username && json.token) {
         console.log('token: ' + json.token);
-
-        this.props.userHasAuthenticated(true, json.username, json.token);
+        this.props.userHasAuthenticated(true, true, json.username, "google");
         this.props.history.push("/");
 
       }else{
@@ -89,9 +89,8 @@ export default class Login extends Component { //export default : 다른 모듈�
           if (json.id && json.token) {
 
             console.log('로그인 성공! token: ' + json.token);
-
-            this.props.userHasAuthenticated(true, json.id, json.token);
-            this.props.history.push("/login-test");
+            this.props.userHasAuthenticated(true, true, json.username, json.email);
+            this.props.history.push("/");
 
           }
         })
@@ -124,14 +123,9 @@ export default class Login extends Component { //export default : 다른 모듈�
       console.log(response);
       if (response.hasOwnProperty("error")) { // response에 error 키를 가진 값이 있을 경우 에러 발생했다는 의미
         if(response.hasOwnProperty("email")){ //이메일 인증 안받았을 때
-          console.log("emailtest.");
-          console.log(response['email']);
-           this.props.history.push({
-             pathname: '/mail-auth',
-             state: { 
-              username: data.username,
-              email: response['email'] }
-           });
+          this.props.userHasAuthenticated(true, false, data.username, response['email']);
+          localStorage.setItem('isLogin', true);
+          this.props.history.push('/mail-resend');
         }
         else{ //아이디 비밀번호 틀렸을 때
            throw Error(response['error']);
@@ -156,10 +150,11 @@ export default class Login extends Component { //export default : 다른 모듈�
       //로그인이 성공하면 response에는 유저의 고유 id와 함께 jwt token이 들어있다.
       // 발급 완료 되었다면 해당 토큰을 클라이언트 Local Storage에 저장
       console.log("로그인 성공!");
-      if (json.id && json.username) {
-        this.props.userHasAuthenticated(true, json.id, json.username);
-        //localStorage.setItem('pk', json.id); //임시 설정, 지워야함.
-        this.props.history.push("/login-test");
+      if (json.email && json.username) {
+        this.props.userHasAuthenticated(true, true, json.username, json.email);
+        localStorage.setItem('isLogin', true);
+        localStorage.setItem('isMailAuthenticated', true);       
+        this.props.history.push("/");
       }
     })
     .catch(error => alert(error));

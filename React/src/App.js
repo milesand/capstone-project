@@ -3,33 +3,38 @@ import NavBar from "./components/routing/Nav";
 import Routes from "./Routes";
 import "./App.css";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
-import cookie from 'react-cookies';
 
 class App extends Component {
   constructor(props) {
     super(props); //App 컴포넌트가 상속받은 Component가 지니고 있던 생성자를 super를 통해 미리 실행한다.
-
+    console.log('App prop test.');
     this.state = { //컴포넌트의 state 정의
       username: "",
-      userid: "",
+      email: "",
+      isAuthenticated: localStorage.getItem('isLogin') ? true : false,
+      isMailAuthenticated: localStorage.getItem('isMailAuthenticated') ? true : false
     };
+    console.log(this.state);
   }
 
-  // user가 로그인 중인지 확인하고, 로그인 중이라면 유저의 정보를 서버로부터 받아온다.
+  // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
     
     console.log("initiate.");
-    let isLogin=false;
 
     //로그인 체크 함수
     let loginCheck = response => {
+      console.log("loginCheck test.");
+      console.log(response);
       if(!response.hasOwnProperty('error')){
         console.log(response);
         this.setState({
           username: response.username,
           userid: response._id
         });
-        isLogin=true;
+      }
+      else{ //로그아웃 상태인데 JWT 토큰 쿠키가 남아있는 경우 삭제
+        this.deleteJWTToken();
       }
       return response;
     }
@@ -43,7 +48,9 @@ class App extends Component {
     .then(loginCheck)
     .then(json=>{
       // 브라우저에 JWT 쿠키가 존재하는 상황이라면 서버에 GET 요청하여 해당 access token이 유효한지 확인
-      if (isLogin) {
+      console.log("login check.");
+      console.log(this.state);
+      if (this.state.isAuthenticated) {
         console.log("token test.");
         console.log(this.state);
         let handleErrors = response => {
@@ -58,7 +65,7 @@ class App extends Component {
         }
 
         // JWT 토큰 값이 유효한지 확인하기 위해 /api/jwt-verify로 POST 리퀘스트를 보낸다.
-        fetch('http://localhost/api/jwt-verify', { //서버에 실을 때는 :8000 지워야합니다.
+        fetch('http://localhost/api/jwt-verify', {
           method: "POST",
           headers: {
             'Content-Type': 'application/json'
@@ -79,7 +86,9 @@ class App extends Component {
             console.log(json);
             if (json.username) {
               this.setState({ username: json.username,
-                              userid: json._id}); //setState : 컴포넌트의 state를 변경한다. state를 변경하려면 setState를 무조건 거쳐야 한다.
+                              email: json.email,
+                              isAuthenticated: true,
+                              isMailAuthenticated: json.is_mail_authenticated}); //setState : 컴포넌트의 state를 변경한다. state를 변경하려면 setState를 무조건 거쳐야 한다.
             }
             console.log(this.state);
             // Refresh Token 발급 받아 token의 만료 시간 연장
@@ -95,14 +104,11 @@ class App extends Component {
             .then(res => res.json())
             .then((json)=>{
               console.log(json);
-              this.setState({
-                  isAuthenticated: true
-              });
 
               console.log('Refresh Token 발급');
               console.log(json.token);
               console.log(this.state);
-              this.props.history.push('/login-test') //여기에 메인 페이지 URL 넣으면 됨
+              this.props.history.push('/') //여기에 메인 페이지 URL 넣으면 됨
             })
             .catch(error => {
 
@@ -125,24 +131,36 @@ class App extends Component {
 
         });
       }
-
     });
   }
 
-  // 새로운 User가 로그인 했다면 (서버로 부터 access token을 발급받았을 것이고) 해당 토큰을 localStorage에 저장
-  userHasAuthenticated = (authenticated, id, username) => {
-    this.setState({
-      isAuthenticated: authenticated,
-      userid: id,
-      username: username
-    });
+  userHasAuthenticated = (authenticated, mailAuthenticated, username, email) => {
+    if(email=='google'||email=='facebook'){ //소셜 로그인
+      this.setState({
+        isAuthenticated: authenticated,
+        username: username,
+        isMailAuthenticated: true
+      });
+    }
+    else{
+      this.setState({
+        isAuthenticated: authenticated,
+        isMailAuthenticated: mailAuthenticated,
+        username: username,
+        email: email
+      });
+    }
   }
 
-  // 로그인 상태였던 유저가 로그아웃을 시도한다면 토큰을 지움
-  handleLogout = () => {
+  deleteJWTToken(){
+    let isTokenStored=true;
+    let tokenCheck = response => {
+      if(!response.ok){
+        isTokenStored=false;
+      }
+      return response;
+    }
 
-    // 이 부분 이슈 잡아야 하는데, 사실 f5 리프레쉬 됐을때 구글 로그인 로직이 자동 호출되는 것만 막으면 됨
-    // Login.js -> handleGoogleSignIn() 함수
     try {
       fetch('http://localhost/api/logout', {
         method: "POST",
@@ -151,14 +169,19 @@ class App extends Component {
         },
         credentials: 'include',
       })
+      .then(tokenCheck)
       .then(res=>{
-        console.log(res);
-        this.setState({
-          isAuthenticated: false,
-          userid: ''
-        });
-        console.log('Logged out successfully');
-        this.props.history.push("/login");
+        if(isTokenStored){
+          console.log(res);
+          this.setState({
+            isAuthenticated: false,
+            isMailAuthenticated: false,
+            username: '',
+            userid: ''
+          });
+          console.log('Logged out successfully');
+          this.props.history.push("/login");
+        }
       });
     
     }catch{
@@ -169,22 +192,27 @@ class App extends Component {
       });
       console.log('Logged out successfully');
     }
-
-
-
-
-
+  }
+  // 로그아웃시 서버로 요청 보내서 JWT 토큰이 저장된 httponly 쿠키 제거
+  handleLogout = () => {
+    localStorage.removeItem('isLogin');
+    localStorage.removeItem('isMailAuthenticated');
+    this.deleteJWTToken();
   }
 
   render() {
     const childProps = {
-      username: this.state.id,
+      username: this.state.username,
+      useremail: this.state.email,
       isAuthenticated: this.state.isAuthenticated,
+      isMailAuthenticated:this.state.isMailAuthenticated,
       userHasAuthenticated: this.userHasAuthenticated
     };
+    console.log("child test.");
+    console.log(childProps);
     return (
       <div className="App">
-        <NavBar
+          <NavBar
           isAuthenticated={this.state.isAuthenticated}
           username={this.state.username}
           handleLogout={this.handleLogout}

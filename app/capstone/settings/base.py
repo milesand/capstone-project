@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'rest_framework', # rest framework
+    'capstone.account.apps.AccountConfig',
+    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
 
     #소셜 로그인용
     'rest_framework.authtoken',
@@ -47,15 +49,11 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
 
-    # react 연동
+    #react 연동
     'corsheaders',
 
-    # SSL 지원
+    #SSL 지원
     'sslserver',
-
-    # 내부 앱
-    'capstone.account.apps.AccountConfig',
-    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
 ]
 
 REST_KNOX = {

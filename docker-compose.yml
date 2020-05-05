@@ -35,7 +35,8 @@ services:
       sh -c "/wait-for-it.sh db:27017 -t 10 &&
              python manage.py makemigrations &&
              python manage.py migrate &&
-             uwsgi --ini ./uwsgi/capstone.ini"
+             uwsgi --ini ./uwsgi/Capstone.ini"
+
   nginx:
     build:
       context: ./nginx
@@ -49,3 +50,5 @@ services:
       - "80:80"
     depends_on:
       - django
+
+

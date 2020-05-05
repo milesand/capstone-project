@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import TodoList from "../components/todos/TodoList";
 import "./style2.css";
 
 
@@ -16,7 +15,6 @@ export default class Home extends Component {
       return response;
     }
 
-    // todo api를 요청하기 위해 현재 access 토큰을 보내 타당한지 확인하고, 타탕하다면 해당 리소스 접근
     // 타당성 확인은 서버측에서 담당
     fetch('http://localhost/api/user', {
       method: "GET",
@@ -39,12 +37,10 @@ export default class Home extends Component {
     console.log(this.props);
     return (
       <div className="Home">
-        <h3>Hi, {this.state.profile['username']}</h3>
+        { this.state && this.state.profile['username'] && //이 방법을 통해 서버에서 정보를 가져오기 전에 렌더링 되는 것을 막을 수 있다.
+          <h3>Hi, {this.state.profile['username']}</h3>
+        }
         <div className="lander">
-          <hr/>
-          <TodoList
-            data={this.state.profile}
-          />
         </div>
       </div>
     );

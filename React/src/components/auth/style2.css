@@ -68,8 +68,18 @@ body {
   h2.active {
     color: #0d0d0d;
     border-bottom: 2px solid #5fbae9;
+  }.authFormText {
+    font-size: 16px;
+    color: #111111;
   }
-
+  
+  .authFormTextS {
+    font-size: 20px;
+    color: #5fbae9;
+  }
+  .authTextContainer {
+    margin: 40px;
+  }
 
 
   /* FORM TYPOGRAPHY*/
@@ -164,6 +174,17 @@ body {
 
 
   #usericon {
+    width: 30%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .register {
+    margin:0px !important ;
+    padding:5px 0px 5px 0px!important;
+    min-width:80% !important;
+    box-shadow: none !important;
+  }
+  #emailicon {
     width: 30%;
     margin-top: 20px;
     margin-bottom: 20px;
