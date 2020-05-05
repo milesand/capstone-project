@@ -24,6 +24,7 @@ services:
     volumes:
      - ./app:/app/
      - socket:/socket/
+     - ./files:/files
     expose:
       - 8000
     depends_on:
