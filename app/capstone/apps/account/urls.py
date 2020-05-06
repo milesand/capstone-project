@@ -4,7 +4,7 @@ from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token # JWT í
 
 urlpatterns=[
     path('users', AllUserAPI.as_view()),
-    path("register", RegistrationAPI.as_view()),
+    path("registration", RegistrationAPI.as_view()),
     path("user", UserAPI.as_view()),
     path("activate/<str:uidb64>/<str:token>", ActivateUserAPI.as_view(), name='activate'),
     path("upload", FileAPI.as_view()),
