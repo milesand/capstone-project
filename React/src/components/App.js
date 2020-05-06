@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { Component, Fragment} from "react";
 import NavBar from "./AuthRoutingComponents/NavBar";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
 
@@ -30,7 +30,7 @@ class App extends Component {
   // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
     let errorCheck = response => {
-      console.log("err cherk.");
+      console.log("err check.");
       console.log(response);
       if(!response.hasOwnProperty('error')){
         this.setState({
@@ -41,11 +41,13 @@ class App extends Component {
         });
       }
       else{
+        console.log('here.');
         this.setState({
           isLogin: false,
         });
         this.deleteJWTToken();
       }
+      console.log('wwwwwstate : ', this.state);
       return response;
     } 
 
@@ -56,38 +58,38 @@ class App extends Component {
        }
        return response;
     }
-    fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
-      method: "GET",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    })
-    .then(res=>res.json())
-    .then(errorCheck)
-    .then(content=>{
-      if(this.state.isLogin){ // 사용자가 로그인 중일 때
-         fetch('http://localhost/api/jwt-refresh', { //JWT 토큰 재발급
-            method: "POST", 
-            headers: {
-              'Content-Type' : 'application/json',
-            },
-            credentials: 'include',
-         })
-         .then(jwtErrorCheck)
-         .then(res=>res.json())
-         .then(content=>{
-            console.log("토큰이 재발급되었습니다.");
-            console.log(content);
-            console.log(this.state);
-            if(this.state.isMailAuthenticated)
-              this.props.history.push('/'); // 메일 인증 받았으면 메인 페이지로
-            else this.props.history.push('/mail-resend'); //안받았으면 메일 인증 안내 페이지로
-
-         }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
-      }
-    }).catch(error=>console.log('로그인 체크 에러!'));
- 
+    
+    if(this.state.username==''){
+      fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+      .then(res=>res.json())
+      .then(errorCheck)
+      .then(content=>{
+        console.log("login? : ", this.state.isLogin);
+        if(this.state.isLogin){ // 사용자가 로그인 중일 때
+          fetch('http://localhost/api/jwt-refresh', { //JWT 토큰 재발급
+              method: "POST", 
+              headers: {
+                'Content-Type' : 'application/json',
+              },
+              credentials: 'include',
+          })
+          .then(jwtErrorCheck)
+          .then(res=>res.json())
+          .then(content=>{
+              console.log("토큰이 재발급되었습니다.");
+              console.log(content);
+              console.log(this.state);
+              //react-router-dom에서 알아서 이메일 인증 안받은사람 인증 페이지로 리다이렉션시키므로, 여기선 안해도됨.
+          }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
+        }
+      }).catch(error=>console.log('로그인 체크 에러!'));
+    }
   }
 
   userStateChange = (authenticated, mailAuthenticated, username, email) => {
@@ -137,7 +139,6 @@ class App extends Component {
             userid: ''
           });
           console.log('Logged out successfully');
-          this.props.history.push("/login");
         }
       });
     
@@ -155,6 +156,7 @@ class App extends Component {
   logout = () => {
     console.log("logout called!");
     this.deleteJWTToken();
+    this.props.history.push("/login");
   }
 
   render() {
@@ -166,8 +168,7 @@ class App extends Component {
       userStateChange: this.userStateChange
     };
 
-    console.log("base test.");
-    console.log(baseProps);
+    console.log("base test.", baseProps);
     return (   
        <Fragment>
           { this.state && this.state.isLogin!=null &&

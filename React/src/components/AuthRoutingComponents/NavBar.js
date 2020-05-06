@@ -15,11 +15,17 @@ const NavBar = ({isLogin, username ,logout}) => {
         <Link to="/">Capstone Test</Link>
       </Navbar.Brand>
     </Navbar.Header>
-    <Nav bsStyle='pills'>
-
-      <NavItem eventKey={1} href="/signup">
+      <Nav bsStyle='pills'>
+      {
+        isLogin
+        ?
+        <></>
+        :
+        <NavItem eventKey={1} href="/signup">
         회원가입
-      </NavItem>
+        </NavItem>
+      }
+      
       {
         isLogin
         ?

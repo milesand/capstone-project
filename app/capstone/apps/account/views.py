@@ -144,11 +144,14 @@ class ActivateUserAPI(APIView):
         try:
             pk = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=pk)
+            print("testtest.")
+            print(user.is_mail_authenticated)
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
         try:
             if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
+                print("check.")
                 user.is_mail_authenticated = True
                 user.save()
                 return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
