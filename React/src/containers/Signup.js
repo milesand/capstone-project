@@ -139,6 +139,7 @@ export default class Signup extends Component {
         throw Error("이미 가입된 이메일입니다.");
       }
 
+      console.log("user : ", content.user);
       if (content.user.username) {
         this.props.userStateChange(true, false, content.user.username, content.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
     
