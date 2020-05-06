@@ -184,7 +184,7 @@ class LoginAPI(ObtainJSONWebToken):
         response=Response()
         if user is None:
             response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
-            response.state_code=status.HTTP_404_NOT_FOUND
+            response.status=status.HTTP_404_NOT_FOUND
             return response
 
         token = super(LoginAPI, self).post(request, *args, **kwargs)

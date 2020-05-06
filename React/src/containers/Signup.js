@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import SignupForm from "../components/auth/SignupForm";
+import SignupForm from "../components/LoginComponents/SignupForm";
 
 // 회원가입할 때 사용하는 컴포넌트
 export default class Signup extends Component {
@@ -21,13 +21,13 @@ export default class Signup extends Component {
   }
 
   componentDidMount() {
-    if (this.props.isAuthenticated) {
+    if (this.props.isLogin) {
       this.props.history.push("/");
     }
   }
 
   
-  validate(id) { //여기서 회원가입 필드들의 유효성 확인. 아이디 8자 이상, 비밀번호 8자 이상 15자 이하, 비밀번호와 비밀번호 확인필드 동일해야함.
+  validateField(id) { //여기서 회원가입 필드들의 유효성 확인. 아이디 8자 이상, 비밀번호 8자 이상 15자 이하, 비밀번호와 비밀번호 확인필드 동일해야함.
     //return (username && username.length >= 8) && (password) && (password==password_val);
     let val = true;
     const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
@@ -52,7 +52,7 @@ export default class Signup extends Component {
     return val;
   }
 
-  validateForm(username, password, password_val, email, phone) {
+  validateAllField(username, password, password_val, email, phone) {
     let val = true;
     const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
     const emailTest=/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/;
@@ -65,35 +65,37 @@ export default class Signup extends Component {
     return val;
   }
 
-  handleChange(event){
-    event.persist();
+  valChangeControl(e){
     let target="";
     let target_err_message="";
-    if(event.target.id=='username'){
+    let target_id=e.target.id;
+    let target_val=e.target.value;
+
+    if(target_id=='username'){
       target="username_err_message";
       target_err_message="8자 이상 15자 이하의 숫자, 영문자를 포함한 값으로 입력해주세요.";
     }
-    else if(event.target.id=='password'){
+    else if(target_id=='password'){
       target='password_err_message';
       target_err_message="8자 이상 15자 이하의 숫자, 영문자를 포함한 값으로 입력해주세요.";
     }
-    else if(event.target.id=='password_val'){
+    else if(target_id=='password_val'){
       target='password_val_err_message';
       target_err_message="비밀번호가 일치하지 않습니다.";
     }
-    else if(event.target.id=='email'){
+    else if(target_id=='email'){
       target='email_err_message';
       target_err_message="이메일 형식을 확인해주세요.";
     }
-    else if(event.target.id=='phone'){
+    else if(target_id=='phone'){
       target='phone_err_message';
       target_err_message="다음과 같은 형태로 입력해주세요. 010-XXXX-XXXX";
     }
 
     this.setState({
-      [event.target.id]: event.target.value //SignupForm.js에서 정해놓은 input id값 및 value값
+      [target_id]: target_val //SignupForm.js에서 정해놓은 input id값 및 value값
     }, ()=> {
-      if(!this.validate(event.target.id)){
+      if(!this.validateField(target_id)){
         this.setState({
           [target]: target_err_message  //대괄호에 문자열을 넣으면 해당 문자열로 state를 업데이트 할 수 있음.
         }); 
@@ -107,7 +109,9 @@ export default class Signup extends Component {
     );
   }
 
-  async handleSubmit(submitEvent) {
+  submit(e) {       
+    e.preventDefault();
+
     let data = {
       username: this.state.username,
       password: this.state.password,
@@ -116,20 +120,8 @@ export default class Signup extends Component {
       social_auth: "",
       is_mail_authenticated: false,
     };
-    
-    submitEvent.preventDefault();
 
-    let handleErrors = response => {
-      if (response.hasOwnProperty('username')) {
-        throw Error("이미 존재하는 아이디입니다.");
-      }
-      else if(response.hasOwnProperty('email')){
-        throw Error("이미 존재하는 이메일입니다.");
-      }
-      return response;
-    }
-
-    fetch('http://localhost/api/register', {
+    fetch('http://localhost/api/registration', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -137,20 +129,24 @@ export default class Signup extends Component {
       body: JSON.stringify(data)
     })
     .then(res => res.json())
-    .then(handleErrors)
-    .then(json => {
-      if (json.user.username) {
-        this.props.userHasAuthenticated(true, false, json.user.username, json.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
-        let mailPage = response => {
-          this.props.history.push('/mail-resend');
-          return response;
-        }
+    .then(content => {
+      console.log(content);
+      if (content.hasOwnProperty('username')) {
+        throw Error("이미 존재하는 아이디입니다.");
+      }
+
+      else if(content.hasOwnProperty('email')){
+        throw Error("이미 가입된 이메일입니다.");
+      }
+
+      if (content.user.username) {
+        this.props.userStateChange(true, false, content.user.username, content.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
     
         let loginData={
           username: this.state.username,
           password: this.state.password
         }
-        // 서버로부터 새로운 access token 발급받음
+        // 서버로부터 새로운 access token 발급받아 로그인 상태로 전환
         fetch('http://localhost/api/jwt-login', {
           //보통 fetch는 쿠키를 보내거나 받지 않는다. 쿠키를 전송하거나 받기 위해서는 credentials 옵션을 반드시 설정해야 한다.
           method: 'POST',
@@ -161,7 +157,9 @@ export default class Signup extends Component {
             body: JSON.stringify(loginData)
           })
         .then(res => res.json())
-        .then(mailPage)
+        .then(mailPage =>{
+          this.props.history.push('/mail-resend');
+        })
       }
     }).catch(error => alert(error));
   }
@@ -179,13 +177,13 @@ export default class Signup extends Component {
         email_err_message={this.state.email_err_message}
         phone={this.state.phone}
         phone_err_message={this.state.phone_err_message}
-        handleChangeUsername={e => this.handleChange(e)}
-        handleChangePassword={e => this.handleChange(e)}
-        handleChangePassword_val={e => this.handleChange(e)}
-        handleChangeEmail={e => this.handleChange(e)}
-        handleChangePhone={e => this.handleChange(e)}
-        handleSubmit={e => this.handleSubmit(e)}
-        validate={this.validateForm}
+        validate={this.validateAllField}
+        changeUsername={e => this.valChangeControl(e)}
+        changePassword={e => this.valChangeControl(e)}
+        changePassword_val={e => this.valChangeControl(e)}
+        changeEmail={e => this.valChangeControl(e)}
+        changePhone={e => this.valChangeControl(e)}
+        submit={e => this.submit(e)}
       />
     );
   }

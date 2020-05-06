@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import MailValidationForm from "../components/auth/MailValidationForm"
+import MailValidationForm from "../components/LoginComponents/MailValidationForm"
 import { withRouter } from 'react-router-dom';
 
 class MailValidation extends Component{
@@ -12,15 +12,14 @@ class MailValidation extends Component{
         }
 
         this.toHome=this.toHome.bind(this);
-        this.props.userHasAuthenticated();
+        this.props.userStateChange();
     }
 
     componentDidMount(){
-        console.log("href test.");
         console.log(document.location.href.split("mail-validation/"));
         let url='http://localhost/api/activate/' + document.location.href.split("mail-validation/")[1];
         let isErr=false;
-        let handleErrors = response => {
+        let errorCheck = response => {
             if(!response.ok){
                 this.setState({
                     guideText: "만료된 링크입니다.",
@@ -36,15 +35,15 @@ class MailValidation extends Component{
                 'Content-Type': 'application/json'
             },
         })
-        .then(handleErrors)
+        .then(errorCheck)
         .then(res=>res.json())
-        .then(json=>{
-            console.log(json);
+        .then(content=>{
+            console.log(content);
             if(!isErr){
                 this.setState({
                     guideText: "메일 인증이 완료되었습니다. 사이트 이름(추후에 수정)의 기능을 즐겨보세요!",
                 });
-                this.props.userHasAuthenticated(true, true, json.username, json.email);
+                this.props.userStateChange(true, true, content.username, content.email);
             }
         });
     }
