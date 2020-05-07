@@ -15,7 +15,7 @@ urlpatterns=[
     path('jwt-refresh', refresh_jwt_token), # JWT 토큰 재발급
     path('jwt-verify', verify_jwt_token), # JWT 토큰이 유효한지 확인
 
-    #httponly cookie로 저장되어 있는 JWT 토큰 제거
+    #httponly cookie로 는 JWT 토큰 제거
     path('logout', LogoutAPI.as_view()),
     #소셜 로그인 테스트용
     path('google', SocialLoginAPI.as_view()),

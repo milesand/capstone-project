@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import LoginForm from "../components/LoginComponents/LoginForm";
-import GoogleLoginButton from "../components/LoginComponents/GoogleLoginButton";
+import { gapi, loadAuth2 } from 'gapi-script';
 //로그인
 export default class Login extends Component { //export default : 다른 모듈에서 이 모듈을 import할 때 내보낼 대표 값
   constructor(props) {
@@ -150,16 +150,16 @@ export default class Login extends Component { //export default : 다른 모듈�
     console.log('login render.');
     return (
       <Fragment>
-        <LoginForm
-            username={this.state.username}
-            password={this.state.password}
-            isLogin={this.isLogin}
-            changeUsername={e => this.valChangeControl(e)}
-            changePassword={e => this.valChangeControl(e)}
-            normalLogin={e => this.normalLogin(e)}
-            googleLogin={e => this.googleLogin(e)}
-            test={e=>this.test(e)}
-        />
+            <LoginForm
+                username={this.state.username}
+                password={this.state.password}
+                isLogin={this.isLogin}
+                changeUsername={e => this.valChangeControl(e)}
+                changePassword={e => this.valChangeControl(e)}
+                normalLogin={e => this.normalLogin(e)}
+                googleLogin={e => this.googleLogin(e)}
+                test={e=>this.test(e)}
+            />
       </Fragment>
     );
   }

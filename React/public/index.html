@@ -10,20 +10,20 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
 
-    <script src="https://apis.google.com/js/platform.js?onload=gapiLoad" async defer></script>
-    <script type="text/javascript">
-      function gapiLoad() {
-        console.log("gapi 로딩중..");
-          gapi.load('auth2', () => {
-              gapi.auth2.init().then(() => {
-                  // DO NOT ATTEMPT TO RENDER BUTTON UNTIL THE 'Init' PROMISE RETURNS
-                  window.dispatchEvent(new Event('google-loaded'));
-                  console.log("gapi 로딩 완료.");
-              });
-          });
-      }
-  
-    </script>
+    <script src="https://apis.google.com/js/platform.js?onload=gapiLoad" defer></script>
+          <script type="text/javascript">
+            function gapiLoad() {
+              console.log("gapi 로딩중..");
+                gapi.load('auth2', () => {
+                    gapi.auth2.init().then(() => {
+                        // DO NOT ATTEMPT TO RENDER BUTTON UNTIL THE 'Init' PROMISE RETURNS
+                        window.dispatchEvent(new Event('google-loaded'));
+                        console.log("gapi 로딩 완료.");
+                    });
+                });
+            }
+        
+          </script>
     <title>Capstone Test</title>
   </head>
   <body>

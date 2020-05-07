@@ -196,6 +196,8 @@ class App extends Component {
     console.log("base test.", baseProps);
     return (   
        <Fragment>
+         
+          
           { this.state && this.state.isLogin!=null &&
           <NavBar        
             isLogin={this.state.isLogin}
