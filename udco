@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+export USER_ID=$(id -u)
+export GROUP_ID=$(id -g)
+
+if [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
+    sudo chown -R $USER_ID:$GROUP_ID db/data
+fi;
+
+docker-compose $@

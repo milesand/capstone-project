@@ -3,7 +3,7 @@
 실행방법
 ==================
 1. manage.py가 위치한 폴더(`./app`)에 `googleAccount.txt` 추가 (카톡방에 올려드릴게요)
-2. docker-compose.yml이 위치한 폴더(`.`)에서 `docker-compose up --build`
+2. docker-compose.yml이 위치한 폴더(`.`)에서 `./udco up`
 3. 아래에 적혀있는 URL 사용방법대로 사용하면 됩니다.
 
 5/3 수정사항
@@ -24,6 +24,10 @@
 ![signup](https://user-images.githubusercontent.com/49271247/81073996-5facaa00-8f23-11ea-9c50-b52dee452ee5.gif)
 
 2. 메일 재전송 페이지 및 인증 페이지와 서버를 연결했습니다.
+
+5/7 수정사항
+------------------
+1. 도커 서비스의 프로세스 유저가 root 대신 현재 사용자가 되도록 했습니다. 이를 위해, `docker-compose` 명령 대신 `./udco`를 사용해야 합니다.
 
 URL 사용법
 ------------------
