@@ -24,7 +24,6 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns # html 테�
 urlpatterns = [
     #path('', include('Account_static.urls')), # 로그인 테스트 페이지
     path('admin', admin.site.urls),
-    path('api/upload/', include('capstone.upload.urls')),
     path('api/', include('capstone.account.urls')),
     path('accounts/', include('allauth.urls')),
 ]
