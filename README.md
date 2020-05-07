@@ -41,7 +41,6 @@
       를 통해 사용자 계정 객체를 생성하고, gapi.auth2.signIn()을 통해 구글 서버에 로그인을 요청합니다. 이를 통해 googleUser 객체를 받아
       이 객체의 메소드인 getAuthResponse를 통해 access token을 뽑아내고, /api/google로 POST 요청을 보내 서버에서 유효성을 판정한 뒤
       사용자에 대한 정보를 이용할 수 있도록 구현했습니다.
-  
 
 URL 사용법
 ------------------
