@@ -8,6 +8,7 @@ import { LinkContainer } from "react-router-bootstrap";
 // 참조 : https://react-bootstrap-v3.netlify.app/components/navs/
 
 const NavBar = ({isLogin, username ,logout}) => {
+  console.log('in navbar, : ', username, " ", isLogin);
   return(
     <Navbar>
     <Navbar.Header>
@@ -29,7 +30,7 @@ const NavBar = ({isLogin, username ,logout}) => {
       {
         isLogin
         ?
-        <NavItem eventKey={2} onSelect={logout}>
+        <NavItem eventKey={2} onClick={logout}>
           로그아웃
         </NavItem>
         :

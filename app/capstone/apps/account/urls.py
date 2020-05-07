@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegistrationAPI, LoginAPI, AllUserAPI, UserAPI, ActivateUserAPI, GoogleLoginAPI, FileAPI, SendMailAPI, LogoutAPI
+from .views import RegistrationAPI, LoginAPI, AllUserAPI, UserAPI, ActivateUserAPI, GoogleLoginAPI, FileAPI, SendMailAPI, LogoutAPI, SocialLoginAPI, DeleteAPI
 from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token # JWT 토큰 관리에 필요한 모듈
 
 urlpatterns=[
@@ -17,6 +17,9 @@ urlpatterns=[
 
     #httponly cookie로 저장되어 있는 JWT 토큰 제거
     path('logout', LogoutAPI.as_view()),
-    #구글 JWT 인증 테스트용
-    path('rest-auth/google/', GoogleLoginAPI.as_view(), name='google_login'),
+    #소셜 로그인 테스트용
+    path('google', SocialLoginAPI.as_view()),
+
+    #유저 삭제 테스트용
+    path('deleteAll', DeleteAPI.as_view())
 ]
