@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import MailResendForm from "../components/auth/MailResendForm"
+import MailResendForm from "../components/LoginComponents/MailResendForm"
 import { withRouter } from 'react-router-dom';
 
 class MailResend extends Component{
@@ -30,7 +30,7 @@ class MailResend extends Component{
     async resendAuthEmail(e){
         e.preventDefault();
         console.log(this.state);
-        let handleErrors = response =>{
+        let errorCheck = response =>{
             if(response.message){
                 throw Error(response.message);
             }
@@ -44,10 +44,10 @@ class MailResend extends Component{
               },
             credentials: 'include',
         })
-        .then(handleErrors)
+        .then(errorCheck)
         .then(res=>res.json())
-        .then(json=>{
-            console.log(json);
+        .then(content=>{
+            console.log(content);
             console.log("메일 재발송 완료.");
         });
     }
