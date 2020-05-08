@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegistrationAPI, LoginAPI, AllUserAPI, UserAPI, ActivateUserAPI, GoogleLoginAPI, FileAPI, SendMailAPI, LogoutAPI, SocialLoginAPI, DeleteAPI
+from .views import RegistrationAPI, LoginAPI, AllUserAPI, UserAPI, ActivateUserAPI, FileAPI, ResendMailAPI, LogoutAPI, SocialLoginAPI, DeleteAPI, FindIDPasswordAPI
 from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token # JWT 토큰 관리에 필요한 모듈
 
 urlpatterns=[
@@ -8,7 +8,8 @@ urlpatterns=[
     path("user", UserAPI.as_view()),
     path("activate/<str:uidb64>/<str:token>", ActivateUserAPI.as_view(), name='activate'),
     path("upload", FileAPI.as_view()),
-    path("send-auth-email", SendMailAPI.as_view()),
+    path("send-auth-email", ResendMailAPI.as_view()),
+    path('forgot', FindIDPasswordAPI.as_view()),
 
     #JWT 토큰 발급 및 재발급용
     path('jwt-login', LoginAPI.as_view()), # JWT 토큰 발급 (로그인)
@@ -19,6 +20,7 @@ urlpatterns=[
     path('logout', LogoutAPI.as_view()),
     #소셜 로그인 테스트용
     path('google', SocialLoginAPI.as_view()),
+
 
     #유저 삭제 테스트용
     path('deleteAll', DeleteAPI.as_view())
