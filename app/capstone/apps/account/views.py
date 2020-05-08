@@ -1,12 +1,17 @@
 from django.shortcuts import render
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from .serializers import UserAccountSerializer, UserSerializer, MailSerializer
+from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer
 from .models import User
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.http.response import HttpResponse
 import json
+
+#ID/비밀번호 찾기에 쓰는 모듈
+import random, datetime
+from django.contrib.auth.hashers import make_password
+random.seed(datetime.datetime.now())
+
 
 # 이메일 인증에 사용하는 모듈
 from django.template.loader import render_to_string
@@ -16,11 +21,11 @@ from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 
 # 소셜 로그인에 사용하는 모듈
-from google.auth.transport import requests
+import requests
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_auth.registration.views import SocialLoginView
 
-# JWT 인증에 사용하는 모
+# JWT 인증에 사용하는 모듈
 from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework_jwt.settings import api_settings
 jwt_payload_handler=api_settings.JWT_PAYLOAD_HANDLER
@@ -53,6 +58,28 @@ def find_user(request):
     user = User.objects.get(_id=payload['user_id'])
     return user
 
+def sendMail(message, mail_title, to_email):
+    email = EmailMessage(mail_title, message, to=[to_email])
+    email.send()
+
+#이메일 전송 API
+class ResendMailAPI(generics.GenericAPIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        #user=find_user(request)
+        user=request.user
+        message = render_to_string('account/user_active_email.html', {
+            'username': user.username,
+            'domain': hostIP,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
+            'token': account_activation_token.make_token(user)
+        })
+        mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
+        to_email = user.email  # 인증 메일을 받는 주소
+        sendMail(message, mail_title, to_email)
+        return Response({"message" : "이메일 전송 완료."}, status=status.HTTP_200_OK)
+
 
 class RegistrationAPI(generics.GenericAPIView):
     permission_classes = (AllowAny,)
@@ -65,20 +92,19 @@ class RegistrationAPI(generics.GenericAPIView):
             body={"message" : '비밀번호가 일치하지 않습니다.'}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)'''
 
-        if request.data['social_auth']=='google': # google 로그인의 경우 access_token이 request에 포함되어 있으므로 이에 대한 인증을 진행한다.
-            print(request.data)
-
         # 소셜 로그인이 아닌 경우
         if 'social_auth' not in request.data.keys() or request.data['social_auth']=='':
             if len(request.data['password']) < 8 or len(request.data['password']) >= 16:  # 비밀번호가 7자 이하이거나 16자 이상인 경우
                 body = {"message": '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
                 return Response({'message': '비밀번호가 너무 짧습니다.'}, status=status.HTTP_400_BAD_REQUEST);
 
-        elif 'social_auth' in request.data.key() and (request.data['social_auth'] not in self.support_social_login):
-            # 지원하는 소셜 로그인이 아닌 경우
-
-            if request.data['social_auth'] not in self.support_social_login:
+        elif 'social_auth' in request.data.keys():
+            if(request.data['social_auth'] not in self.support_social_login):
+                # 지원하는 소셜 로그인이 아닌 경우
                 return Response({'message': '잘못된 접근입니다.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+            else: #지원하는 소셜 로그인
+                request.data['is_mail_authenticated']=True
 
         serializer = UserAccountSerializer(data=request.data)
         if serializer.is_valid():
@@ -94,8 +120,7 @@ class RegistrationAPI(generics.GenericAPIView):
                 })
                 mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
                 to_email = user.email  # 인증 메일을 받는 주소
-                email = EmailMessage(mail_title, message, to=[to_email])
-                email.send()
+                sendMail(message, mail_title, to_email)
 
             payload = jwt_payload_handler(user)
             payload['user_id']=str(payload['user_id'])
@@ -110,31 +135,9 @@ class RegistrationAPI(generics.GenericAPIView):
                     "user": UserSerializer(
                         user, context=self.get_serializer_context()
                     ).data,
-                    #"token": token.data['token']
                 }  # 가입을 수행한 뒤 확인을 위해 유저 정보 출력
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-#이메일 전송 API
-class SendMailAPI(generics.GenericAPIView):
-    permission_classes = (AllowAny, )
-
-    def get(self, request, *args, **kwargs):
-        #user=find_user(request)
-        user=request.user
-        message = render_to_string('account/user_active_email.html', {
-            'username': user.username,
-            'domain': hostIP,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
-            'token': account_activation_token.make_token(user)
-        })
-        mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
-        to_email = user.email  # 인증 메일을 받는 주소
-        email = EmailMessage(mail_title, message, to=[to_email])
-        email.send()
-        return Response({"message" : "이메일 재전송 완료."}, status=status.HTTP_200_OK)
-
 
 # 이메일 인증 API
 class ActivateUserAPI(APIView):
@@ -154,9 +157,8 @@ class ActivateUserAPI(APIView):
                 return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
             else:
                 return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
+        except:
             print('error')
-
 
 # 유저 로그인 API
 '''class LoginAPI(generics.GenericAPIView):
@@ -179,15 +181,20 @@ class ActivateUserAPI(APIView):
 #유저 JWT 로그인
 class LoginAPI(ObtainJSONWebToken):
     def post(self, request, *args, **kwargs):
+        print("request test.")
+        print(request.data)
         #존재하는 아이디인지 확인
         user=authenticate(username=request.data['username'], password=request.data['password'])
         response=Response()
         if user is None:
             response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
-            response.state_code=status.HTTP_404_NOT_FOUND
+            response.status=status.HTTP_404_NOT_FOUND
             return response
 
+        print('here.')
+        print(request.data)
         token = super(LoginAPI, self).post(request, *args, **kwargs)
+
         response.set_cookie('jwt', token.data['token'], domain=None,
                             expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
                             httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
@@ -225,7 +232,6 @@ class UserAPI(generics.GenericAPIView):
     def get(self, request):
         #user=find_user(request)
         user=request.user
-        print(user)
         if not user.is_authenticated:
             return Response({"error" : "로그인 중이 아닙니다."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
@@ -255,21 +261,89 @@ class FileAPI(generics.GenericAPIView):
 
 
 
-'''class GoogleLoginAPI(APIView):
+class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
+
     def post(self, request):
-        payload = {'access_token': request.data.get('token')}
-        r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', params=payload)
-        data = json.loads(r.text)
-        if 'error' in data:
-            content = {'message': 'wrong google token / this google token is already expired.'}
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        print(request.data)
+        params = {'access_token': request.data.get("access_token")}  # 구글로 request를 보내기 위한 파라미터 설정
         try:
-            user = User.objects.get(email=data['email'])
-        except User.DoesNotExist:
-            return Response({'message': 'User does not exist.'})
-        token = RefreshToken.for_user(user)
-        response = {}
-        response['username'] = user.username
-        response['access_token'] = str(token.access_token)
-        response['refresh_token'] = str(token)
-        return Response(response)'''
+            r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', params=params)
+        except:
+            return Response({"error" : "구글 인증 정보가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        data = json.loads(r.text) # response 데이터 JSON으로 변환
+        print(data)
+        userData={'username' : data['name'],
+                  'password' : data['id'],
+                  'email' : data['email'],
+                  'is_mail_authenticated' : True,
+                  'social_auth' : 'google'}
+        try:
+            user=User.objects.get(email=data['email'])
+        except: #회원 정보 없음, 회원 가입 진행
+            request._full_data=userData
+            print("registration result.")
+            print(RegistrationAPI.post(self, request))
+
+        #로그인 진행
+        self.serializer_class = LoginAPI.serializer_class #serializer class 로그인 용으로 전환
+        userLoginData={'username' : data['name'],
+                       'password' : data['id']}
+        request._full_data=userLoginData
+        try:
+            return LoginAPI.post(self, request)
+        except:
+            return Response({'error' : '구글 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message" : "구글 테스트중."}, status=status.HTTP_200_OK)
+
+class FindIDPasswordAPI(generics.GenericAPIView):
+    serializer_class = FindIDPasswordSerializer
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+        serializer=self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            if request.data['IDorPassword']=='id': #ID 찾기, 메일 안보내도됨.
+                try:
+                    user=User.objects.get(email=request.data['email'])
+                    return Response({"id" : user.username}, status=status.HTTP_200_OK)
+                except:
+                    return Response({"error" : "해당 메일로 가입된 아이디가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+            else: #비밀번호 찾기, 메일로 임시 비밀번호 보내야됨.
+                try:
+                    print(request.data)
+                    user=User.objects.get(username=request.data['username'], email=request.data['email'])
+                    print(user)
+                    cand_list="0123456789abcdefghijklmnopqrstuvwxyz"
+                    rand_password=""
+
+                    for i in range(8): #8자리 랜덤 비밀번호 설정
+                        rand_password+=cand_list[random.randrange(len(cand_list))]
+
+                    print(rand_password)
+    
+                    message=render_to_string('account/password_regeneration_email.html', {
+                                             'username': user.username,
+                                             'password': rand_password
+                                              })
+                    mail_title="(사이트 이름) 임시 비밀번호를 보내드립니다."
+                    to_email=user.email
+                    sendMail(message, mail_title, to_email)
+                    user.password=make_password(rand_password)
+                    user.save()
+                    return Response({"message": "완료."}, status=status.HTTP_200_OK)
+                except:
+                    return Response({"error": "일치하는 정보가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error" : "입력 형식을 확인해주세요."}, status.HTTP_400_BAD_REQUEST)
+
+
+
+#개발용 API입니다. 가입 유저 전부 삭제.
+class DeleteAPI(APIView):
+    def get(self, request):
+        user=User.objects.all()
+        user.delete()
+        return Response(status=status.HTTP_200_OK)

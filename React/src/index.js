@@ -1,14 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter as Router } from "react-router-dom";
-import App from "./App";
+import { BrowserRouter } from "react-router-dom";
 import "./index.css";
+import App from "./containers/App";
 import * as serviceWorker from './serviceWorker';
 
+const responseGoogle = (response) => {
+  console.log(response);
+}
+
 ReactDOM.render(
-  <Router>
+  <BrowserRouter>
     <App />
-  </Router>,
+  </BrowserRouter>,
   document.getElementById("root")
 );
 

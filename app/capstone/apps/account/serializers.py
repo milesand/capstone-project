@@ -7,6 +7,7 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import RefreshJSONWebTokenSerializer, VerifyJSONWebTokenSerializer
 from rest_framework_jwt.views import RefreshJSONWebToken, VerifyJSONWebToken
 
+from django.core.validators import RegexValidator
 #jwt 인증 관련 시리얼라이저 오버라이딩
 RefreshJSONWebTokenSerializer._declared_fields.pop('token')
 VerifyJSONWebTokenSerializer._declared_fields.pop('token')
@@ -71,12 +72,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('_id', 'username', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
 
-#이메일 보낼때 사용하는 시리얼라이저
-class MailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=User
-        fields=('username', 'email')
-
 # 로그인
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -90,6 +85,12 @@ class UserLoginSerializer(serializers.Serializer):
             else:
                 raise serializers.ValidationError("메일 인증이 필요합니다. 가입 시 입력한 이메일을 통해 인증 절차를 진행해주세요.")  # 메일인증 미수행
         raise serializers.ValidationError("아이디나 비밀번호가 일치하지 않습니다.")
+
+#ID/비밀번호 찾기
+class FindIDPasswordSerializer(serializers.Serializer):
+    IDorPassword=serializers.RegexField(regex=r"id|password")
+    username=serializers.CharField(min_length=8, max_length=15, allow_blank=True)
+    email=serializers.EmailField()
 
 #파일 업로드용
 class FileSerializer(serializers.ModelSerializer):
