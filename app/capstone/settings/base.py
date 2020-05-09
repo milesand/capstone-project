@@ -37,8 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'rest_framework', # rest framework
-    'capstone.account.apps.AccountConfig',
-    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
 
     #소셜 로그인용
     'rest_framework.authtoken',
@@ -54,6 +52,9 @@ INSTALLED_APPS = [
 
     #SSL 지원
     'sslserver',
+    'capstone.account.apps.AccountConfig',
+    #'Account_static.apps.AccountStaticConfig', # 웹 페이지 테스트용
+    'capstone.upload.apps.UploadConfig'
 ]
 
 REST_KNOX = {
