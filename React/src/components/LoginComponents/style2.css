@@ -199,7 +199,10 @@ body {
     background-color: #6796EB;
   }
   input#register-google, input#login-google {
-    background-color: #EB645F;
+    background-image: url("./googleButtonImg.png");
+    background-size: 163px;
+    background-repeat:   no-repeat;
+    background-position: center center; 
   }
 
   .register-sns {

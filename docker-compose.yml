@@ -21,6 +21,7 @@ services:
   django:
     build:
       context: ./app
+      network: host #django pip 속도 향상
     volumes:
      - ./app:/app/
      - socket:/socket/
