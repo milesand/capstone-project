@@ -63,7 +63,7 @@ def _check_flow_upload_request(request, id, attr, check_chunk):
     # happens here. 400 seems appropriate. Downside is that Flow doesn't interpret
     # 400 as "Stop trying to upload", and will try to keep uploading; Which means if
     # Flow breaks the request format, non-malicious clients using Flow could end up
-    # trying to upload indefinately with no success. We'll ignore this for now and
+    # trying to upload indefinitely with no success. We'll ignore this for now and
     # hope Flow doesn't break anything.
     try:
         chunk_no = int(request_data['flowChunkNumber'])

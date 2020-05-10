@@ -3,12 +3,11 @@ import { Row, Col} from "react-bootstrap";
 import "./style2.css"
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
-import GoogleLoginButton from "./GoogleLoginButton"
 // presentational component, only a stateless function
 // gets props by destructuring the props object
 // note that the input fields use the props to render their value attribute
 
-const LoginForm = ({username, password, isLogin, changeUsername,  changePassword, normalLogin, googleLogin, test}) => {
+const LoginForm = ({username, password, changeUsername,  changePassword, normalLogin, googleLogin}) => {
     return (
       <div className="Login">
         <div className="wrapper fadeInDown">
@@ -19,18 +18,18 @@ const LoginForm = ({username, password, isLogin, changeUsername,  changePassword
                 <input
                   type="button"
                   id="login-facebook"
-                  className="fadeIn register form-control"
+                  class="fadeIn register form-control"
                   value="페이스북으로 로그인"
                 />
               </Col>        
-              <Col xs={6} className="Login-google">
+              <Col xs={6}>
               <input
                   onClick={googleLogin}
                   type="button"
-                  id="login-facebook"
-                  className="fadeIn register form-control"
-                  value="구글 계정으로 로그인"
-                />
+                  id="login-google"
+                  class="fadeIn register form-control"
+                > 
+              </input>
               </Col>    
               </form>
               
