@@ -1,13 +1,15 @@
 import React, { Component, Fragment } from "react";
 import LoginForm from "../components/LoginComponents/LoginForm";
-import { gapi, loadAuth2 } from 'gapi-script';
+
 //로그인
 export default class Login extends Component { //export default : 다른 모듈에서 이 모듈을 import할 때 내보낼 대표 값
   constructor(props) {
     super(props);
+    console.log('login props : ', props);
     this.state = {
       username: "",
       password: "",
+      isLoading: false
     };
     console.log("로그인 시작.");
   }
@@ -22,7 +24,6 @@ export default class Login extends Component { //export default : 다른 모듈�
   valChangeControl(e){
     let target_id=e.target.id;
     let target_val=e.target.value;
-    console.log("changeControl!");
     this.setState({
       [target_id]: target_val
     });
@@ -114,13 +115,15 @@ export default class Login extends Component { //export default : 다른 모듈�
   // 일반 로그인
   normalLogin(e) {
     e.preventDefault();
-
     let isMailAuthenticated=true;
     let data={
       username: this.state.username,
       password: this.state.password
     }
-
+    this.setState({
+      isLoading: true
+    })
+    console.log("isLoading : ", this.state.isLoading);
     fetch("http://localhost/api/jwt-login", {
       method: "POST",
       headers: {
@@ -142,17 +145,21 @@ export default class Login extends Component { //export default : 다른 모듈�
 
       console.log("content ? ", content);
       this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.email);
+      console.log("joigwegjoiwegwgweg");
+      this.setState({
+        isLoading: true
+      });
       this.props.history.push('/');
     }).catch(error=>alert(error));
   }
 
   render() {
-    console.log('login render.');
     return (
       <Fragment>
             <LoginForm
                 username={this.state.username}
                 password={this.state.password}
+                isLoading={this.state.isLoading}
                 isLogin={this.isLogin}
                 changeUsername={e => this.valChangeControl(e)}
                 changePassword={e => this.valChangeControl(e)}

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, File
+from .models import User
 from bson.objectid import ObjectId
 
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
@@ -91,9 +91,3 @@ class FindIDPasswordSerializer(serializers.Serializer):
     IDorPassword=serializers.RegexField(regex=r"id|password")
     username=serializers.CharField(min_length=8, max_length=15, allow_blank=True)
     email=serializers.EmailField()
-
-#파일 업로드용
-class FileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = File
-        fields=("file",)

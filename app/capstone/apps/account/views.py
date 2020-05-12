@@ -1,5 +1,6 @@
-from django.shortcuts import render
-from rest_framework import generics, status, permissions
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer
 from .models import User
@@ -55,7 +56,7 @@ def decodeJWTToken(token):
 #JWT 토큰 decoding을 통해 유저 정보 획득
 def find_user(request):
     payload = decodeJWTToken(request.COOKIES['jwt']);  # JWT payload decoding
-    user = User.objects.get(_id=payload['user_id'])
+    user = get_object_or_404(User, _id=payload['user_id'])
     return user
 
 def sendMail(message, mail_title, to_email):
@@ -146,19 +147,18 @@ class ActivateUserAPI(APIView):
     def get(self, request, uidb64, token):
         try:
             pk = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=pk)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+            user = get_object_or_404(User, pk=pk)
+        except(TypeError, ValueError, OverflowError):
+            return Response({"error": "잘못된 접근입니다."}, status=status.HTTP_403_FORBIDDEN)
+        except(Http404):
+            return Response({"error": "해당하는 유저를 찾을 수 없습니다."}, status=status.HTTP_410_GONE) # 사용자 정보가 서버에 없을 경
 
-        try:
-            if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
-                user.is_mail_authenticated = True
-                user.save()
-                return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
-            else:
-                return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
-        except:
-            print('error')
+        if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
+            user.is_mail_authenticated = True
+            user.save()
+            return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
+        else:
+            return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
 
 # 유저 로그인 API
 '''class LoginAPI(generics.GenericAPIView):
@@ -244,23 +244,6 @@ class UserAPI(generics.GenericAPIView):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-#파일 업로드 테스트용
-from .serializers import FileSerializer
-from .models import File
-class FileAPI(generics.GenericAPIView):
-    serializer_class = FileSerializer
-
-    def post(self, request):
-        print(request.FILES)
-        serializer=FileSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message" : "success"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message" : "failed"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
 
     def post(self, request):
@@ -279,7 +262,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
                   'is_mail_authenticated' : True,
                   'social_auth' : 'google'}
         try:
-            user=User.objects.get(email=data['email'])
+            user=get_(email=data['email'])
         except: #회원 정보 없음, 회원 가입 진행
             request._full_data=userData
             print("registration result.")
@@ -302,19 +285,20 @@ class FindIDPasswordAPI(generics.GenericAPIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
+        print(request.data)
         serializer=self.serializer_class(data=request.data)
         if serializer.is_valid():
             if request.data['IDorPassword']=='id': #ID 찾기, 메일 안보내도됨.
                 try:
-                    user=User.objects.get(email=request.data['email'])
-                    return Response({"id" : user.username}, status=status.HTTP_200_OK)
-                except:
+                    user=get_object_or_404(User, email=request.data['email'])
+                    return Response({"username" : user.username}, status=status.HTTP_200_OK)
+                except(Http404):
                     return Response({"error" : "해당 메일로 가입된 아이디가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
             else: #비밀번호 찾기, 메일로 임시 비밀번호 보내야됨.
                 try:
                     print(request.data)
-                    user=User.objects.get(username=request.data['username'], email=request.data['email'])
+                    user=get_object_or_404(User, username=request.data['username'], email=request.data['email'])
                     print(user)
                     cand_list="0123456789abcdefghijklmnopqrstuvwxyz"
                     rand_password=""
@@ -334,8 +318,10 @@ class FindIDPasswordAPI(generics.GenericAPIView):
                     user.password=make_password(rand_password)
                     user.save()
                     return Response({"message": "완료."}, status=status.HTTP_200_OK)
-                except:
+                except(Http404):
                     return Response({"error": "일치하는 정보가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+                except:
+                    return Response({"error": "메일 전송이 실패했습니다."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         else:
             return Response({"error" : "입력 형식을 확인해주세요."}, status.HTTP_400_BAD_REQUEST)
 

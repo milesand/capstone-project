@@ -6,6 +6,7 @@ import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그�
 import { Route, Switch } from "react-router-dom";
 import NormalRoute from "../components/AuthRoutingComponents/NormalRoute";
 import AuthenticatedRoute from "../components/AuthRoutingComponents/AuthenticatedRoute";
+import NotAuthenticatedRoute from "../components/AuthRoutingComponents/NotAuthenticatedRoute";
 import MailAuthRoute from "../components/AuthRoutingComponents/MailAuthRoute";
 import ErrorPage from "../components/LoginComponents/ErrorPage";
 import Home from "./Home";
@@ -13,6 +14,11 @@ import Login from "./Login";
 import Signup from "./Signup";
 import MailResend from "./MailResend";
 import MailValidation from "./MailValidation";
+import DownloadTest from "./DownloadTest";
+import ForgotID from "./ForgotID";
+import ForgotPassword from "./ForgotPassword";
+import DisplayID from "./DisplayID";
+import ReturnToLogin from "./ReturnToLogin";
 
 class App extends Component {
   constructor(props) {
@@ -22,13 +28,16 @@ class App extends Component {
       username: "",
       email: "",
       isLogin: null, //사용자가 로그인 상태인지 체크한 후에 bool 값이 할당됨.
-      isMailAuthenticated: null
+      isMailAuthenticated: null,
+      isLoading: false
     };
     console.log(this.state);
   }
 
-  test(){
-    console.log("Click Test.");
+  toggleLoading=()=>{
+    this.setState=({
+      isLoading: !this.state.isLoading
+    });
   }
   // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
@@ -44,7 +53,6 @@ class App extends Component {
         });
       }
       else{
-        console.log('here.');
         this.setState({
           isLogin: false,
         });
@@ -188,9 +196,10 @@ class App extends Component {
       username: this.state.username,
       useremail: this.state.email,
       isLogin: this.state.isLogin,
-      isLogout: this.state.isLogout,
       isMailAuthenticated:this.state.isMailAuthenticated,
+      isLoading: this.state.isLoading,
       userStateChange: this.userStateChange,
+      toggleLoading: this.toggleLoading
     };
 
     console.log("base test.", baseProps);
@@ -210,9 +219,14 @@ class App extends Component {
             <Switch>
               <AuthenticatedRoute path="/" exact component={Home} props={baseProps} />
               <NormalRoute path="/login" exact component={Login} props={baseProps} />
-              <NormalRoute path="/signup" exact component={Signup} props={baseProps} />
-              <MailAuthRoute path="/mail-resend" exact component={MailResend} props={baseProps} />
               <NormalRoute path="/mail-validation/*" exact component={MailValidation} props={baseProps} />
+              <NormalRoute path="/download-test" exact component={DownloadTest} props={baseProps} />
+              <MailAuthRoute path="/mail-resend" exact component={MailResend} props={baseProps} />
+              <NotAuthenticatedRoute path="/signup" exact component={Signup} props={baseProps} />
+              <NotAuthenticatedRoute path="/forgot-id" exact component={ForgotID} props={baseProps} />
+              <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
+              <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
+              <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
           }

@@ -2,7 +2,7 @@ import React from 'react';
 import './style2.css';
 import {Col} from 'react-bootstrap';
 import logo from './mail.png';
-
+import CustomButton from './CustomButton';
 const MailResendForm=({username, email, resendAuthEmail}) => {
 
     return(
@@ -20,12 +20,12 @@ const MailResendForm=({username, email, resendAuthEmail}) => {
                     <span className="authFormText">을 통해 인증을 진행해주세요.</span>
                 </div>
             <form>
+
               <input
                 type="button"
                 className="fadeIn"
                 value="메일 재발송"
                 onClick={resendAuthEmail}
-
               />  
             </form>
 

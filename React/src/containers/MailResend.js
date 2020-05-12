@@ -29,6 +29,7 @@ class MailResend extends Component{
     
     async resendAuthEmail(e){
         e.preventDefault();
+        console.log('클릭!');
         console.log(this.state);
         let errorCheck = response =>{
             if(response.message){

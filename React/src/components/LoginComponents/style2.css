@@ -73,6 +73,12 @@ body {
     color: #111111;
   }
   
+  .authFormHeadTextS {
+    font-weight: 700;
+    font-size: 30px;
+    color: #5fbae9;
+  }
+  
   .authFormTextS {
     font-size: 20px;
     color: #5fbae9;
@@ -83,7 +89,9 @@ body {
 
 
   /* FORM TYPOGRAPHY*/
-
+  link[type=button],
+  button[type=button],
+  button[type=submit],
   input[type=button],
   input[type=submit],
   input[type=reset] {

@@ -14,6 +14,3 @@ class User(AbstractUser):
     password = models.CharField(_('비밀번호'), max_length=100)
     social_auth=models.CharField(max_length=20, default="None", blank=True)
     #password_val = models.CharField(_('비밀번호 확인'), max_length=15) #프론트엔드 쪽에서 처리
-
-class File(models.Model):
-    file=models.FileField(upload_to='testStorage')
