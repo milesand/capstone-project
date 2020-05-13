@@ -25,7 +25,7 @@ urlpatterns = [
     #path('', include('Account_static.urls')), # 로그인 테스트 페이지
     path('admin', admin.site.urls),
     path('api/', include('capstone.account.urls')), # 회원 정보 관리
-    path('api/storage/', include('capstone.storage.urls')), #업로드
+    path('api/upload/', include('capstone.storage.urls')), #업로드
     path('api/download/', include('capstone.download.urls')), #다운로드
     path('accounts/', include('allauth.urls')),
 ]
