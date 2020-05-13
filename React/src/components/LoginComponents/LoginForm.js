@@ -3,26 +3,31 @@ import { Row, Col} from "react-bootstrap";
 import "./style2.css"
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
-import CustomButton from './CustomButton';
+import FacebookLogin from 'react-facebook-login';
 // presentational component, only a stateless function
 // gets props by destructuring the props object
 // note that the input fields use the props to render their value attribute
 
-const LoginForm = ({username, password, isLoading, changeUsername,  changePassword, normalLogin, googleLogin}) => {
+const LoginForm = ({username, password, isLoading, changeUsername,  changePassword, normalLogin, googleLogin, facebookLogin}) => {
     return (
       <div className="Login">
         <div className="wrapper fadeInDown">
           <div id="formContent">
             <div className="register-sns">
               <form>
-              <Col xs={6} >
-                <input
-                  type="button"
-                  id="login-facebook"
-                  class="fadeIn register form-control"
-                  value="페이스북으로 로그인"
+                
+              <Col xs={6}>
+                <FacebookLogin
+                appId="240402274007270"
+                autoLoad={true}
+                fields="name,email,picture"
+                callback={facebookLogin} 
+                icon="fa-facebook-square"  
+                cssClass="fadeIn register form-control "
+                size = "medium"
+                textButton = " 페이스북으로 로그인"    // 사용할 스타일
                 />
-              </Col>        
+              </Col>     
               <Col xs={6}>
               <input
                   onClick={googleLogin}
@@ -38,7 +43,6 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
             <Col xs={12} className="fadeIn">
               <img src={logo} id="usericon" alt="User Icon" />
             </Col>
-            <form onSubmit={normalLogin} method="POST">
               <input
                 type="text"
                 id="username"
@@ -59,16 +63,12 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                 value={password}
                 onChange={changePassword}
               />
-              <CustomButton
-                type="submit"
-                id="submit"
-                className="fadeIn"
-                value='로그인'
-                isLoading={isLoading}
-              />
+              <button
+                 type="button"
+                 className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
+                 onClick={normalLogin}
+              >{isLoading ? '':'로그인'}</button>
 
-             
-            </form>
 
             <div id="formFooter">
               <Row>

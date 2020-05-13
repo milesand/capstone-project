@@ -18,7 +18,7 @@ const DisplayIDForm=({username}) => {
  
                     <span className="authFormText">회원님의 닉네임은 </span>
                     <span className="authFormTextS">{username}</span>
-                    <span className="authFormText">입니다</span>
+                    <span className="authFormText">입니다.</span>
                 </div>
             <div id="formFooter">
               <Row>

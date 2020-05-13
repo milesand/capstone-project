@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import logo from './login4.png'; 
 
 
-const ForgotPasswordForm = ({email, username, changeEmail, changeUsername, sendPassword}) => {
+const ForgotPasswordForm = ({email, username, isLoading, changeEmail, changeUsername, sendPassword}) => {
+    console.log('fpForm : ', isLoading);
     return (
       <div className="Login">
         <div className="wrapper fadeInDown">
@@ -39,12 +40,11 @@ const ForgotPasswordForm = ({email, username, changeEmail, changeUsername, sendP
                 onChange={changeEmail}
               />
               
-                <input
-                type="button"
-                className="fadeIn"
-                value="확인"
-                onClick={sendPassword}
-              />  
+              <button
+                 type="button"
+                 className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
+                 onClick={sendPassword}
+              >{isLoading ? '':'확인'}</button>
              
             </form>
 

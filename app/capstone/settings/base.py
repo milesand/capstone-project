@@ -295,6 +295,5 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-#네이버 로그인용
-NAVER_CLIENT_ID = account_info[4]
-NAVER_SECRET_KEY = account_info[5]
+SOCIAL_AUTH_FACEBOOK_KEY=account_info[4]
+SOCIAL_AUTH_FACEBOOK_SECRET=account_info[5]

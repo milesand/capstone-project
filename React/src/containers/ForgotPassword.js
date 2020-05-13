@@ -29,7 +29,9 @@ export default class ForgotPassword extends Component{
             username:this.state.username,
             email: this.state.email
         }
-    
+
+        this.props.toggleLoadingState();
+
         fetch("http://localhost/api/forgot", {
           method: "POST",
           headers: {
@@ -43,10 +45,16 @@ export default class ForgotPassword extends Component{
             console.log(content);
             if(content.hasOwnProperty('error'))
                 throw Error('이메일 또는 닉네임이 올바르지 않습니다.');
-            else
+            else{
+              this.props.toggleLoadingState();
               this.props.history.push('/return-to-login',{username: content.username, email: this.email});
+            }
+              
               //redirect? push 대신 replace?
-        }).catch(error=>alert(error));
+        }).catch(error=>{
+          alert(error);
+          this.props.toggleLoadingState();
+        });
       }
 
       valChangeControl(e){
@@ -66,6 +74,7 @@ export default class ForgotPassword extends Component{
                 <ForgotPasswordForm
                 email={this.state.email}
                 username = {this.state.username}
+                isLoading = {this.props.isLoading}
                 changeEmail={e => this.valChangeControl(e)}
                 changeUsername={e => this.valChangeControl(e)}
                 sendPassword = {e => this.sendPassword(e)}

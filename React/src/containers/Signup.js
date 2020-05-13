@@ -120,7 +120,7 @@ export default class Signup extends Component {
       social_auth: "",
       is_mail_authenticated: false,
     };
-
+    this.props.toggleLoadingState(); // App.js의 isLoading state를 true로 변경
     fetch('http://localhost/api/registration', {
       method: 'POST',
       headers: {
@@ -159,10 +159,14 @@ export default class Signup extends Component {
           })
         .then(res => res.json())
         .then(mailPage =>{
+          this.props.toggleLoadingState(); 
           this.props.history.push('/mail-resend');
         })
       }
-    }).catch(error => alert(error));
+    }).catch(error =>{
+        alert(error);
+        this.props.toggleLoadingState(); //fetch 과정에서 에러가 발생했을 때, isLoading state를 false로 돌려놓는다.
+      } );
   }
 
   render() {
@@ -178,6 +182,7 @@ export default class Signup extends Component {
         email_err_message={this.state.email_err_message}
         phone={this.state.phone}
         phone_err_message={this.state.phone_err_message}
+        isLoading={this.props.isLoading}
         validate={this.validateAllField}
         changeUsername={e => this.valChangeControl(e)}
         changePassword={e => this.valChangeControl(e)}

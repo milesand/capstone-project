@@ -18,7 +18,7 @@ urlpatterns=[
     #httponly cookie로 는 JWT 토큰 제거
     path('logout', LogoutAPI.as_view()),
     #소셜 로그인 테스트용
-    path('google', SocialLoginAPI.as_view()),
+    path('social-login', SocialLoginAPI.as_view()),
 
 
     #유저 삭제 테스트용

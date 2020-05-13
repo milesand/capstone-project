@@ -208,7 +208,7 @@ body {
   }
   input#register-google, input#login-google {
     background-image: url("./googleButtonImg.png");
-    background-size: 163px;
+    background-size: 161px;
     background-repeat:   no-repeat;
     background-position: center center; 
   }
@@ -331,7 +331,14 @@ body {
     width: 100%;
   }
 
-
+  .facebook-button{
+    font-size: 12px;
+    padding: 7px;
+    background-color: rgba(0, 0, 255, 0.76);
+    color: white;
+    border-width: 2px;
+    border-color: black;
+  }
 
   /* OTHERS */
 

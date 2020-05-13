@@ -34,11 +34,13 @@ class App extends Component {
     console.log(this.state);
   }
 
-  toggleLoading=()=>{
-    this.setState=({
+  toggleLoadingState=()=>{ //현재 fetch 중이라면 isLoading을 true로, 아니면 false로 바꿔준다. 버튼 스피너를 위해 필요함.
+    console.log("toggle!");
+    this.setState((prevState)=>({
       isLoading: !this.state.isLoading
-    });
+    }));
   }
+
   // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
     let errorCheck = response => {
@@ -172,6 +174,7 @@ class App extends Component {
   // 로그아웃시 서버로 요청 보내서 JWT 토큰이 저장된 httponly 쿠키 제거
   logout = () => {
     console.log("logout called!");
+    window.FB.logout();
     let auth2 = window.gapi && window.gapi.auth2.getAuthInstance();
     console.log("isSignedIN test : ", auth2.isSignedIn.get());
     auth2.signOut()
@@ -199,7 +202,7 @@ class App extends Component {
       isMailAuthenticated:this.state.isMailAuthenticated,
       isLoading: this.state.isLoading,
       userStateChange: this.userStateChange,
-      toggleLoading: this.toggleLoading
+      toggleLoadingState: this.toggleLoadingState,
     };
 
     console.log("base test.", baseProps);

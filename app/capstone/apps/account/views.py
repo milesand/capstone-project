@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer
+from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer
 from .models import User
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,7 +13,6 @@ import random, datetime
 from django.contrib.auth.hashers import make_password
 random.seed(datetime.datetime.now())
 
-
 # 이메일 인증에 사용하는 모듈
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -23,8 +22,6 @@ from .tokens import account_activation_token
 
 # 소셜 로그인에 사용하는 모듈
 import requests
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from rest_auth.registration.views import SocialLoginView
 
 # JWT 인증에 사용하는 모듈
 from rest_framework_jwt.views import ObtainJSONWebToken
@@ -33,14 +30,10 @@ jwt_payload_handler=api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from capstone.settings.base import JWT_AUTH
+from capstone.settings.base import JWT_AUTH, SOCIAL_AUTH_FACEBOOK_KEY, SOCIAL_AUTH_FACEBOOK_SECRET
 from datetime import datetime
 from django.contrib.auth import authenticate
 import jwt
-
-class GoogleLoginAPI(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
-
 
 # Create your views here.
 
@@ -244,8 +237,44 @@ class UserAPI(generics.GenericAPIView):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# 소셜로그인을 수행할 때 여기서 구글인지 페이스북인지 체크한 다음, 적절한 곳으로 POST 명령을 보내준다.
 class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
+    serializer_class = SocialLoginSerializer
 
+    def login_n_registration(self, request, data):
+        userData = {'username': data['name'],
+                    'password': 'social',
+                    'email': data['email'],
+                    'is_mail_authenticated': True,
+                    'social_auth': 'google'}
+        try:
+            user = get_object_or_404(User, username=data['name'])
+        except:  # 회원 정보 없음, 회원 가입 진행
+            request._full_data = userData
+            print("registration result.")
+            print(RegistrationAPI.post(self, request))
+
+        # 로그인 진행
+        self.serializer_class = LoginAPI.serializer_class  # serializer class 로그인 용으로 전환
+        userLoginData = {'username': data['name'],
+                         'password': "social"}
+        request._full_data = userLoginData
+        try:
+            return LoginAPI.post(self, request)
+        except:
+            return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        serializer=self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            if request.data['social_auth']=='facebook':
+                return FacebookLoginAPI.post(self, request)
+            else:
+                return GoogleLoginAPI.post(self, request)
+        else:
+            return Response({"error" : "입력 형식을 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+class GoogleLoginAPI(SocialLoginAPI, generics.GenericAPIView):
     def post(self, request):
         print(request.data)
         params = {'access_token': request.data.get("access_token")}  # 구글로 request를 보내기 위한 파라미터 설정
@@ -256,29 +285,33 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
 
         data = json.loads(r.text) # response 데이터 JSON으로 변환
         print(data)
-        userData={'username' : data['name'],
-                  'password' : data['id'],
-                  'email' : data['email'],
-                  'is_mail_authenticated' : True,
-                  'social_auth' : 'google'}
-        try:
-            user=get_(email=data['email'])
-        except: #회원 정보 없음, 회원 가입 진행
-            request._full_data=userData
-            print("registration result.")
-            print(RegistrationAPI.post(self, request))
+        return self.login_n_registration(request,data)
 
-        #로그인 진행
-        self.serializer_class = LoginAPI.serializer_class #serializer class 로그인 용으로 전환
-        userLoginData={'username' : data['name'],
-                       'password' : data['id']}
-        request._full_data=userLoginData
+
+class FacebookLoginAPI(SocialLoginAPI, generics.GenericAPIView):
+    def post(self, request):
+        print(request.data)
+        input_token=request.data['access_token']
+        access_token=SOCIAL_AUTH_FACEBOOK_KEY+'|'+SOCIAL_AUTH_FACEBOOK_SECRET
+        url='https://graph.facebook.com/debug_token?input_token=' + input_token + '&access_token=' + access_token
+        print('url : ', url)
         try:
-            return LoginAPI.post(self, request)
+            r=requests.get(url)
+            data=json.loads(r.text)
+            uid=data['data']['user_id']
+            print('uid : ', uid)
+            url='https://graph.facebook.com/' + uid \
+                + '?fields=id,name,first_name,last_name,age_range,link,gender,locale,picture,timezone,updated_time,verified,email&access_token=' \
+                + input_token
+            try:
+                r=requests.get(url)
+                data=json.loads(r.text)
+                return self.login_n_registration(request,data)
+            except:
+                return Response({'error': '사용자 정보 로드 에러!'}, status=status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'error' : '구글 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message" : "구글 테스트중."}, status=status.HTTP_200_OK)
+            return Response({'error' : 'access token 검증 에러!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message' : '전달 완료'}, status=status.HTTP_200_OK)
 
 class FindIDPasswordAPI(generics.GenericAPIView):
     serializer_class = FindIDPasswordSerializer

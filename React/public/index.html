@@ -26,6 +26,25 @@
         
           </script>
 
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId            : '240402274007270',
+          autoLogAppEvents : true,
+          xfbml            : true,
+          version          : 'v7.0'
+        });
+      };
+
+      (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+        console.log('페이스북 로드 완료.');
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
     <title>Capstone Test</title>
   </head>
   <body>

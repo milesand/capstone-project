@@ -91,3 +91,7 @@ class FindIDPasswordSerializer(serializers.Serializer):
     IDorPassword=serializers.RegexField(regex=r"id|password")
     username=serializers.CharField(min_length=8, max_length=15, allow_blank=True)
     email=serializers.EmailField()
+
+class SocialLoginSerializer(serializers.Serializer):
+    access_token=serializers.CharField(max_length=300)
+    social_auth=serializers.RegexField(regex="google|facebook")
