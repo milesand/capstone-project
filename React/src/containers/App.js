@@ -26,6 +26,7 @@ class App extends Component {
     console.log('App prop test.');
     this.state = { //컴포넌트의 state 정의
       username: "",
+      nickname: "",
       email: "",
       isLogin: null, //사용자가 로그인 상태인지 체크한 후에 bool 값이 할당됨.
       isMailAuthenticated: null,
@@ -51,6 +52,7 @@ class App extends Component {
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
           username: response.username,
+          nickname: response.nickname,
           email: response.email,
         });
       }
@@ -105,12 +107,13 @@ class App extends Component {
     }
   }
 
-  userStateChange = (authenticated, mailAuthenticated, username, email) => {
+  userStateChange = (authenticated, mailAuthenticated, username, nickname, email) => {
     console.log("thisStateTest.", this.state);
     if(email=='google'||email=='facebook'){ //소셜 로그인
       this.setState({
         isLogin: authenticated,
         username: username,
+        nickname : nickname,
         isMailAuthenticated: true
       });
     }
@@ -119,6 +122,7 @@ class App extends Component {
         isLogin: authenticated,
         isMailAuthenticated: mailAuthenticated,
         username: username,
+        nickname: nickname,
         email: email
       });
     }
@@ -151,6 +155,7 @@ class App extends Component {
               isLogin: false,
               isMailAuthenticated: false,
               username: '',
+              nickname: '',
               email: '',
             }
           });
@@ -197,6 +202,7 @@ class App extends Component {
   render() {
     const baseProps = {
       username: this.state.username,
+      nickname: this.state.nickname,
       useremail: this.state.email,
       isLogin: this.state.isLogin,
       isMailAuthenticated:this.state.isMailAuthenticated,
@@ -213,8 +219,6 @@ class App extends Component {
           { this.state && this.state.isLogin!=null &&
           <NavBar        
             isLogin={this.state.isLogin}
-            username={this.state.username}
-            isLogout={this.state.isLogout}
             logout={this.logout}
           />
           }

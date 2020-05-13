@@ -5,8 +5,9 @@ import logo from './login4.png';
 import { Link } from "react-router-dom";
 
 // 구글로 로그인하지 않고 서버에 직접 회원 등록하는 경우 폼
-const SignupForm = ({username, password, password_val, email, phone, isLoading, username_err_message, password_err_message, password_val_err_message,
-                     email_err_message, phone_err_message, changeUsername, changePassword, changePassword_val, 
+const SignupForm = ({username, nickname, password, password_val, email, phone, isLoading, username_err_message, 
+                     nickname_err_message, password_err_message, password_val_err_message, email_err_message, 
+                     phone_err_message, changeUsername, changeNickname, changePassword, changePassword_val, 
                      changeEmail, changePhone, submit, validate}) => {
     return (
       <div className="Signup wrapper fadeInDown">
@@ -25,6 +26,14 @@ const SignupForm = ({username, password, password_val, email, phone, isLoading, 
               />
         <div style={{ color: "red", fontSize: "12px" }}>
           {username_err_message}
+        </div>
+        <br></br><label>닉네임</label><br></br>
+        <input type="text" id="nickname" className="fadeIn" name="login" placeholder="Nickname"  
+              value={nickname}
+              onChange={changeNickname}
+              />
+        <div style={{ color: "red", fontSize: "12px" }}>
+          {nickname_err_message}
         </div>
         <br></br><label>비밀번호</label><br></br>
         <input type="password" id="password" className="fadeIn" name="login" placeholder="Password"  
@@ -60,7 +69,7 @@ const SignupForm = ({username, password, password_val, email, phone, isLoading, 
         <button
               type="submit"
               className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
-              disabled={!validate(username, password, password_val, email, phone)}
+              disabled={!validate(username, nickname, password, password_val, email, phone)}
         >{isLoading ? '':'회원가입'}</button>
         </form>
         <div id="formFooter">

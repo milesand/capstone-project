@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
-class UploadConfig(AppConfig):
+class StorageConfig(AppConfig):
     name = 'capstone.storage'
 
     def ready(self):
-        import capstone.upload.signals
+        import capstone.storage.signals

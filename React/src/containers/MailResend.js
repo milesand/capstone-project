@@ -9,10 +9,13 @@ class MailResend extends Component{
         console.log(this);
         this.state = {
             username: this.props.username,
+            nickname: this.props.nickname,
+            state: this.props.nickname,
             email : this.props.useremail,
             isLoading : false
         };
         this.resendAuthEmail=this.resendAuthEmail.bind(this);
+        console.log(this.state);
     }
     
     async resendAuthEmail(e){
@@ -55,6 +58,7 @@ class MailResend extends Component{
             { this.state && this.state.username!="" && this.state.email!=""&&
                 <MailResendForm
                 username={this.state.username}
+                nickname={this.state.nickname}
                 email={this.state.email}
                 resendAuthEmail={this.resendAuthEmail}
                 isLoading={this.props.isLoading}

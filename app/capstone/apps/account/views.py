@@ -82,6 +82,7 @@ class RegistrationAPI(generics.GenericAPIView):
     support_social_login = ['google', 'facebook']
 
     def post(self, request, *args, **kwargs):
+        print('registration request : ', request.data)
         '''if request.data['password']!=request.data['password_val']: # 프론트엔드에서 처리
             body={"message" : '비밀번호가 일치하지 않습니다.'}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)'''
@@ -99,11 +100,11 @@ class RegistrationAPI(generics.GenericAPIView):
 
             else: #지원하는 소셜 로그인
                 request.data['is_mail_authenticated']=True
-
+        print("registration prev.")
         serializer = UserAccountSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # 여기서 UserAccountSerializer의 create 메소드가 실행된다.
-
+            print("registration here.")
             # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다.
             if UserSerializer(user)['is_mail_authenticated'].value == False:
                 message = render_to_string('account/user_active_email.html', {
@@ -119,6 +120,7 @@ class RegistrationAPI(generics.GenericAPIView):
             payload = jwt_payload_handler(user)
             payload['user_id']=str(payload['user_id'])
             token = jwt_encode_handler(payload) #JWT 토큰 생성
+            print("가입 완료!")
             return Response(  # Response(data, status=None, template_name=None, headers=None, content_type=None)
                 # data : response를 위한 직렬화된 데이터(만들어놓은 Serailizer 클래스 사용)
                 # status : 응답으로 보내는 상태 코드
@@ -140,6 +142,7 @@ class ActivateUserAPI(APIView):
     def get(self, request, uidb64, token):
         try:
             pk = force_text(urlsafe_base64_decode(uidb64))
+            print("pk : ", pk)
             user = get_object_or_404(User, pk=pk)
         except(TypeError, ValueError, OverflowError):
             return Response({"error": "잘못된 접근입니다."}, status=status.HTTP_403_FORBIDDEN)
@@ -149,7 +152,7 @@ class ActivateUserAPI(APIView):
         if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
             user.is_mail_authenticated = True
             user.save()
-            return Response({"username" : user.username, "email" : user.email}, status=status.HTTP_200_OK)
+            return Response({"username" : user.username, 'nickname' : user.nickname, "email" : user.email}, status=status.HTTP_200_OK)
         else:
             return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
 
@@ -185,20 +188,18 @@ class LoginAPI(ObtainJSONWebToken):
             return response
 
         print('here.')
-        print(request.data)
         token = super(LoginAPI, self).post(request, *args, **kwargs)
-
         response.set_cookie('jwt', token.data['token'], domain=None,
                             expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
                             httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
-
+        print("set complete.")
         if user.is_mail_authenticated == False:
             response.data={"error": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요.", "email" : user.email}
             response.status=status.HTTP_401_UNAUTHORIZED
             return response
         else:
             #response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
-            response.data={'username': user.username, 'email' : user.email}
+            response.data={'username': user.username, 'nickname': user.nickname, 'email' : user.email}
             response.status=status.HTTP_200_OK
             return response
 
@@ -241,14 +242,16 @@ class UserAPI(generics.GenericAPIView):
 class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
     serializer_class = SocialLoginSerializer
 
-    def login_n_registration(self, request, data):
-        userData = {'username': data['name'],
+    def login_n_registration(self, request, data, social):
+        userData = {'username': data['id'],
+                    'nickname' : data['name'],
                     'password': 'social',
                     'email': data['email'],
                     'is_mail_authenticated': True,
-                    'social_auth': 'google'}
+                    'social_auth': social}
+        print('userdata : ', userData)
         try:
-            user = get_object_or_404(User, username=data['name'])
+            user = get_object_or_404(User, username=data['id'])
         except:  # 회원 정보 없음, 회원 가입 진행
             request._full_data = userData
             print("registration result.")
@@ -256,7 +259,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
 
         # 로그인 진행
         self.serializer_class = LoginAPI.serializer_class  # serializer class 로그인 용으로 전환
-        userLoginData = {'username': data['name'],
+        userLoginData = {'username': data['id'],
                          'password': "social"}
         request._full_data = userLoginData
         try:
@@ -285,7 +288,7 @@ class GoogleLoginAPI(SocialLoginAPI, generics.GenericAPIView):
 
         data = json.loads(r.text) # response 데이터 JSON으로 변환
         print(data)
-        return self.login_n_registration(request,data)
+        return self.login_n_registration(request, data, 'google')
 
 
 class FacebookLoginAPI(SocialLoginAPI, generics.GenericAPIView):
@@ -306,7 +309,8 @@ class FacebookLoginAPI(SocialLoginAPI, generics.GenericAPIView):
             try:
                 r=requests.get(url)
                 data=json.loads(r.text)
-                return self.login_n_registration(request,data)
+                print("here.")
+                return self.login_n_registration(request, data, 'facebook')
             except:
                 return Response({'error': '사용자 정보 로드 에러!'}, status=status.HTTP_400_BAD_REQUEST)
         except:

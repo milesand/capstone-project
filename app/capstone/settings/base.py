@@ -52,11 +52,9 @@ INSTALLED_APPS = [
 
     #SSL 지원
     'sslserver',
-
-    #app 설정
     'capstone.account.apps.AccountConfig',
-    'capstone.storage.apps.StorageConfig',
-    'capstone.download.apps.DownloadConfig'
+    'capstone.download.apps.DownloadConfig',
+    'capstone.storage.apps.StorageConfig'
 ]
 
 REST_KNOX = {
@@ -95,7 +93,7 @@ SITE_ID=1
 
 
 
-AUTH_USER_MODEL='capstone_account.User' # custom user model 설정, account 앱의 apps.py의 label로 capstone_account을 설정했으므로, capstone_account로 User를 참조할 수 있
+AUTH_USER_MODEL='capstone_account.User' # custom user model 설정
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # react 연동

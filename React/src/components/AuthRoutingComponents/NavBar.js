@@ -7,8 +7,7 @@ import { LinkContainer } from "react-router-bootstrap";
 // 네비게이션 바의 내용을 결정한다.
 // 참조 : https://react-bootstrap-v3.netlify.app/components/navs/
 
-const NavBar = ({isLogin, username ,logout}) => {
-  console.log('in navbar, : ', username, " ", isLogin);
+const NavBar = ({isLogin, logout}) => {
   return(
     <Navbar>
     <Navbar.Header>

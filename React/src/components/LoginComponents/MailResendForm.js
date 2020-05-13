@@ -2,7 +2,7 @@ import React from 'react';
 import './style2.css';
 import {Col} from 'react-bootstrap';
 import logo from './mail.png';
-const MailResendForm=({username, email, resendAuthEmail, isLoading}) => {
+const MailResendForm=({nickname, email, resendAuthEmail, isLoading}) => {
     console.log("MailResendForm called!!!");
     return(
         <div className="MailResend">
@@ -13,7 +13,7 @@ const MailResendForm=({username, email, resendAuthEmail, isLoading}) => {
               <img src={logo} id="emailicon" alt="Email Icon" />
             </Col>
                 <div className="authTextContainer">
-                    <span className="authFormTextS"  >{username}</span>
+                    <span className="authFormTextS"  >{nickname}</span>
                     <span className="authFormText">님. 입력하신 이메일 주소</span>
                     <div className="authFormTextS" >{email}</div>
                     <span className="authFormText">을 통해 인증을 진행해주세요.</span>

@@ -65,7 +65,7 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(res=>res.json())
         .then(errorCheck)
         .then(content => {
-          this.props.userStateChange(true, true, content.username, content.email);
+          this.props.userStateChange(true, true, content.username, content.nickname, content.email);
           this.props.history.push('/');
         }).catch(e=>alert(e))
       }
@@ -97,49 +97,10 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(errorCheck)
     .then(content => {
       console.log('facebook content : ', content);
-      this.props.userStateChange(true, true, content.username, content.email);
+      this.props.userStateChange(true, true, content.username, content.nickname, content.email);
       this.props.history.push('/');
     }).catch(e=>alert(e))
   }
-
-  /*googleLogin(googleUser){
-    console.log("near login : ", this.props);
-    if(this.props.username==""){
-      console.log("google login called!!!!!", this.props.username);
-      let token=googleUser.getAuthResponse().access_token;
-      console.log(token);
-
-      let data={
-        access_token: token,
-        social_auth: "google"
-      }
-
-      let errorCheck= response =>{
-        if(response.hasOwnProperty('error')){
-          throw Error(response['error'])
-        }
-        return response;
-      }
-      console.log("here, props : ", this.props);
-      if(token!=null){
-        fetch("http://localhost/api/google", {
-          method: "POST",
-          headers: {
-            'Content-Type' : 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(data)
-        })
-        .then(res=>res.json())
-        .then(errorCheck)
-        .then(content => {
-          console.log('prop logout : ', this.props.isLogout);
-          this.props.userStateChange(true, true, content.username, content.email);
-          this.props.history.push('/');
-        }).catch(e=>alert(e))
-      }
-    }
-  }*/
 
   // 일반 로그인
   normalLogin(e) {
@@ -172,7 +133,7 @@ export default class Login extends Component { //export default : 다른 모듈�
       }
 
       console.log("content ? ", content);
-      this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.email);
+      this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.nickname, content.email);
       console.log("joigwegjoiwegwgweg");
       this.setState({
         isLoading: true
