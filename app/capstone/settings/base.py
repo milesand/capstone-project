@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 
     #app 설정
     'capstone.account.apps.AccountConfig',
-    'capstone.upload.apps.UploadConfig',
+    'capstone.storage.apps.StorageConfig',
     'capstone.download.apps.DownloadConfig'
 ]
 

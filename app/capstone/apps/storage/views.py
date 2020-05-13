@@ -39,13 +39,13 @@ class FlowUploadStartView(APIView):
         return Response(
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/upload/flow/" + str(upload._id)
+                "Location": "/api/storage/flow/" + str(upload._id)
             }
         )
 
 
 '''
-Checks if there's an error with this flow upload request.
+Checks if there's an error with this flow storage request.
 If there's an error, returns `(True, error_response)`.
 If there isn't returns `(False, parsed_content)`.
 `parsed_content` is a 4-tuple of `(chunk_no, normal_chunk_size, chunk, partial_upload)`,
@@ -61,9 +61,9 @@ def _check_flow_upload_request(request, id, attr, check_chunk):
     
     # These are purely client-side error; no check against server-side data
     # happens here. 400 seems appropriate. Downside is that Flow doesn't interpret
-    # 400 as "Stop trying to upload", and will try to keep uploading; Which means if
+    # 400 as "Stop trying to storage", and will try to keep uploading; Which means if
     # Flow breaks the request format, non-malicious clients using Flow could end up
-    # trying to upload indefinitely with no success. We'll ignore this for now and
+    # trying to storage indefinitely with no success. We'll ignore this for now and
     # hope Flow doesn't break anything.
     try:
         chunk_no = int(request_data['flowChunkNumber'])
@@ -90,7 +90,7 @@ def _check_flow_upload_request(request, id, attr, check_chunk):
         if partial_upload.uploader != request.user:
             # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
             # But then we're leaking information to some potentially evil 3rd party
-            # that upload with this id exists. That seems bad for security.
+            # that storage with this id exists. That seems bad for security.
             # So interpret this 404 not as NOT FOUND, but as MAYBE OR MAYBE NOT FOUND
             # BUT I AM NOT GOING TO TELL YOU AND I AM NOT LETTING YOU USE IT ANYWAYS.
             return (True, Response(status=status.HTTP_404_NOT_FOUND))
@@ -108,14 +108,14 @@ def _check_flow_upload_request(request, id, attr, check_chunk):
         if partial_upload.is_expired():
             partial_upload.delete()
             # 410 GONE would be more appropriate, but flow doesn't understand it,
-            # and Flow attempting to upload after expiration because bad internet
+            # and Flow attempting to storage after expiration because bad internet
             # seems like a legit case. In this case we need to tell Flow to stop.
             return (True, Response(status=status.HTTP_404_NOT_FOUND))
     
     if check_chunk:
         chunk_end = partial_upload.received_bytes + chunk.size
         if chunk_end > file_size:
-            # User is attempting to upload more than requested amount.
+            # User is attempting to storage more than requested amount.
             return (True, Response(status=status.HTTP_400_BAD_REQUEST))
     
     return (False, (chunk_no, normal_chunk_size, chunk, partial_upload))

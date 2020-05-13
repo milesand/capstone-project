@@ -13,7 +13,7 @@ def delete_partial_upload(sender, instance, using, **kwargs):
 
         # Bump up the user's storage capacity.
         with transaction.atomic():
-            # If partial upload exists, then its uploader must have requested an upload,
+            # If partial storage exists, then its uploader must have requested an storage,
             # which would have created the UserStorageCapacity object for the user.
             # Thus, the UserStorageCapacity object is sure to exist.
             storage = UserStorageCapacity.objects.get(user=instance.uploader)
