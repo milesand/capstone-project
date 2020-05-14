@@ -46,7 +46,7 @@ class MailValidation extends Component{
                 console.log(this.state);
                 console.log('메일 인증 완료.', this.state.guideText);
                 console.log(this.state);
-                this.props.userStateChange(true, true, content.username, content.email);
+                this.props.userStateChange(true, true, content.username, content.nickname, content.email);
             }
         });
     }

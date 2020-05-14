@@ -9,6 +9,8 @@ export default class Signup extends Component {
     this.state = {
       username: "",
       username_err_message:"",
+      nickname: "",
+      nickname_err_message:"",
       password: "",
       password_err_message:"",
       password_val: "",
@@ -27,15 +29,19 @@ export default class Signup extends Component {
   }
 
   
-  validateField(id) { //여기서 회원가입 필드들의 유효성 확인. 아이디 8자 이상, 비밀번호 8자 이상 15자 이하, 비밀번호와 비밀번호 확인필드 동일해야함.
-    //return (username && username.length >= 8) && (password) && (password==password_val);
+  validateField(id) { //여기서 회원가입 필드들의 유효성 확인.
     let val = true;
-    const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
-    const emailTest=/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/;
-    const phoneNumberTest = /^\d{3}-\d{3,4}-\d{4}$/;
+    const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/; //8자 이상 15자 이하, 영문자와 숫자를 조합해야함.
+    const nicknameTest=/^.*(?=^.{2,15}$)(?=.*[0-9a-zA-Z가-힣]).*$/; //2자 이상 15자 이하, 영문자, 숫자, 한글로 이루어짐.
+    const emailTest=/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/; //이메일 주소
+    const phoneNumberTest = /^\d{3}-\d{3,4}-\d{4}$/; //전화번호, XXX-XXX-XXXX 또는 XXX-XXXX-XXXX 형태
     
     if(id=='username'){
       if(!this.state.username||!idPasswordTest.test(this.state.username)) val=false;
+    }
+    else if(id=='nickname'){
+      console.log('here.');
+      if(!this.state.nickname||!nicknameTest.test(this.state.nickname)) val=false;
     }
     else if(id=='password'){
       if(!this.state.password||!idPasswordTest.test(this.state.password)) val=false;
@@ -52,12 +58,14 @@ export default class Signup extends Component {
     return val;
   }
 
-  validateAllField(username, password, password_val, email, phone) {
+  validateAllField(username, nickname, password, password_val, email, phone) {
     let val = true;
     const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
+    const nicknameTest=/^.*(?=^.{2,15}$)(?=.*[0-9a-zA-Z가-힣]).*$/;
     const emailTest=/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/;
     const phoneNumberTest = /^\d{3}-\d{3,4}-\d{4}$/;
     if(!username||!idPasswordTest.test(username)) val=false;
+    if(!nickname||!nicknameTest.test(nickname)) val=false;
     if(!password||!idPasswordTest.test(password)) val=false;
     if(!password_val||password!=password_val) val=false;
     if(!email||!emailTest.test(email)) val=false;
@@ -74,6 +82,10 @@ export default class Signup extends Component {
     if(target_id=='username'){
       target="username_err_message";
       target_err_message="8자 이상 15자 이하의 숫자, 영문자를 포함한 값으로 입력해주세요.";
+    }
+    else if(target_id=='nickname'){
+      target="nickname_err_message";
+      target_err_message="2자 이상 15자 이하의 숫자 또는 영문자를 포함한 값으로 입력해주세요.";
     }
     else if(target_id=='password'){
       target='password_err_message';
@@ -114,13 +126,14 @@ export default class Signup extends Component {
 
     let data = {
       username: this.state.username,
+      nickname: this.state.nickname,
       password: this.state.password,
       email: this.state.email,
       phone_num: this.state.phone,
       social_auth: "",
       is_mail_authenticated: false,
     };
-
+    this.props.toggleLoadingState(); // App.js의 isLoading state를 true로 변경
     fetch('http://localhost/api/registration', {
       method: 'POST',
       headers: {
@@ -141,7 +154,7 @@ export default class Signup extends Component {
 
       console.log("user : ", content.user);
       if (content.user.username) {
-        this.props.userStateChange(true, false, content.user.username, content.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
+        this.props.userStateChange(true, false, content.user.username, content.user.nickname, content.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
     
         let loginData={
           username: this.state.username,
@@ -159,10 +172,14 @@ export default class Signup extends Component {
           })
         .then(res => res.json())
         .then(mailPage =>{
+          this.props.toggleLoadingState(); 
           this.props.history.push('/mail-resend');
         })
       }
-    }).catch(error => alert(error));
+    }).catch(error =>{
+        alert(error);
+        this.props.toggleLoadingState(); //fetch 과정에서 에러가 발생했을 때, isLoading state를 false로 돌려놓는다.
+      } );
   }
 
   render() {
@@ -170,6 +187,8 @@ export default class Signup extends Component {
       <SignupForm
         username={this.state.username}
         username_err_message={this.state.username_err_message}
+        nickname={this.state.nickname}
+        nickname_err_message={this.state.nickname_err_message}
         password={this.state.password}
         password_err_message={this.state.password_err_message}
         password_val={this.state.password_val} //비밀번호 확인 필드를 위해 추가
@@ -178,8 +197,10 @@ export default class Signup extends Component {
         email_err_message={this.state.email_err_message}
         phone={this.state.phone}
         phone_err_message={this.state.phone_err_message}
+        isLoading={this.props.isLoading}
         validate={this.validateAllField}
         changeUsername={e => this.valChangeControl(e)}
+        changeNickname={e => this.valChangeControl(e)}
         changePassword={e => this.valChangeControl(e)}
         changePassword_val={e => this.valChangeControl(e)}
         changeEmail={e => this.valChangeControl(e)}

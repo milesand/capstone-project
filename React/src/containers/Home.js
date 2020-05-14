@@ -30,7 +30,7 @@ export default class Home extends Component {
     return (
       <div className="Home">
         { this.state && this.state.profile['username'] && //이 방법을 통해 서버에서 정보를 가져오기 전에 렌더링 되는 것을 막을 수 있다.
-          <h3>안녕하세요, {this.state.profile['username']}님.</h3>
+          <h3>안녕하세요, {this.state.profile['nickname']}님.</h3>
         }
         <div className="lander">
         </div>

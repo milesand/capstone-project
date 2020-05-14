@@ -1,13 +1,15 @@
 import React, { Component, Fragment } from "react";
 import LoginForm from "../components/LoginComponents/LoginForm";
-import { gapi, loadAuth2 } from 'gapi-script';
+
 //로그인
 export default class Login extends Component { //export default : 다른 모듈에서 이 모듈을 import할 때 내보낼 대표 값
   constructor(props) {
     super(props);
+    console.log('login props : ', props);
     this.state = {
       username: "",
       password: "",
+      isLoading: false
     };
     console.log("로그인 시작.");
   }
@@ -22,7 +24,6 @@ export default class Login extends Component { //export default : 다른 모듈�
   valChangeControl(e){
     let target_id=e.target.id;
     let target_val=e.target.value;
-    console.log("changeControl!");
     this.setState({
       [target_id]: target_val
     });
@@ -53,7 +54,7 @@ export default class Login extends Component { //export default : 다른 모듈�
       }
       console.log("here, props : ", this.props);
       if(token!=null){
-        fetch("http://localhost/api/google", {
+        fetch("http://localhost/api/social-login", {
           method: "POST",
           headers: {
             'Content-Type' : 'application/json',
@@ -64,63 +65,54 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(res=>res.json())
         .then(errorCheck)
         .then(content => {
-          console.log('prop logout : ', this.props.isLogout);
-          this.props.userStateChange(true, true, content.username, content.email);
+          this.props.userStateChange(true, true, content.username, content.nickname, content.email);
           this.props.history.push('/');
         }).catch(e=>alert(e))
       }
     })
   }
 
-  /*googleLogin(googleUser){
-    console.log("near login : ", this.props);
-    if(this.props.username==""){
-      console.log("google login called!!!!!", this.props.username);
-      let token=googleUser.getAuthResponse().access_token;
-      console.log(token);
-
-      let data={
-        access_token: token,
-        social_auth: "google"
-      }
-
-      let errorCheck= response =>{
-        if(response.hasOwnProperty('error')){
-          throw Error(response['error'])
-        }
-        return response;
-      }
-      console.log("here, props : ", this.props);
-      if(token!=null){
-        fetch("http://localhost/api/google", {
-          method: "POST",
-          headers: {
-            'Content-Type' : 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(data)
-        })
-        .then(res=>res.json())
-        .then(errorCheck)
-        .then(content => {
-          console.log('prop logout : ', this.props.isLogout);
-          this.props.userStateChange(true, true, content.username, content.email);
-          this.props.history.push('/');
-        }).catch(e=>alert(e))
-      }
+  //페이스북 로그인
+  facebookLogin = (response) => {
+    console.log("facebook profile : ", response);
+    let data={
+      access_token: response.accessToken,
+      social_auth: "facebook"
     }
-  }*/
+
+    let errorCheck = (response) =>{
+      console.log(data);
+      return response;
+    }
+
+    fetch("http://localhost/api/social-login", {
+      method: "POST",
+      headers: {
+        'Content-Type' : 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    })
+    .then(res=>res.json())
+    .then(errorCheck)
+    .then(content => {
+      console.log('facebook content : ', content);
+      this.props.userStateChange(true, true, content.username, content.nickname, content.email);
+      this.props.history.push('/');
+    }).catch(e=>alert(e))
+  }
 
   // 일반 로그인
   normalLogin(e) {
     e.preventDefault();
-
     let isMailAuthenticated=true;
     let data={
       username: this.state.username,
       password: this.state.password
     }
-
+    
+    this.props.toggleLoadingState();
+    console.log("isLoading : ", this.state.isLoading);
     fetch("http://localhost/api/jwt-login", {
       method: "POST",
       headers: {
@@ -141,23 +133,32 @@ export default class Login extends Component { //export default : 다른 모듈�
       }
 
       console.log("content ? ", content);
-      this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.email);
+      this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.nickname, content.email);
+      console.log("joigwegjoiwegwgweg");
+      this.setState({
+        isLoading: true
+      });
+      this.props.toggleLoadingState();
       this.props.history.push('/');
-    }).catch(error=>alert(error));
+    }).catch(error=>{
+          alert(error);
+          this.props.toggleLoadingState();
+    });
   }
 
   render() {
-    console.log('login render.');
     return (
       <Fragment>
             <LoginForm
                 username={this.state.username}
                 password={this.state.password}
+                isLoading={this.props.isLoading}
                 isLogin={this.isLogin}
                 changeUsername={e => this.valChangeControl(e)}
                 changePassword={e => this.valChangeControl(e)}
                 normalLogin={e => this.normalLogin(e)}
                 googleLogin={e => this.googleLogin(e)}
+                facebookLogin={e => this.facebookLogin(e)}
                 test={e=>this.test(e)}
             />
       </Fragment>

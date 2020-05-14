@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, File
+from .models import User
 from bson.objectid import ObjectId
 
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
@@ -29,7 +29,7 @@ RefreshJSONWebToken.serializer_class = RefreshJSONWebTokenSerializerCookieBased
 class UserAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'phone_num', 'social_auth', 'is_mail_authenticated')
+        fields = ('username', 'nickname', 'password', 'email', 'phone_num', 'social_auth', 'is_mail_authenticated')
 
     def create(self, validated_data):
         phone = ""
@@ -54,6 +54,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # email : 자동으로 소문자로 변환됨.
             _id=ObjectId(),
             username=validated_data["username"],
+            nickname=validated_data["nickname"],
             email=validated_data['email'],
             password=validated_data["password"],
             phone_num=phone,
@@ -70,7 +71,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('_id', 'username', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
+        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
 
 # 로그인
 class UserLoginSerializer(serializers.Serializer):
@@ -92,8 +93,6 @@ class FindIDPasswordSerializer(serializers.Serializer):
     username=serializers.CharField(min_length=8, max_length=15, allow_blank=True)
     email=serializers.EmailField()
 
-#파일 업로드용
-class FileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = File
-        fields=("file",)
+class SocialLoginSerializer(serializers.Serializer):
+    access_token=serializers.CharField(max_length=300)
+    social_auth=serializers.RegexField(regex="google|facebook")
