@@ -54,7 +54,6 @@ api = [
     path("<str:user_name>/<str:file_name>", download.FileDownloadAPI.as_view()),
     path("file-list", download.FileListAPI.as_view()),
 ]
-]
 
 urlpatterns = [
     #path('', include('Account_static.urls')), # 로그인 테스트 페이지
