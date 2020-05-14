@@ -9,7 +9,7 @@ volumes:
 services:
   db:
     image : mongo
-    container_name : "db"
+    container_name: "db"
     environment:
       MONGO_INITDB_DATABASE: exampledb
     volumes:
@@ -17,6 +17,7 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d/
     expose:
       - 27017
+    user: ${USER_ID:?"Run as './udco ...'"}:${GROUP_ID:?"Run as './udco ...'"}
 
   django:
     build:
