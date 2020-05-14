@@ -41,7 +41,7 @@ api = [
     #httponly cookie로 는 JWT 토큰 제거
     path('logout', account.LogoutAPI.as_view()),
     #소셜 로그인 테스트용
-    path('google', account.SocialLoginAPI.as_view()),
+    path('social-login', account.SocialLoginAPI.as_view()),
 
     #유저 삭제 테스트용
     path('deleteAll', account.DeleteAPI.as_view()),
@@ -51,8 +51,8 @@ api = [
     re_path('upload/flow/(?P<id>[0-9a-f]{24})', storage.FlowUploadChunkView.as_view()),
 
     # 다운로드
-    path("<str:user_name>/<str:file_name>", download.FileDownloadAPI.as_view()),
-    path("file-list", download.FileListAPI.as_view()),
+    path("download/<str:user_name>/<str:file_name>", download.FileDownloadAPI.as_view()),
+    path("download/file-list", download.FileListAPI.as_view()),
 ]
 
 urlpatterns = [
