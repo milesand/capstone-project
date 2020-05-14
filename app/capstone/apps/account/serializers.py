@@ -67,25 +67,21 @@ class UserAccountSerializer(serializers.ModelSerializer):
         return user
 
 
-# 접속 유지중인지 확인
+# 유저 정보 출력
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
 
-# 로그인
-class UserLoginSerializer(serializers.Serializer):
+#소셜 로그인, 아이디 및 패스워드 제한 없음.
+class SocialLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
-    def validate(self, data):
-        user = authenticate(**data)
-        if user and user.is_active:
-            if user.is_mail_authenticated:
-                return user
-            else:
-                raise serializers.ValidationError("메일 인증이 필요합니다. 가입 시 입력한 이메일을 통해 인증 절차를 진행해주세요.")  # 메일인증 미수행
-        raise serializers.ValidationError("아이디나 비밀번호가 일치하지 않습니다.")
+# 일반 로그인, 아이디 및 패스워드 15자 제한
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=15)
+    password = serializers.CharField(max_length=15)
 
 #ID/비밀번호 찾기
 class FindIDPasswordSerializer(serializers.Serializer):
@@ -93,6 +89,6 @@ class FindIDPasswordSerializer(serializers.Serializer):
     username=serializers.CharField(min_length=8, max_length=15, allow_blank=True)
     email=serializers.EmailField()
 
-class SocialLoginSerializer(serializers.Serializer):
+class SocialAccessTokenSerializer(serializers.Serializer):
     access_token=serializers.CharField(max_length=300)
     social_auth=serializers.RegexField(regex="google|facebook")

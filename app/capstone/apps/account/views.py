@@ -1,9 +1,12 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer
+from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer, SocialAccessTokenSerializer, UserLoginSerializer
 from .models import User
+from django.contrib.auth import login
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 import json
@@ -20,20 +23,22 @@ from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 # 소셜 로그인에 사용하는 모듈
 import requests
+from capstone.settings.base import SOCIAL_AUTH_FACEBOOK_KEY, SOCIAL_AUTH_FACEBOOK_SECRET
 
 # JWT 인증에 사용하는 모듈
 from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework_jwt.settings import api_settings
 jwt_payload_handler=api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from capstone.settings.base import JWT_AUTH, SOCIAL_AUTH_FACEBOOK_KEY, SOCIAL_AUTH_FACEBOOK_SECRET
+from capstone.settings.base import JWT_AUTH
 from datetime import datetime
 from django.contrib.auth import authenticate
-import jwt
+import jwt, calendar
 
 # Create your views here.
 
@@ -83,24 +88,28 @@ class RegistrationAPI(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         print('registration request : ', request.data)
-        '''if request.data['password']!=request.data['password_val']: # 프론트엔드에서 처리
-            body={"message" : '비밀번호가 일치하지 않습니다.'}
-            return Response(body, status=status.HTTP_400_BAD_REQUEST)'''
 
         # 소셜 로그인이 아닌 경우
-        if 'social_auth' not in request.data.keys() or request.data['social_auth']=='':
+        if request.data['social_auth']=='':
             if len(request.data['password']) < 8 or len(request.data['password']) >= 16:  # 비밀번호가 7자 이하이거나 16자 이상인 경우
                 body = {"message": '비밀번호가 너무 짧거나 너무 깁니다. 8자 이상 15자 이하로 설정해주세요.'}
                 return Response({'message': '비밀번호가 너무 짧습니다.'}, status=status.HTTP_400_BAD_REQUEST);
 
-        elif 'social_auth' in request.data.keys():
+        else:
             if(request.data['social_auth'] not in self.support_social_login):
                 # 지원하는 소셜 로그인이 아닌 경우
                 return Response({'message': '잘못된 접근입니다.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
             else: #지원하는 소셜 로그인
-                request.data['is_mail_authenticated']=True
-        print("registration prev.")
+                print('here.')
+                try:
+                    User.objects.get(email=request.data['email']) #기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
+                    print('here2.')
+                    return Response(status=status.HTTP_202_ACCEPTED)
+                except:
+                    print('here3.')
+                    request.data['is_mail_authenticated']=True
+
         serializer = UserAccountSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # 여기서 UserAccountSerializer의 create 메소드가 실행된다.
@@ -156,52 +165,60 @@ class ActivateUserAPI(APIView):
         else:
             return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
 
-# 유저 로그인 API
-'''class LoginAPI(generics.GenericAPIView):
-    serializer_class = UserLoginSerializer
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        print('request ' + str(serializer))
-        if serializer.is_valid():
-            user = serializer.validated_data
-            return Response(
-                {
-                    "user": UserSerializer(
-                        user, context=self.get_serializer_context()
-                    ).data,
-                    "token": AuthToken.objects.create(user)[1],
-                }
-            )
-        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)'''
+#JWT 토큰을 얻기 위한 부모 클래스
+class GetJWTToken(ObtainJSONWebToken):
+    request = None
+    #아이디와 비밀번호를 이용하여 발급받기
+    def getToken(self, request):
+        self.request=request
+        token = self.post(self.request)
+        return token
+
+    #비밀번호를 사용하지 않고 발급받기
+    def getToken_without_password(self, user):
+        payload=jwt_payload_handler(user)
+        if(api_settings.JWT_ALLOW_REFRESH):
+            payload['orig_iat'] = calendar.timegm(datetime.utcnow().utctimetuple())
+
+        return jwt_encode_handler(payload)
 
 #유저 JWT 로그인
-class LoginAPI(ObtainJSONWebToken):
-    def post(self, request, *args, **kwargs):
-        print("request test.")
-        print(request.data)
-        #존재하는 아이디인지 확인
-        user=authenticate(username=request.data['username'], password=request.data['password'])
-        response=Response()
-        if user is None:
-            response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
-            response.status=status.HTTP_404_NOT_FOUND
-            return response
+class LoginAPI(generics.GenericAPIView):
+    serializer_class = UserLoginSerializer
+    def post(self, request):
+        if len(request.data['username'])>15: #아이디 15자 이하일 경우, 일반 로그인
+            self.serializer_class = SocialLoginSerializer
 
-        print('here.')
-        token = super(LoginAPI, self).post(request, *args, **kwargs)
-        response.set_cookie('jwt', token.data['token'], domain=None,
-                            expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
-                            httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
-        print("set complete.")
-        if user.is_mail_authenticated == False:
-            response.data={"error": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요.", "email" : user.email}
-            response.status=status.HTTP_401_UNAUTHORIZED
-            return response
+        serializer=self.serializer_class(data=request.data)
+        print('login : ', request.data)
+        if serializer.is_valid():
+            print("request test.")
+            print(request.data)
+            #존재하는 아이디인지 확인
+            user=authenticate(username=request.data['username'], password=request.data['password'])
+            response=Response()
+            if user is None:
+                response.data={"error" : "아이디와 비밀번호를 확인해주세요."}
+                response.status=status.HTTP_404_NOT_FOUND
+                return response
+
+            g=GetJWTToken()
+            token = g.getToken(request)
+            response.set_cookie('jwt', token.data['token'], domain=None,
+                                expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
+                                httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
+            print("set complete.")
+            if user.is_mail_authenticated == False:
+                response.data={"error": "이메일 인증이 필요합니다. 인증을 수행한 뒤 다시 로그인해주세요.", 'nickname' : user.nickname, "email" : user.email}
+                response.status=status.HTTP_401_UNAUTHORIZED
+                return response
+            else:
+                #response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
+                response.data={'username': user.username, 'nickname': user.nickname, 'email' : user.email}
+                response.status=status.HTTP_200_OK
+                return response
         else:
-            #response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
-            response.data={'username': user.username, 'nickname': user.nickname, 'email' : user.email}
-            response.status=status.HTTP_200_OK
-            return response
+            return Response({'error' : "입력 형식을 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPI(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, )
@@ -240,8 +257,8 @@ class UserAPI(generics.GenericAPIView):
 
 # 소셜로그인을 수행할 때 여기서 구글인지 페이스북인지 체크한 다음, 적절한 곳으로 POST 명령을 보내준다.
 class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
-    serializer_class = SocialLoginSerializer
-
+    serializer_class = SocialAccessTokenSerializer
+    response=None
     def login_n_registration(self, request, data, social):
         userData = {'username': data['id'],
                     'nickname' : data['name'],
@@ -255,17 +272,39 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
         except:  # 회원 정보 없음, 회원 가입 진행
             request._full_data = userData
             print("registration result.")
-            print(RegistrationAPI.post(self, request))
+            self.response=RegistrationAPI.post(self, request)
+            print(self.response.status_code) #해당 이메일로 이미 가입된 아이디가 있을 경우, http code 202 발생
 
         # 로그인 진행
+        print(LoginAPI.serializer_class)
         self.serializer_class = LoginAPI.serializer_class  # serializer class 로그인 용으로 전환
-        userLoginData = {'username': data['id'],
-                         'password': "social"}
-        request._full_data = userLoginData
-        try:
-            return LoginAPI.post(self, request)
-        except:
-            return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
+        if self.response is not None and self.response.status_code==202:
+            user=User.objects.get(email=data['email'])
+            if user.is_mail_authenticated==False:
+                user.is_mail_authenticated=True
+                user.save()
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            g=GetJWTToken()
+            token=g.getToken_without_password(user)
+            print('token : ', token)
+            response=Response({'message' : '로그인 완료.'}, status=status.HTTP_200_OK)
+            response.set_cookie('jwt', token, domain=None,
+                                expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
+                                httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
+
+            print("set complete.")
+            return response
+
+        else:
+            userLoginData = {'username': data['id'],
+                              'password': "social"}
+
+            request._full_data = userLoginData
+            try:
+                return LoginAPI.post(self, request)
+            except:
+                return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         serializer=self.serializer_class(data=request.data)
@@ -366,7 +405,7 @@ class FindIDPasswordAPI(generics.GenericAPIView):
 
 #개발용 API입니다. 가입 유저 전부 삭제.
 class DeleteAPI(APIView):
-    def get(self, request):
+    def delete(self, request):
         user=User.objects.all()
         user.delete()
         return Response(status=status.HTTP_200_OK)
