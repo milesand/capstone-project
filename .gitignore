@@ -1,10 +1,15 @@
-ㅔ__pycache__/
+__pycache__
+node_modules
+
+# IDE
+.idea
+.vscode
 
 # 구글계정
 app/googleAccount.txt
 
 # 웹페이지 테스트용
-Account_static/
+Account_static
 
 # DB
 db/data
