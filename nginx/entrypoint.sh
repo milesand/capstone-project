@@ -11,7 +11,6 @@ if [ -z "${GROUP_ID}" ]; then
     return 1
 fi
 
-echo ${USER_ID} ${GROUP_ID}
 groupmod -g ${GROUP_ID} -o nginx
 usermod -u ${USER_ID} -g nginx nginx
 
