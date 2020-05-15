@@ -103,7 +103,7 @@ def _check_flow_upload_request(request, id, attr, check_chunk):
             partial_upload.file_name = file_name
             partial_upload.save()
         elif partial_upload.file_name != file_name:
-            return (True, Response(status=status.HTTP_400_NOT_FOUND))
+            return (True, Response(status=status.HTTP_400_BAD_REQUEST))
         
         if partial_upload.is_expired():
             partial_upload.delete()
@@ -162,7 +162,7 @@ class FlowUploadChunkView(APIView):
             if partial_upload.received_bytes > chunk_start:
                 # We already received this chunk, but for some reason flow sent it again.
                 # This is fine, just 200.
-                return Response(status=status.HTTP_200_NO_CONTENT)
+                return Response(status=status.HTTP_200_OK)
             
             file_path = partial_upload.file_path()
             file_path.touch(exist_ok=True)
