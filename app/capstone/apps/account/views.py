@@ -126,9 +126,6 @@ class RegistrationAPI(generics.GenericAPIView):
                 to_email = user.email  # 인증 메일을 받는 주소
                 sendMail(message, mail_title, to_email)
 
-            payload = jwt_payload_handler(user)
-            payload['user_id']=str(payload['user_id'])
-            token = jwt_encode_handler(payload) #JWT 토큰 생성
             print("가입 완료!")
             return Response(  # Response(data, status=None, template_name=None, headers=None, content_type=None)
                 # data : response를 위한 직렬화된 데이터(만들어놓은 Serailizer 클래스 사용)
