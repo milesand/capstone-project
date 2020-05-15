@@ -17,5 +17,5 @@ def delete_partial_upload(sender, instance, using, **kwargs):
             # which would have created the UserStorageCapacity object for the user.
             # Thus, the UserStorageCapacity object is sure to exist.
             storage = UserStorageCapacity.objects.get(user=instance.uploader)
-            storage.capacity_left += instance.file_size
+            storage.remove(instance.file_size)
             storage.save()
