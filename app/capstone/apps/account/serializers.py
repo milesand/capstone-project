@@ -92,3 +92,10 @@ class FindIDPasswordSerializer(serializers.Serializer):
 class SocialAccessTokenSerializer(serializers.Serializer):
     access_token=serializers.CharField(max_length=300)
     social_auth=serializers.RegexField(regex="google|facebook")
+
+class TeamListSerializer(serializers.ModelSerializer):
+    invitationList=serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model=User
+        fields=('_id', 'username', 'invitationList',)

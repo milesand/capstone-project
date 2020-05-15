@@ -32,3 +32,4 @@ sqlparse==0.2.4
 uritemplate==3.0.1
 urllib3==1.25.8
 uwsgi==2.0.18
+rest-meets-djongo==0.0.13

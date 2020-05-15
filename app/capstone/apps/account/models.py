@@ -1,11 +1,13 @@
 from django.db import models
+from djongo import models as mongo_models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import ugettext_lazy as _
+
 # Create your models here.
 
 # User model custom.
 class User(AbstractUser):
-    _id=models.CharField(max_length=200, primary_key=True)
+    _id=models.CharField(max_length=24, primary_key=True)
     nickname=models.CharField(_('닉네임'), max_length=15)
     email = models.EmailField(_('이메일 주소'), unique=True) #배포용
     #email = models.EmailField(_('이메일 주소')) #테스트용

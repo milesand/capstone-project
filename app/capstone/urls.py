@@ -24,7 +24,7 @@ from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token # JWT �
 import capstone.account.views as account
 import capstone.storage.views as storage
 import capstone.download.views as download
-
+import capstone.teams.views as teams
 api = [
     path('users', account.AllUserAPI.as_view()),
     path("registration", account.RegistrationAPI.as_view()),
@@ -32,6 +32,7 @@ api = [
     path("activate/<str:uidb64>/<str:token>", account.ActivateUserAPI.as_view(), name='activate'),
     path("send-auth-email", account.ResendMailAPI.as_view()),
     path('forgot', account.FindIDPasswordAPI.as_view()),
+    path('invitation-list', account.InvitationListAPI.as_view()),
 
     #JWT 토큰 발급 및 재발급용
     path('jwt-login', account.LoginAPI.as_view()), # JWT 토큰 발급 (로그인)
@@ -51,8 +52,13 @@ api = [
     re_path('upload/flow/(?P<id>[0-9a-f]{24})', storage.FlowUploadChunkView.as_view()),
 
     # 다운로드
-    path("download/<str:user_name>/<str:file_name>", download.FileDownloadAPI.as_view()),
+    path("download/<str:user_name>/<str:file_id>", download.FileDownloadAPI.as_view()),
     path("download/file-list", download.FileListAPI.as_view()),
+
+    #팀 관련 기능
+    path('team', teams.CreateTeamAPI.as_view()),
+    path('team-management/<str:teamID>', teams.TeamAPI.as_view()),
+    path('team/<str:teamID>/invitation', teams.InvitationAPI.as_view()),
 ]
 
 urlpatterns = [

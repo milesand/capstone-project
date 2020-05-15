@@ -7,7 +7,6 @@ from django.http import Http404
 from .models import File
 from .serializers import FileDownloadSerializer, FileSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.views import View
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -23,7 +22,7 @@ class FileDownloadAPI(generics.GenericAPIView):
     serializer_class = FileDownloadSerializer
     permission_classes = (AllowAny, ) #추후에 권한 필요하도록 IsAuthenticated로 수정해야 함. 개발용 설정
 
-    def post(self, request, user_name, file_name): # 테스트 하기 위한 모델 생성용
+    def post(self, request, user_name, file_id): # 테스트 하기 위한 모델 생성용
         print(request.data)
         serializer=self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -32,7 +31,7 @@ class FileDownloadAPI(generics.GenericAPIView):
         else:
             return Response({'error' : '입력 형식 확인바람.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, user_name, file_name): #특정 사용자의 고유 ID와 함께 파일 이름 전달
+    def get(self, request, user_name, file_id): #특정 사용자의 고유 ID와 함께 파일 이름 전달
         try:
             user=get_object_or_404(User, username=user_name) # 사용자 이름으로 받을까? 고유 ID로 받을까?
         except(Http404):
@@ -40,8 +39,8 @@ class FileDownloadAPI(generics.GenericAPIView):
 
         try:
             print(user)
-            print(file_name)
-            file=get_object_or_404(File, user=user, file_name=file_name)
+            print(file_id)
+            file=get_object_or_404(File, user=user, file_name=file_id)
         except(Http404):
             return Response({"error" : "해당 파일 이름으로 저장된 파일이 존재하지 않습니다."},
                                  status=status.HTTP_404_NOT_FOUND)
@@ -53,3 +52,4 @@ class FileDownloadAPI(generics.GenericAPIView):
                                                                                                 # <사용자 ID>/<파일 이름> 의 경로에서 다운로드 받게 한다.
         print('/media/files/{0}'.format(file.file_path))
         return response
+
