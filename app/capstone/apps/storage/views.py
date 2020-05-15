@@ -1,18 +1,19 @@
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import UserStorageCapacity, PartialUpload
+from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
 
 class FlowUploadStartView(APIView):
-    parser_classes = (MultiPartParser,)
+    parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -25,7 +26,18 @@ class FlowUploadStartView(APIView):
 
         user = request.user
         with transaction.atomic():
-            storage, _ = UserStorageCapacity.objects.get_or_create(user=user)
+            try:
+                storage = UserStorage.objects.get(user=user)
+            except UserStorage.DoesNotExist:
+                root = Directory.objects.create(
+                    owner=user,
+                    name="",
+                    parent=None,
+                )
+                storage = UserStorage.objects.create(
+                    user=user,
+                    root_dir=root,
+                )
             try:
                 storage.add(file_size)
             except NotEnoughCapacityException:
@@ -38,7 +50,7 @@ class FlowUploadStartView(APIView):
         return Response(
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/storage/flow/" + str(upload._id)
+                "Location": "/api/upload/flow/" + str(upload._id)
             }
         )
 
@@ -170,16 +182,25 @@ class FlowUploadChunkView(APIView):
                     partial_file.write(subchunk)
             partial_upload.received_bytes += chunk.size
 
-            if partial_upload.received_bytes == partial_upload.file_size:
-                user_dir = Path('/files/complete').joinpath(str(request.user.id))
-                user_dir.mkdir(exist_ok=True)
-
-                new_path = user_dir.joinpath(partial_upload.file_name)
-                partial_upload.file_path().rename(new_path)
-
-                partial_upload.is_complete = True
-                partial_upload.delete()
-            else:
+            if partial_upload.received_bytes != partial_upload.file_size:
                 partial_upload.save()
+                return Response(status=status.HTTP_200_OK)
 
-            return Response(status=status.HTTP_200_OK)
+            file_record = File.objects.create(
+                owner=request.user,
+                name=partial_upload.file_name,
+                size=partial_upload.file_size,
+                directory=UserStorage.objects.get(user=request.user).root_dir,
+            )
+            new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(file_record._id))
+            partial_upload.file_path().rename(new_path)
+
+            partial_upload.is_complete = True
+            partial_upload.delete()
+
+            return Response(
+                status=status.HTTP_201_CREATED,
+                headers={
+                    "Location": "/api/file" + str(file_record._id)
+                },
+            )

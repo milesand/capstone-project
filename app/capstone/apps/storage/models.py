@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from django.conf import settings
 from django.db import models
@@ -8,11 +8,61 @@ from djongo import models as mongo_models
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
 
-class UserStorageCapacity(models.Model):
+class Directory(models.Model):
+    _id = mongo_models.ObjectIdField(primary_key=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=256)
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True  # Root directories have no parent
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['parent', 'name'],
+                name="unique_directory_name",
+                condition=models.Q(parent__isnull=False)
+            ),
+        ]
+
+
+class File(models.Model):
+    _id = mongo_models.ObjectIdField(primary_key=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=256)
+    size = models.BigIntegerField()
+    uploaded_at = models.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    directory = models.ForeignKey(
+        Directory,
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['directory', 'name'],
+                name="unique_file_name",
+            ),
+        ]
+
+
+class UserStorage(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
+    )
+    root_dir = models.ForeignKey(
+        Directory,
+        on_delete=models.CASCADE,
     )
 
     # A 63-bit positive number can represent up to 8 * 1024**6 - 1,
@@ -27,7 +77,7 @@ class UserStorageCapacity(models.Model):
 
     # Following fields are used to calculate total storage used:
     # * `file_count` is number of files owned by this user.
-    # * `dir_count` is number of directories owned by this user.
+    # * `dir_count` is number of directories owned by this user (excluding root).
     # * `file_size_total` is the sum of size of all files.
     # Actual used storage space by this user is calculated by:
     # file_count * FILE_METADATA_SIZE + dir_count * DIR_METADATA_SIZE + file_size_total
@@ -71,7 +121,7 @@ class UserStorageCapacity(models.Model):
 
 
 class PartialUpload(models.Model):
-    _id = mongo_models.ObjectIdField()
+    _id = mongo_models.ObjectIdField(primary_key=True)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -91,7 +141,7 @@ class PartialUpload(models.Model):
         return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
 
     def file_path(self):
-        return Path('/files/partial').joinpath(str(self.pk))
+        return Path(settings.PARTIAL_UPLOAD_PATH, str(self._id))
 
     # When PartialUpload is deleted, some clean ups are required;
     # The user's file capacity needs to be bumped back up, and the
