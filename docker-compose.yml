@@ -6,6 +6,10 @@ volumes:
   socket:
     external: false
 
+secrets:
+  django_secret:
+    file: app/googleAccount.txt
+
 services:
   db:
     image : mongo
@@ -27,6 +31,8 @@ services:
      - ./app:/app/
      - socket:/socket/
      - ./file:/file
+    secrets:
+      - django_secret
     expose:
       - 8000
     depends_on:

@@ -212,7 +212,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #이메일 인증
-f=open('googleAccount.txt', 'r')
+f=open('/run/secrets/django_secret', 'r')
 account_info=f.read().split()
 EMAIL_HOST = 'smtp.gmail.com' # 메일을 호스트하는 서버
 EMAIL_PORT = '587' # gmail과 통신하는 포트
