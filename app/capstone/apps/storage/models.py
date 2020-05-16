@@ -27,26 +27,32 @@ class Directory(models.Model):
     def get_by_path(user, path):
         '''
         Checks whether directory specified by given `path` exists for
-        given `user`. Returns found directory object if it exists,
-        `None` otherwise.
+        given `user`.
+        
+        Return value is a 2-tuple (n, directory) where directory
+        is the deepest ancestor found or the found directory, and n is the
+        number of directories that were not found.
+        So if given path = "/a/b/c/d/e", and "/a/b/c" exists but "d" doesn't,
+        This will return `(2, <directory object for /a/b/c>)` since "d" and
+        "e" were not found.
 
         Arguments:
         user -- user to be checked; Should match settings.AUTH_USER_MODEL.
-        path -- a pathlib.PosixPurePath specifying the path to check.
+        path -- a path-like object specifying a POSIX path to check.
                 If relative, considered as relative-from-root.
         '''
-        parts = path.parts
+        parts = iter(PurePosixPath(path).parts)
         if path.is_absolute():
-            parts = parts[1:]
+            next(parts)  # discard first item
 
         current_dir = UserStorage.objects.get(user=user).root_dir
-        for part in parts:
+        for (i, part) in enumerate(parts):
             try:
-                current_dir = current_dir.child_dirs.get(name__exact=part)
+                next_dir = current_dir.child_dirs.get(name__exact=part)
             except Directory.DoesNotExist:
-                return None
-        return current_dir
-
+                return (len(parts) - i, current_dir)
+            current_dir = next_dir
+        return (0, current_dir)
 
 
     class Meta:
@@ -126,14 +132,17 @@ class UserStorage(models.Model):
 
     def capacity_left(self):
         return max(0, self.capacity - self.space_used())
-
-    def add(self, file_size_sum, file_count=1, dir_count=0):
+    
+    def addable(self, file_size_sum, file_count=1, dir_count=0):
         additional = (
             file_count * settings.FILE_METADATA_SIZE +
             dir_count * settings.DIR_METADATA_SIZE +
             file_size_sum
         )
-        if self.capacity_left() >= additional:
+        return self.capacity_left() >= additional
+
+    def add(self, file_size_sum, file_count=1, dir_count=0):
+        if self.addable(file_size_sum, file_count, dir_count):
             self.file_count += file_count
             self.dir_count += dir_count
             self.file_size_total += file_size_sum
