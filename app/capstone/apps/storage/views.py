@@ -185,13 +185,16 @@ class FlowUploadChunkView(APIView):
             if partial_upload.received_bytes != partial_upload.file_size:
                 partial_upload.save()
                 return Response(status=status.HTTP_200_OK)
-
+            
+            # TODO: update to support upload to non-root path.
+            directory = UserStorage.objects.get(user=request.user).root_dir
             file_record = File.objects.create(
                 owner=request.user,
                 name=partial_upload.file_name,
                 size=partial_upload.file_size,
-                directory=UserStorage.objects.get(user=request.user).root_dir,
+                directory=directory,
             )
+            directory.files.add(file_record)
             new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(file_record._id))
             partial_upload.file_path().rename(new_path)
 

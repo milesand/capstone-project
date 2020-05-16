@@ -20,6 +20,16 @@ class Directory(models.Model):
         on_delete=models.CASCADE,
         null=True  # Root directories have no parent
     )
+    child_dirs = mongo_models.ArrayReferenceField(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='+',  # '+' means no backwards relation for django
+    )
+    files = mongo_models.ArrayReferenceField(
+        'File',
+        on_delete=models.CASCADE,
+        related_name='+',
+    )
 
     class Meta:
         constraints = [
