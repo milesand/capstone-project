@@ -25,6 +25,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+# Unlimited persistent connection.
+# connect to DB once, reuse that connection until something goes wrong.
+CONN_MAX_AGE = None
+
 
 # Application definition
 
