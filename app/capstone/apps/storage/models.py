@@ -23,6 +23,32 @@ class Directory(models.Model):
         null=True  # Root directories have no parent
     )
 
+    @staticmethod
+    def get_by_path(user, path):
+        '''
+        Checks whether directory specified by given `path` exists for
+        given `user`. Returns found directory object if it exists,
+        `None` otherwise.
+
+        Arguments:
+        user -- user to be checked; Should match settings.AUTH_USER_MODEL.
+        path -- a pathlib.PosixPurePath specifying the path to check.
+                If relative, considered as relative-from-root.
+        '''
+        parts = path.parts
+        if path.is_absolute():
+            parts = parts[1:]
+
+        current_dir = UserStorage.objects.get(user=user).root_dir
+        for part in parts:
+            try:
+                current_dir = current_dir.child_dirs.get(name__exact=part)
+            except Directory.DoesNotExist:
+                return None
+        return current_dir
+
+
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
