@@ -1,9 +1,9 @@
-__pycache__
-node_modules
+__pycache__/
+node_modules/
 
 # IDE
-.idea
-.vscode
+.idea/
+.vscode/
 
 # 구글계정
 app/googleAccount.txt
