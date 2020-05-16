@@ -3,10 +3,15 @@
 export USER_ID=$(id -u)
 export GROUP_ID=$(id -g)
 
+if [ ! -d 'file/partial' ]; then
+    mkdir -p file/partial
+fi
+if [ ! -d 'file/complete' ]; then
+    mkdir file/complete
+fi
 if [ ! -d 'db/data' ]; then
     mkdir -p db/data
-fi;
-if [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
+elif [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
     sudo chown -R $USER_ID:$GROUP_ID db/data
 fi;
 

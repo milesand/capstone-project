@@ -15,7 +15,7 @@ Account_static
 db/data
 
 # 업로드된 파일
-files
+file
 
 # SSL 테스트용
 app/stunnel/*

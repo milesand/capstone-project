@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import UserStorageCapacity, PartialUpload
+from .models import UserStorage, PartialUpload
 
 # Register your models here.
 
-admin.site.register(UserStorageCapacity)
+admin.site.register(UserStorage)
 admin.site.register(PartialUpload)
