@@ -207,3 +207,7 @@ class FlowUploadChunkView(APIView):
                     "Location": "/api/file" + str(file_record._id)
                 },
             )
+
+from rest_framework import generics
+class TestAPI(generics.CreateAPIView):
+    

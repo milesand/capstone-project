@@ -25,3 +25,11 @@ class ChangeTeamNameSerializer(serializers.ModelSerializer):
 
 class InvitationSerializer(serializers.Serializer):
     username=serializers.CharField(max_length=15)
+
+class SharingFolderSerializer(serializers.Serializer): #공유폴더 설정
+    folderID=serializers.CharField(max_length=24)
+    def validate(self, data):
+        if ObjectId.is_valid(data['folderID']):
+           return data
+        else:
+            raise serializers.ValidationError("ObjectID 값이 유효하지 않습니다.")

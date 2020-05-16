@@ -4,7 +4,7 @@ from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer, \
-    SocialAccessTokenSerializer, UserLoginSerializer
+    SocialAccessTokenSerializer, UserLoginSerializer, TeamListSerializer
 from .models import User
 from django.contrib.auth import login
 from rest_framework.views import APIView
@@ -254,12 +254,14 @@ class AllUserAPI(generics.ListAPIView):
 # 특정 접속 유저의 프로필을 출력하거나, 회원에서 제거하는 API
 class UserAPI(generics.GenericAPIView):
     serializer_class = UserSerializer
-    # permission_classes = [IsAuthenticated, ]
-    permission_classes = [AllowAny, ]  # 임시 설정
+    permission_classes = (IsAuthenticated, )
+    #permission_classes = [AllowAny, ]  # 임시 설정
 
     def get(self, request):
         # user=find_user(request)
+        print('here.')
         user = request.user
+        print('user : ', user)
         if not user.is_authenticated:
             return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
@@ -422,7 +424,8 @@ class FindIDPasswordAPI(generics.GenericAPIView):
         else:
             return Response({"error": "입력 형식을 확인해주세요."}, status.HTTP_400_BAD_REQUEST)
 
-from .serializers import TeamListSerializer
+
+#현재 초대받은 팀들의 이름을 출력한다.
 class InvitationListAPI(generics.ListAPIView):
     serializer_class = TeamListSerializer
     permission_classes = (IsAuthenticated, )

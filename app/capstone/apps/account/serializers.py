@@ -66,12 +66,13 @@ class UserAccountSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
 # 유저 정보 출력
 class UserSerializer(serializers.ModelSerializer):
+    invitationList=serializers.StringRelatedField(many=True)
+    memberList=serializers.StringRelatedField(many=True)
     class Meta:
         model = User
-        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth')
+        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList')
 
 #소셜 로그인, 아이디 및 패스워드 제한 없음.
 class SocialLoginSerializer(serializers.Serializer):

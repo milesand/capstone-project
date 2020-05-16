@@ -59,6 +59,9 @@ api = [
     path('team', teams.CreateTeamAPI.as_view()),
     path('team-management/<str:teamID>', teams.TeamAPI.as_view()),
     path('team/<str:teamID>/invitation', teams.InvitationAPI.as_view()),
+    path('team/<str:teamID>/acceptance', teams.AcceptInvitationAPI.as_view()),
+    path('team/<str:teamID>/secession', teams.SecessionAPI.as_view()),
+    path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
 ]
 
 urlpatterns = [
