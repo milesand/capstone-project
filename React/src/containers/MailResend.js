@@ -51,7 +51,7 @@ class MailResend extends Component{
     }
 
     render(){
-        console.log("mail auth render test.", this.props.isLoading);
+        console.log("mail auth render test.", this.state);
         
         return(
             <div>

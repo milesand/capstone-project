@@ -27,8 +27,19 @@ export default class Login extends Component { //export default : 다른 모듈�
     this.setState({
       [target_id]: target_val
     });
+    console.log('change!');
+    console.log(target_id, " : ", target_val);
   }
 
+  validateAllField(username, password){
+     console.log('username : ', username, ' password : ', password);
+     let val=true;
+     const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
+     if(!username||!idPasswordTest.test(username)) val=false;
+     if(!password||!idPasswordTest.test(password)) val=false;
+     console.log("validate val : ", val);
+     return val;
+  }
   //구글 로그인 구현하기
 
   googleLogin(){
@@ -128,13 +139,13 @@ export default class Login extends Component { //export default : 다른 모듈�
         if(content.hasOwnProperty('email')){
            isMailAuthenticated=false;
         }
+        else if(!this.validateAllField(this.state.username, this.state.password))
+            throw Error('아이디와 비밀번호는 영문자, 숫자를 포함한 8자 이상 15자 이하로 입력해주세요.');
         else
            throw Error(content['error']);
       }
 
-      console.log("content ? ", content);
       this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.nickname, content.email);
-      console.log("joigwegjoiwegwgweg");
       this.setState({
         isLoading: true
       });
@@ -159,7 +170,6 @@ export default class Login extends Component { //export default : 다른 모듈�
                 normalLogin={e => this.normalLogin(e)}
                 googleLogin={e => this.googleLogin(e)}
                 facebookLogin={e => this.facebookLogin(e)}
-                test={e=>this.test(e)}
             />
       </Fragment>
     );

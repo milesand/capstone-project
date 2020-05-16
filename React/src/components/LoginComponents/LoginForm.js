@@ -8,14 +8,15 @@ import FacebookLogin from 'react-facebook-login';
 // gets props by destructuring the props object
 // note that the input fields use the props to render their value attribute
 
-const LoginForm = ({username, password, isLoading, changeUsername,  changePassword, normalLogin, googleLogin, facebookLogin}) => {
+const LoginForm = ({username, password, isLoading, changeUsername,  changePassword,
+                    normalLogin, googleLogin, facebookLogin}) => {
     return (
       <div className="Login">
         <div className="wrapper fadeInDown">
           <div id="formContent">
+          <form method="POST" onSubmit={normalLogin}>
             <div className="register-sns">
-              <form>
-                
+
               <Col xs={6}>
                 <FacebookLogin
                 appId="240402274007270"
@@ -37,7 +38,6 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                 > 
               </input>
               </Col>    
-              </form>
               
             </div>
             <Col xs={12} className="fadeIn">
@@ -64,9 +64,8 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                 onChange={changePassword}
               />
               <button
-                 type="button"
+                 type="submit"
                  className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
-                 onClick={normalLogin}
               >{isLoading ? '':'로그인'}</button>
 
 
@@ -82,10 +81,11 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                   
                 </Col>
               </Row>
-            </div>
-          </div>
-        </div>
-      </div>
+             </div>
+            </form>
+           </div>
+         </div>
+       </div>
     );
   }
 

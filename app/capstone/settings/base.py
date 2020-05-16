@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'sslserver',
     'capstone.account.apps.AccountConfig',
     'capstone.download.apps.DownloadConfig',
-    'capstone.storage.apps.StorageConfig'
+    'capstone.storage.apps.StorageConfig',
+    'capstone.teams.apps.TeamsConfig'
 ]
 
 REST_KNOX = {
