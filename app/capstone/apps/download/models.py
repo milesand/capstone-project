@@ -2,6 +2,7 @@ import sys, os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from django.conf import settings
 from django.db import models
+from djongo import models as mongo_models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from capstone.account.models import User
