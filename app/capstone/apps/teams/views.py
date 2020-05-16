@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import Team
-from .serializers import TeamSerializer, ChangeTeamNameSerializer, InvitationSerializer, SharingFolderSerializer
+from .serializers import CreateTeamSerializer, TeamSerializer, ChangeTeamNameSerializer, InvitationSerializer, SharingFolderSerializer
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,12 +13,12 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from capstone.account.models import User
 from capstone.storage.models import Directory
 class CreateTeamAPI(generics.ListCreateAPIView):
-    serializer_class = TeamSerializer
     permission_classes = (IsAuthenticated, )
     queryset = Team.objects.all()
 
     def post(self, request): #팀 생성
-        team=self.serializer_class(data=request.data)
+        serializer_class=self.get_serializer_class()
+        team=serializer_class(data=request.data)
         if team.is_valid():
             print('here.')
             team.save()
@@ -26,6 +26,10 @@ class CreateTeamAPI(generics.ListCreateAPIView):
         else:
             return Response({'error' : '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            return TeamSerializer
+        return CreateTeamSerializer
 
 class TeamAPI(generics.GenericAPIView):
     serializer_class = TeamSerializer

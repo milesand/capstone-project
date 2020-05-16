@@ -45,9 +45,10 @@ class App extends Component {
   // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
     let errorCheck = response => {
-      console.log("err check.");
+      console.log("err checwgjoiwjgiowejgoiewk.");
       console.log(response);
-      if(!response.hasOwnProperty('error')){
+      if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
+        console.log("here. error exist.");
         this.setState({
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
@@ -57,6 +58,7 @@ class App extends Component {
         });
       }
       else{
+        console.log("here. success.");
         this.setState({
           isLogin: false,
         });
@@ -181,11 +183,9 @@ class App extends Component {
     console.log("logout called!");
     window.FB.logout();
     let auth2 = window.gapi && window.gapi.auth2.getAuthInstance();
-    console.log("isSignedIN test : ", auth2.isSignedIn.get());
     auth2.signOut()
     .then(function () {
       auth2.disconnect();
-      console.log("signOut complete.", auth2.isSignedIn.get());
     })
     .then(() => {
       this.deleteJWTToken();
