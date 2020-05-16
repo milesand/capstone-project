@@ -12,6 +12,6 @@ if [ -z "${GROUP_ID}" ]; then
 fi
 
 groupmod -g ${GROUP_ID} -o nginx
-usermod -u ${USER_ID} -g nginx nginx
+usermod -u ${USER_ID} -g nginx -o nginx 2> /dev/null
 
 exec "$@"
