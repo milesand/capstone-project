@@ -96,7 +96,7 @@
    1. storage/views.py에서 파일 업로드를 마친 뒤, 해당 파일이 이미지 파일인지 확인합니다.
    2. 이미지 파일이 아니라면 그대로 나머지 업로드 로직을 진행하고, 맞다면 thumbnail.py의 MakeThumbnail 클래스를 이용하여 썸네일을 제작한 뒤, 
       해당 파일을 file/complete/사용자명/thumbnail/ 에 파일ID.jpg의 형태로 저장합니다(Nginx 상에서는 media/files/사용자명/thumbnail 디렉토리에 저장됩니다.).
-   3. 썸네일이 저장된 경로를 업로드 response의 body에 thumbnail_url : <url> 형태로 실어서 response를 전송합니다.
+   3. 썸네일이 저장된 경로를 업로드 response의 body에 thumbnail_url : {url} 형태로 실어서 response를 전송합니다.
    4. 해당 url로 접속하면 서버에 저장된 썸네일 아이콘이 보이게 됩니다. 이것을 이용해 리액트쪽에서 썸네일 이미지를 보여주면 됩니다.
    
    storage앱의 view.py에 있는 ThumbnailTestAPI와 thumbnail 앱은 테스트용으로, 제거할 예정입니다.
@@ -143,7 +143,7 @@ API
 
 * POST /api/register 는 HTTP body에 json 형식으로 username, password, email 필드를 필수로 넘겨줘야 하며, phone_num 필드는 선택사항입니다.
 
-* POST /api/jwt-login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, 서버는 response로 HttpOnly 속성을 지닌 쿠키에 JWT            토큰을 담아서 보내줍니다.
+* POST /api/jwt-login은 HTTP body에 json 형식으로 username, password를 넘겨줘야 하며, 서버는 response로 HttpOnly 속성을 지닌 쿠키에 JWT 토큰을 담아서 보내줍니다.
    한번 로그인했을 때 토큰의 유효시간은 30분입니다.
 
 * POST /api/jwt-refresh는 HTTP body에 json 형식으로 token : <발급받은 토큰>을 넣어주면 유효 시간이 갱신된 새로운 토큰을 받을 수 있습니다.
