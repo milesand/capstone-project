@@ -233,9 +233,7 @@ class FlowUploadChunkView(APIView):
                 },
             )
 
-from rest_framework.permissions import AllowAny
 class ThumbnailTestAPI(APIView):
-    permission_classes = (AllowAny, )
     def get(self, request):
         print('dir : ', os.path.dirname(os.getcwd()))
         print(request.user)

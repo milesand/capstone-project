@@ -27,5 +27,4 @@ class MakeThumbnail(ImageSpec):
             retFile.close()
 
         return "http://localhost"+destURL
-        #return destURL
 
