@@ -198,7 +198,7 @@ class GetJWTToken(ObtainJSONWebToken):
 # 유저 JWT 로그인
 class LoginAPI(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
-
+    permission_classes = (AllowAny, )
     def post(self, request):
         if len(request.data['username']) > 15:  # 아이디 15자 이하일 경우, 일반 로그인
             self.serializer_class = SocialLoginSerializer

@@ -25,6 +25,7 @@ import capstone.account.views as account
 import capstone.storage.views as storage
 import capstone.download.views as download
 import capstone.teams.views as teams
+
 api = [
     path('users', account.AllUserAPI.as_view()),
     path("registration", account.RegistrationAPI.as_view()),
@@ -62,6 +63,8 @@ api = [
     path('team/<str:teamID>/acceptance', teams.AcceptInvitationAPI.as_view()),
     path('team/<str:teamID>/secession', teams.SecessionAPI.as_view()),
     path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
+
+    path("thumb2", storage.ThumbnailTestAPI.as_view()),
 ]
 
 urlpatterns = [
