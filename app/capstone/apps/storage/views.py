@@ -12,6 +12,11 @@ from rest_framework.views import APIView
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
 
+#thumbnail
+import os
+from .thumbnail import MakeThumbnail
+from PIL import Image
+
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
@@ -195,15 +200,60 @@ class FlowUploadChunkView(APIView):
                 directory=directory,
             )
             directory.files.add(file_record)
-            new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(file_record._id))
+            new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)) # (수정) 경로에 사용자 아이디 추가.
             partial_upload.file_path().rename(new_path)
 
             partial_upload.is_complete = True
             partial_upload.delete()
 
+            # make thumbnail.
+
+            #setting file path.
+            if os.path.dirname(os.getcwd()) == '/':  # on docker
+                path = os.path.dirname(os.getcwd()) +\
+                       str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), file_record._id))
+
+            else:  # for test
+                path = os.path.dirname(os.getcwd()) + str(
+                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), file_record._id))
+
+            # check if uploaded file is image file.
+            try:
+                image = Image.open(path)
+                thumbnail = MakeThumbnail(path=path, width=50, height=50)
+                thumbnail_url = thumbnail.generate_thumbnail(request.user, file_record._id)
+            except:
+                print('이미지 파일 아님.')
+
             return Response(
+                {'thumbnail_url' : thumbnail_url}, # show thumbnail image's path to frontend.
                 status=status.HTTP_201_CREATED,
                 headers={
                     "Location": "/api/file" + str(file_record._id)
                 },
             )
+
+class ThumbnailTestAPI(APIView):
+    def get(self, request):
+        print('dir : ', os.path.dirname(os.getcwd()))
+        print(request.user)
+        # thumbnail
+        if os.path.dirname(os.getcwd())=='/': # on docker
+            path=Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'testMail.jpg')
+
+        else: # for test
+            path = os.path.dirname(os.getcwd()) + str(
+                Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'testMail.jpg'))
+
+        print('path : ', path)
+        try:
+            image=Image.open(path)
+        except:
+            return Response({"message" : "이미지 아님."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # MakeThumbnail
+        #   path :
+        thumbnail = MakeThumbnail(path=path, width=50, height=50)
+        thumbnail_url=thumbnail.generate_thumbnail(request.user, 'testMail.jpg')
+        return Response({'url' : thumbnail_url}, status=status.HTTP_200_OK)
+

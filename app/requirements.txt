@@ -19,6 +19,7 @@ idna==2.9
 Jinja2==2.11.1
 MarkupSafe==1.1.1
 oauthlib==3.1.0
+Pillow==6.2.2
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
@@ -33,3 +34,4 @@ uritemplate==3.0.1
 urllib3==1.25.8
 uwsgi==2.0.18
 rest-meets-djongo==0.0.13
+django-imagekit==4.0.2

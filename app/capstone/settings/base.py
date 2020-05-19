@@ -56,10 +56,14 @@ INSTALLED_APPS = [
 
     #SSL 지원
     'sslserver',
-    'capstone.account.apps.AccountConfig',
+
+    #app 목록
+   'capstone.account.apps.AccountConfig',
     'capstone.download.apps.DownloadConfig',
     'capstone.storage.apps.StorageConfig',
-    'capstone.teams.apps.TeamsConfig'
+    'capstone.teams.apps.TeamsConfig',
+    'capstone.thumbnail.apps.ThumbnailConfig',
+
 ]
 
 REST_KNOX = {
@@ -209,7 +213,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 #파일 업로드 테스트용
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/file/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'file')
 
 #이메일 인증
 try:
@@ -311,3 +316,5 @@ PARTIAL_UPLOAD_EXPIRE = timedelta(minutes=30)
 
 PARTIAL_UPLOAD_PATH = "/file/partial"
 COMPLETE_UPLOAD_PATH = "/file/complete"
+
+DOMAIN_NAME='localhost' # 도메인 이름, 도메인 구입 후에 수정
