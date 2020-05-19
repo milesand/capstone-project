@@ -96,13 +96,20 @@
    1. storage/views.py에서 파일 업로드를 마친 뒤, 해당 파일이 이미지 파일인지 확인합니다.
    2. 이미지 파일이 아니라면 그대로 나머지 업로드 로직을 진행하고, 맞다면 thumbnail.py의 MakeThumbnail 클래스를 이용하여 썸네일을 제작한 뒤, 
       해당 파일을 file/complete/사용자명/thumbnail/ 에 파일ID.jpg의 형태로 저장합니다(Nginx 상에서는 media/files/사용자명/thumbnail 디렉토리에 저장됩니다.).
+      MakeThumbnail 클래스를 생성할 때, width와 height 값을 넘겨줌으로써 썸네일 크기를 조정할 수 있습니다.
    3. 썸네일이 저장된 경로를 업로드 response의 body에 thumbnail_url : {url} 형태로 실어서 response를 전송합니다.
    4. 해당 url로 접속하면 서버에 저장된 썸네일 아이콘이 보이게 됩니다. 이것을 이용해 리액트쪽에서 썸네일 이미지를 보여주면 됩니다.
    
    storage앱의 view.py에 있는 ThumbnailTestAPI와 thumbnail 앱은 테스트용으로, 제거할 예정입니다.
    썸네일 이미지 테스트 페이지는 localhost/thumb-test에 가시면 확인할 수 있으며, 사용자 아이디를 sungs201로 설정하셔야 합니다
    (이는 테스트용 설정으로, 추후에 업로드 구현이 완료되면 업로드한 계정으로 로그인 하시면 됩니다.).
-   
+
+5/19 수정사항
+-----------------
+1. 동영상 썸네일 기능을 구현했습니다. 사용방법은 이미지 파일 썸네일 기능과 같습니다. 동영상 썸네일 기능을 위해 moviepy 모듈을 사용했으며, 이를 위해
+   django dockerfile에 apk add ffmpeg를 추가했습니다.
+
+
 URL 사용법
 ------------------
 리액트 폼
