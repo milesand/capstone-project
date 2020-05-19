@@ -9,12 +9,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
 
 #thumbnail
 import os
-from .thumbnail import MakeThumbnail
+from .thumbnail import MakeImageThumbnail, MakeVideoThumbnail
 from PIL import Image
 
 class FlowUploadStartView(APIView):
@@ -208,22 +209,31 @@ class FlowUploadChunkView(APIView):
 
             # make thumbnail.
 
+            extension=os.path.splitext(file_record.name)[1] # get file extension.
+            save_name=file_record._id + extension
             #setting file path.
             if os.path.dirname(os.getcwd()) == '/':  # on docker
-                path = os.path.dirname(os.getcwd()) +\
-                       str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), file_record._id))
+                path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
 
             else:  # for test
                 path = os.path.dirname(os.getcwd()) + str(
-                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), file_record._id))
+                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
 
             # check if uploaded file is image file.
             try:
                 image = Image.open(path)
-                thumbnail = MakeThumbnail(path=path, width=50, height=50)
-                thumbnail_url = thumbnail.generate_thumbnail(request.user, file_record._id)
+                image_thum = MakeImageThumbnail(path=path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
+                                                                                # initial values are width=50, height=50.
+                thumbnail_url = image_thum.generate_thumbnail(request.user, save_name)
             except:
                 print('이미지 파일 아님.')
+                thumbnail_url='not image.'
+                try:
+                    video_thum = MakeVideoThumbnail(path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
+                                                                               # initial values are width=50, height=50.
+                    thumbnail_url = video_thum.generate_thumbnail(request.user)
+                except:
+                    thumbnail_url='not image or video file.'
 
             return Response(
                 {'thumbnail_url' : thumbnail_url}, # show thumbnail image's path to frontend.
@@ -233,13 +243,13 @@ class FlowUploadChunkView(APIView):
                 },
             )
 
-class ThumbnailTestAPI(APIView):
+class ImageThumbAPI(APIView): #image thumbnail test
     def get(self, request):
         print('dir : ', os.path.dirname(os.getcwd()))
         print(request.user)
         # thumbnail
         if os.path.dirname(os.getcwd())=='/': # on docker
-            path=Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'testMail.jpg')
+            path=str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'testMail.jpg'))
 
         else: # for test
             path = os.path.dirname(os.getcwd()) + str(
@@ -252,8 +262,32 @@ class ThumbnailTestAPI(APIView):
             return Response({"message" : "이미지 아님."}, status=status.HTTP_400_BAD_REQUEST)
 
         # MakeThumbnail
-        #   path :
-        thumbnail = MakeThumbnail(path=path, width=50, height=50)
-        thumbnail_url=thumbnail.generate_thumbnail(request.user, 'testMail.jpg')
-        return Response({'url' : thumbnail_url}, status=status.HTTP_200_OK)
+        thumbnail = MakeImageThumbnail(path=path, width=50, height=50)
+        thumbnail_url=thumbnail.generate_thumbnail(request.user)
+        return Response({'thumbnail_url' : thumbnail_url}, status=status.HTTP_200_OK)
+
+class VideoThumbAPI(APIView): #video thumbnail test
+    permission_classes = (IsAuthenticated, )
+    def get(self, request):
+        print('dir : ', os.path.dirname(os.getcwd()))
+        print(request.user)
+        # thumbnail
+        if os.path.dirname(os.getcwd()) == '/':  # on docker
+            path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'cat.mp4'))
+            print('on docker, path : ', path)
+
+        else:  # for test
+            path = os.path.dirname(os.getcwd()) + str(
+                Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'cat.mp4'))
+
+        print('path : ', path)
+        try:
+            video_thum=MakeVideoThumbnail(path, width=50, height=50)
+            thumbnail_url=video_thum.generate_thumbnail(request.user)
+        except(OSError):
+            return Response({'message' : '파일이 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "동영상 아님."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'thumbnail_url': thumbnail_url}, status=status.HTTP_200_OK)
+
 

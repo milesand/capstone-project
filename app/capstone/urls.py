@@ -64,7 +64,8 @@ api = [
     path('team/<str:teamID>/secession', teams.SecessionAPI.as_view()),
     path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
 
-    path("thumb2", storage.ThumbnailTestAPI.as_view()),
+    path("thumb2", storage.ImageThumbAPI.as_view()),
+    path('v-thumb', storage.VideoThumbAPI.as_view()),
 ]
 
 urlpatterns = [
