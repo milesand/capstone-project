@@ -53,8 +53,9 @@ api = [
     re_path('upload/flow/(?P<pk>[0-9a-f]{24})', storage.FlowUploadChunkView.as_view()),
 
     # 다운로드
-    path("download/<str:user_name>/<str:file_id>", download.FileDownloadAPI.as_view()),
-    path("download/file-list", download.FileListAPI.as_view()),
+    path("download/<str:file_id>", download.FileDownloadAPI.as_view()),
+    path("file-list", download.FileListAPI.as_view()),
+    path('file-id/<str:file_name>', download.GetFileIDAPI.as_view()),
 
     #팀 관련 기능
     path('team', teams.CreateTeamAPI.as_view()),

@@ -273,12 +273,12 @@ class VideoThumbAPI(APIView): #video thumbnail test
         print(request.user)
         # thumbnail
         if os.path.dirname(os.getcwd()) == '/':  # on docker
-            path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'cat.mp4'))
+            path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), '5ec3c0ac82a1e27fb1182905.mp4'))
             print('on docker, path : ', path)
 
         else:  # for test
             path = os.path.dirname(os.getcwd()) + str(
-                Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), 'cat.mp4'))
+                Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), '5ec3c0ac82a1e27fb1182905.mp4'))
 
         print('path : ', path)
         try:
