@@ -4,13 +4,14 @@ from bson.objectid import ObjectId
 class FileDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model=File
-        fields=('file_name', )
+        fields=('owner_name', 'file_name', 'file_path')
 
     def create(self, validated_data):
         file=File.objects.create(
             _id=ObjectId(),
-            owner_name=self.context['request'].user.username,
+            owner_name=validated_data['owner_name'],
             file_name=validated_data['file_name'],
+            file_path=validated_data['file_path']
         )
         return file
 

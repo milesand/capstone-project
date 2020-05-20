@@ -203,7 +203,7 @@ class LoginAPI(generics.GenericAPIView):
         if len(request.data['username']) > 15:  # 아이디 15자 이하일 경우, 일반 로그인
             self.serializer_class = SocialLoginSerializer
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         print('login : ', request.data)
         if serializer.is_valid():
             print("request test.")
@@ -328,7 +328,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
                 return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             if request.data['social_auth'] == 'facebook':
                 return FacebookLoginAPI.post(self, request)
@@ -385,7 +385,7 @@ class FindIDPasswordAPI(generics.GenericAPIView):
 
     def post(self, request):
         print(request.data)
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             if request.data['IDorPassword'] == 'id':  # ID 찾기, 메일 안보내도됨.
                 try:

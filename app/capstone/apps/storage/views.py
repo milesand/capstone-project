@@ -24,10 +24,13 @@ class FlowUploadStartView(APIView):
 
     def post(self, request):
         try:
+            print('request : ', request.data)
             file_size = int(request.data['fileSize'])
+            print('fileSize : ', file_size)
             if file_size < 0:
                 raise ValueError
         except (ValueError, KeyError):
+            print("here, error!")
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
@@ -46,7 +49,7 @@ class FlowUploadStartView(APIView):
                 )
             try:
                 storage.add(file_size)
-            except NotEnoughCapacityException:
+            except NotEnoughCapacityException: #이 예외는 왜 발생할까?
                 return Response(status=status.HTTP_403_FORBIDDEN)
             storage.save()
 
@@ -54,12 +57,12 @@ class FlowUploadStartView(APIView):
             upload.save()
 
         return Response(
+            {'Location' :  "/api/upload/flow/" + str(upload._id)}, #임시 설정, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "/api/upload/flow/" + str(upload._id)
             }
         )
-
 
 def _check_flow_upload_request(request, pk, attr, check_chunk):
     '''
@@ -145,6 +148,7 @@ class FlowUploadChunkView(APIView):
 
 
     def get(self, request, pk):
+        print("here ! get request : ", request.data)
         err, payload = _check_flow_upload_request(request, pk, 'query_params', check_chunk=False)
         if err:
             return payload
@@ -165,6 +169,7 @@ class FlowUploadChunkView(APIView):
 
 
     def post(self, request, pk):
+        print("here ! request : ", request)
         with transaction.atomic():
             err, payload = _check_flow_upload_request(request, pk, 'data', check_chunk=True)
             if err:
@@ -182,8 +187,14 @@ class FlowUploadChunkView(APIView):
                 return Response(status=status.HTTP_200_OK)
 
             file_path = partial_upload.file_path()
+            if os.path.dirname(os.getcwd()) != '/':  # on develop.
+                file_path=Path(os.path.dirname(os.getcwd())+str(file_path))
+
+            print('file path : ', file_path)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             file_path.touch(exist_ok=True)
-            with partial_upload.file_path().open('ab') as partial_file:
+
+            with file_path.open('ab') as partial_file:
                 for subchunk in chunk.chunks():
                     partial_file.write(subchunk)
             partial_upload.received_bytes += chunk.size
@@ -200,9 +211,20 @@ class FlowUploadChunkView(APIView):
                 size=partial_upload.file_size,
                 directory=directory,
             )
+
+            extension=os.path.splitext(file_record.name)[1]
             directory.files.add(file_record)
-            new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)) # (수정) 경로에 사용자 아이디 추가.
-            partial_upload.file_path().rename(new_path)
+            if os.path.dirname(os.getcwd()) == '/':  # on docker
+                new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)+extension) # (수정) 경로에 사용자 아이디 추가.
+                os.makedirs(os.path.dirname(new_path), exist_ok=True) # 사용자 디렉터리 없을 경우 새로 생성.
+
+            else:  # for test
+                new_path = os.path.dirname(os.getcwd()) + str(
+                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)+ extension))
+                os.makedirs(os.path.dirname(new_path), exist_ok=True)
+
+            print('new_path : ', new_path)
+            file_path.rename(new_path)
 
             partial_upload.is_complete = True
             partial_upload.delete()
@@ -210,7 +232,7 @@ class FlowUploadChunkView(APIView):
             # make thumbnail.
 
             extension=os.path.splitext(file_record.name)[1] # get file extension.
-            save_name=file_record._id + extension
+            save_name=str(file_record._id) + extension
             #setting file path.
             if os.path.dirname(os.getcwd()) == '/':  # on docker
                 path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
@@ -224,11 +246,13 @@ class FlowUploadChunkView(APIView):
                 image = Image.open(path)
                 image_thum = MakeImageThumbnail(path=path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
                                                                                 # initial values are width=50, height=50.
-                thumbnail_url = image_thum.generate_thumbnail(request.user, save_name)
+
+                thumbnail_url = image_thum.generate_thumbnail(request.user)
             except:
                 print('이미지 파일 아님.')
                 thumbnail_url='not image.'
                 try:
+                    print('동영상 파일임.')
                     video_thum = MakeVideoThumbnail(path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
                                                                                # initial values are width=50, height=50.
                     thumbnail_url = video_thum.generate_thumbnail(request.user)

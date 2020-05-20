@@ -25,6 +25,7 @@ class File(models.Model):
         default='')
 
     file_name=models.CharField(max_length=200)
+    file_path=models.CharField(max_length=200)
 
 from rest_framework.response import Response
 from rest_framework import status

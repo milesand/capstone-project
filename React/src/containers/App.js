@@ -20,6 +20,7 @@ import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
 import ThumbTest from "./thumbtest";
+import UploadTest from "./UploadTest";
 
 class App extends Component {
   constructor(props) {
@@ -235,7 +236,8 @@ class App extends Component {
               <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
-              <NormalRoute path="/thumb-test" exast component={ThumbTest} props={baseProps} />
+              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
+              <NormalRoute path="/upload-test" exact component={UploadTest} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
           }

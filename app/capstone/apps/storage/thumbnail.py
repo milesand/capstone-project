@@ -11,10 +11,6 @@ def set_path(path, fileName):
     return destURL
 
 class MakeImageThumbnail(ImageSpec):
-    '''processors = [ResizeToFill(100, 100)]
-    format = "JPEG"
-    options = {'quality': 100}'''
-
     def __init__(self, path, width, height, format="JPEG", quality=100):
         self.processors=[ResizeToFill(width, height)]
         self.format=format
@@ -25,10 +21,9 @@ class MakeImageThumbnail(ImageSpec):
         self.source=obj_file
 
     def generate_thumbnail(self, user):
+        print("image thumbnail!!")
         result=self.generate()
-        print('dirdir : ', os.path.dirname(self.path))
         destURL=set_path(self.path, self.fileName)
-        print('dest : ', destURL)
         with open(destURL, 'wb') as retFile:
             retFile.write(result.read())
             retFile.close()
@@ -43,12 +38,10 @@ class MakeVideoThumbnail:
         self.height=height
 
     def generate_thumbnail(self, user):
-        print("generate start!")
         destURL=set_path(self.path, self.fileName)
-        print(self.path)
-        print(destURL)
+        print('here.', destURL, self.path)
         clip=VideoFileClip(self.path).resize(newsize=(self.width, self.height))
-        print("here!!!")
+        print('here1')
         clip.save_frame(destURL, t=0.00)
-
+        print('here2.')
         return "http://localhost"+destURL

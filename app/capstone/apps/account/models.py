@@ -36,6 +36,3 @@ class User(AbstractUser):
         max_length=20,
         default="None",
         blank=True)
-
-    def __str__(self):
-        return self.username
