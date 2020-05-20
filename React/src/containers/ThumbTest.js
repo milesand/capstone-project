@@ -7,7 +7,8 @@ export default class ThumbTest extends Component { //export default : 다른 모
     super(props);
     console.log('login props : ', props);
     this.state = {
-      url:""
+      imageThumbURL:"",
+      videoThumbURL:""
     };
 
     fetch('http://localhost/api/thumb2', {
@@ -21,7 +22,23 @@ export default class ThumbTest extends Component { //export default : 다른 모
     .then(content=>{
         console.log(content)
         this.setState({
-            url: content['url']
+            imageThumbURL: content['thumbnail_url']
+        })
+        console.log(this.state)
+    })
+
+    fetch('http://localhost/api/v-thumb', {
+        method:"GET",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    })
+    .then(res=>res.json())
+    .then(content=>{
+        console.log(content)
+        this.setState({
+            videoThumbURL: content['thumbnail_url']
         })
         console.log(this.state)
     })
@@ -31,8 +48,11 @@ export default class ThumbTest extends Component { //export default : 다른 모
     return (
       
       <Fragment>
-          {this.state && this.state.url!=""&&
-                <img src={this.state.url} alt='new'></img>
+          {this.state && this.state.imageThumbURL!=""&&
+                <img src={this.state.imageThumbURL} alt='it'></img>
+          }
+          {this.state && this.state.videoThumbURL!=""&&
+                <img src={this.state.videoThumbURL} alt='vt'></img>
           }
       </Fragment>
     );
