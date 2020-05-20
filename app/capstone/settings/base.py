@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'capstone.download.apps.DownloadConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
-    'capstone.thumbnail.apps.ThumbnailConfig',
 
 ]
 

@@ -54,7 +54,7 @@ class TeamAPI(generics.GenericAPIView):
 
     def put(self, request, teamID): #팀명 수정
         self.serializer_class=ChangeTeamNameSerializer
-        serializer=self.serializer_class(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             team=Team.objects.get(_id=teamID)
             team.teamName=request.data['teamName']
@@ -69,7 +69,7 @@ class InvitationAPI(generics.GenericAPIView): # 새로운 유저를 팀으로 �
     permission_classes = (IsAuthenticated, )
     def put(self, request, teamID):
         #request.user는 로그인 헀을 때 해당 사용자를 리턴한다.
-        serializer=self.serializer_class(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             try:
                 team=get_object_or_404(Team, _id=teamID)
@@ -143,7 +143,7 @@ class SharingFolderAPI(generics.GenericAPIView):
         return directory
 
     def post(self, request, teamID):
-        serializer=self.serializer_class(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
 
             team=Team.objects.get(pk=teamID)
@@ -159,7 +159,7 @@ class SharingFolderAPI(generics.GenericAPIView):
             return Response({'message' : '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, teamID): #공유설정 해제
-        serializer=self.serializer_class(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             team = Team.objects.get(pk=teamID)
             user = request.user
