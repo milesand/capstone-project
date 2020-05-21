@@ -9,6 +9,7 @@ defusedxml==0.6.0
 Django==2.2.12
 django-allauth==0.41.0
 django-cors-headers==3.2.1
+django-imagekit==4.0.2
 django-rest-auth==0.9.5
 django-sslserver==0.22
 djangorestframework==3.11.0
@@ -18,6 +19,7 @@ google-auth==1.14.0
 idna==2.9
 Jinja2==2.11.1
 MarkupSafe==1.1.1
+moviepy==1.0.3 
 oauthlib==3.1.0
 Pillow==6.2.2
 pyasn1==0.4.8
@@ -27,11 +29,10 @@ python3-openid==3.1.0
 pytz==2019.3
 requests==2.23.0
 requests-oauthlib==1.3.0
+rest-meets-djongo==0.0.13
 rsa==4.0
 six==1.14.0
 sqlparse==0.2.4
 uritemplate==3.0.1
 urllib3==1.25.8
 uwsgi==2.0.18
-rest-meets-djongo==0.0.13
-django-imagekit==4.0.2

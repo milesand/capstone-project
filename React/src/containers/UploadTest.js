@@ -33,39 +33,30 @@ export default class UploadTest extends Component { //export default : 다른 �
 
    
     flow.on('fileAdded', function(fileObj){
-        let data={
+        let data= {
             fileSize: fileObj.size
+        };
+        const formData  = new FormData();
+        for(const name in data) {
+            formData.append(name, data[name]);
         }
 
-        let errorCheck = response =>{
+        let errorCheck = response => {
             if(response.status!=201){
                 throw Error('업로드 실패!');
             }
             return response;
-        }
+        };
         console.log("파일 등록!");
         fetch("http://localhost/api/upload/flow", {
             method: "POST",
-            headers:{
-                'Content-Type' : 'application/json',
-            },
             credentials: 'include',
-            body:JSON.stringify(data)
+            body: formData,
         })
         .then(errorCheck)
-        .then(res=>res.json())
-        .then(content=>{ //개발용 설정
-            console.log("content : ", content);
-            let url='http://localhost' + content.Location;
-            console.log('url : ', url);
-            fileObj.targetUrl=url;
-        })
-        .then(()=>{
-            console.log('파일 등록 완료!');
-            flow.upload();
-        }).catch(e=>alert(e));
-        /*.then(response=>{ // 실제 서버에서 사용
-            let url=response.headers.get('Location');
+        .catch(e=>alert(e))
+        .then(response=>{ // 실제 서버에서 사용
+            let url = response.headers.get('Location');
             console.log('url : ', url);
             fileObj.targetUrl=url;
             flow.simultaneousUploads=1;
@@ -73,9 +64,7 @@ export default class UploadTest extends Component { //export default : 다른 �
         .then(()=>{
             console.log('파일 등록 완료!');
             flow.upload();
-        }).catch(e=>alert(e));*/
-
-
+        }).catch(e=>alert(e));
     });
 
     flow.on('uploadStart', function(){
