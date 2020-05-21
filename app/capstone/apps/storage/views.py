@@ -49,7 +49,7 @@ class FlowUploadStartView(APIView):
                 )
             try:
                 storage.add(file_size)
-            except NotEnoughCapacityException: #이 예외는 왜 발생할까?
+            except NotEnoughCapacityException:
                 return Response(status=status.HTTP_403_FORBIDDEN)
             storage.save()
 
@@ -57,7 +57,6 @@ class FlowUploadStartView(APIView):
             upload.save()
 
         return Response(
-            {'Location' :  "/api/upload/flow/" + str(upload._id)}, #임시 설정, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "/api/upload/flow/" + str(upload._id)
