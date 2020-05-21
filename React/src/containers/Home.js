@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./style2.css";
+import "../components/style2.css";
 
 //테스트 페이지입니다. 나중에 메인 페이지 만들면 교체해주세요.
 export default class Home extends Component {

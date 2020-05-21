@@ -58,8 +58,7 @@ INSTALLED_APPS = [
     'sslserver',
 
     #app 목록
-   'capstone.account.apps.AccountConfig',
-    'capstone.download.apps.DownloadConfig',
+    'capstone.account.apps.AccountConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
 

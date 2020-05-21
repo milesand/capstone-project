@@ -207,7 +207,7 @@ body {
     background-color: #6796EB;
   }
   input#register-google, input#login-google {
-    background-image: url("./googleButtonImg.png");
+    background-image: url("LoginComponents/googleButtonImg.png");
     background-size: 161px;
     background-repeat:   no-repeat;
     background-position: center center; 

@@ -40,6 +40,9 @@ class Directory(models.Model):
             ),
         ]
 
+    def __str__(self):
+        return str(self.pk)
+
 
 class File(models.Model):
     _id = mongo_models.ObjectIdField(primary_key=True)
@@ -67,6 +70,7 @@ class File(models.Model):
 class UserStorage(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
+        related_name='directory_info', #User 모델에서 참조할 떄 사용할 이름
         on_delete=models.CASCADE,
         primary_key=True,
     )

@@ -20,7 +20,7 @@ import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
 import ThumbTest from "./thumbtest";
-import UploadTest from "./UploadTest";
+import FileTest from "./FileTest";
 
 class App extends Component {
   constructor(props) {
@@ -227,17 +227,16 @@ class App extends Component {
           { this.state && this.state.isLogin!=null &&
             <Switch>
               <AuthenticatedRoute path="/" exact component={Home} props={baseProps} />
+              <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />                     
               <NormalRoute path="/login" exact component={Login} props={baseProps} />
               <NormalRoute path="/mail-validation/*" exact component={MailValidation} props={baseProps} />
-              <NormalRoute path="/download-test" exact component={DownloadTest} props={baseProps} />
+              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
               <MailAuthRoute path="/mail-resend" exact component={MailResend} props={baseProps} />
               <NotAuthenticatedRoute path="/signup" exact component={Signup} props={baseProps} />
               <NotAuthenticatedRoute path="/forgot-id" exact component={ForgotID} props={baseProps} />
               <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
-              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
-              <NormalRoute path="/upload-test" exact component={UploadTest} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
           }

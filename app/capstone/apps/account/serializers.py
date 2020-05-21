@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
 from .models import User
 from bson.objectid import ObjectId
 
@@ -7,7 +6,10 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import RefreshJSONWebTokenSerializer, VerifyJSONWebTokenSerializer
 from rest_framework_jwt.views import RefreshJSONWebToken, VerifyJSONWebToken
 
-from django.core.validators import RegexValidator
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from capstone.storage.serializers import UserStorageSerializer
+
 #jwt 인증 관련 시리얼라이저 오버라이딩
 RefreshJSONWebTokenSerializer._declared_fields.pop('token')
 VerifyJSONWebTokenSerializer._declared_fields.pop('token')
@@ -68,11 +70,12 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
 # 유저 정보 출력
 class UserSerializer(serializers.ModelSerializer):
-    invitationList=serializers.StringRelatedField(many=True)
-    memberList=serializers.StringRelatedField(many=True)
+    invitationList=serializers.StringRelatedField(many=True, read_only=True)
+    memberList=serializers.StringRelatedField(many=True, read_only=True)
+    directory_info=UserStorageSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList')
+        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList', 'directory_info')
 
 #소셜 로그인, 아이디 및 패스워드 제한 없음.
 class SocialLoginSerializer(serializers.Serializer):
