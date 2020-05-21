@@ -14,12 +14,11 @@ import Login from "./Login";
 import Signup from "./Signup";
 import MailResend from "./MailResend";
 import MailValidation from "./MailValidation";
-import DownloadTest from "./DownloadTest";
 import ForgotID from "./ForgotID";
 import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
-import ThumbTest from "./thumbtest";
+import ThumbTest from "./ThumbTest";
 import FileTest from "./FileTest";
 
 class App extends Component {
