@@ -171,7 +171,6 @@ class FlowUploadChunkView(APIView):
 
 
     def post(self, request, pk):
-        print("here ! request : ", request)
         with transaction.atomic():
             err, payload = _check_flow_upload_request(request, pk, 'data', check_chunk=True)
             if err:
