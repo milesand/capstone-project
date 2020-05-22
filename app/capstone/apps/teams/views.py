@@ -37,7 +37,7 @@ class TeamAPI(generics.GenericAPIView):
 
     def get(self, request, teamID):
         try:
-            team=get_object_or_404(Team, _id=teamID)
+            team=get_object_or_404(Team, pk=teamID)
         except(Http404):
             return Response({'error' : '해당하는 팀이 존재하지 않습니다.'}, status=status.HTTP_404_NOT_FOUND)
 

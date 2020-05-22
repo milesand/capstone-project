@@ -52,7 +52,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             # username : set
             # password : set
             # email : 자동으로 소문자로 변환됨.
-            _id=ObjectId(),
             username=validated_data["username"],
             nickname=validated_data["nickname"],
             email=validated_data['email'],
@@ -68,11 +67,10 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
 # 유저 정보 출력
 class UserSerializer(serializers.ModelSerializer):
-    invitationList=serializers.StringRelatedField(many=True)
-    memberList=serializers.StringRelatedField(many=True)
+    directory_info=UserStorageSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ('_id', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList')
+        fields = ('pk', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList', 'directory_info')
 
 #소셜 로그인, 아이디 및 패스워드 제한 없음.
 class SocialLoginSerializer(serializers.Serializer):

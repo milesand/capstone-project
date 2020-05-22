@@ -50,7 +50,7 @@ api = [
 
     # Flow.js를 이용한 업로드
     re_path('upload/flow$', storage.FlowUploadStartView.as_view()),
-    re_path('upload/flow/(?P<pk>[0-9a-f]{24})', storage.FlowUploadChunkView.as_view()),
+    re_path('upload/flow/(?P<pk>[0-9a-z-]{36})', storage.FlowUploadChunkView.as_view()),
 
     # 다운로드
     path("download/<str:user_name>/<str:file_id>", download.FileDownloadAPI.as_view()),

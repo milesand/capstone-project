@@ -11,7 +11,6 @@ class CreateTeamSerializer(DjongoModelSerializer):
 
     def create(self, validated_data):
         team=Team.objects.create(
-            _id=ObjectId(),
             teamName=validated_data['teamName'],
             teamLeader=validated_data['teamLeader']
         )
