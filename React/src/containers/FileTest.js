@@ -64,15 +64,16 @@ export default class FileTest extends Component { //export default : 다른 모�
         .then(res=>res.json())
         .then(response=>{ // 실제 서버에서 사용
             //let url = response.headers.get('Location');
-            let url=response['Location'];
+            let url=response['Location']; //테스트용, build 할 때 지우기
             console.log('url : ', url);
             file.targetUrl=url;
             console.log('file url : ', file.targetUrl);
             return file;
         })
         .then(file=>{
+          console.log('file : ', file, 'url : ', flow.opts.target(file));
           file.resume();
-          console.log('전송 시작!');
+          console.log('전송 시작!', file.targetUrl);
         })
         .catch(e=>alert(e));
     });
@@ -81,27 +82,28 @@ export default class FileTest extends Component { //export default : 다른 모�
       for(let i=0; i<array.length; i++){
         console.log('array ', i+1, ' : ', array[i]);
       }
-      console.log('파일 큐에 추가 완료!');
+      console.log('파일 큐에 추가 완료!  ', flow.files);
     })
-
-    flow.on('uploadStart', function(){
-        console.log('업로드 리얼 시작!');
-    });
 
     flow.on('fileRetry', function(file, chunk){
         console.log('재시도중!');
     });
 
+    flow.on('fileRemoved', function(file){
+      console.log('파일 ', file, ' 제거됨!');
+  });
+
+
     flow.on('fileSuccess', function(file, message, chunk){
         console.log(file, message, '업로드 성공!');
+        flow.removeFile(file)
     });
 
     flow.on('fileError', function(file, message){
         console.log(file, message, "에러!");
     });
     
-    flow.on('progress', function(file){
-        console.log(file);
+    flow.on('progress', function(){
         console.log("업로드중...", flow.timeRemaining(), flow.sizeUploaded());
     })
   }

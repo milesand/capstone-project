@@ -1,7 +1,7 @@
 import uuid
 
 from datetime import datetime, timezone
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 from django.conf import settings
 from django.db import models
@@ -42,6 +42,7 @@ class File(models.Model):
     name = models.CharField(max_length=256)
     size = models.BigIntegerField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_thumbnail = models.BooleanField(default=False)
     directory = models.ForeignKey(
         Directory,
         related_name='files',

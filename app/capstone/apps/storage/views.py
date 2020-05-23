@@ -1,6 +1,7 @@
 from pathlib import Path, PurePosixPath
 from django.conf import settings
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, Http404
 from rest_framework import status, generics
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -78,47 +79,12 @@ class FlowUploadStartView(APIView):
 
         print('return!')
         return Response(
-            {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)},
+            {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)}, # 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "/api/upload/flow/" + str(upload._id)
             }
         )
-
-        '''    try:
-                storage = UserStorage.objects.select_for_update().get(user=user)
-                print("UserStorage exist!!!!!!!!!!")
-            except UserStorage.DoesNotExist:
-                print("UserStoarge does NOT exist!!!!!!!")
-                root = Directory.objects.create(
-                    owner=user,
-                    name="",
-                    parent=None,
-                )
-                storage = UserStorage.objects.create(
-                    user=user,
-                    root_dir=root,
-                )
-            try:
-                print("prev file num : ", storage.file_count)
-                storage.add(file_size)
-                print("current file num : ", storage.file_count)
-            except NotEnoughCapacityException:
-                return Response(status=status.HTTP_403_FORBIDDEN)
-            storage.save()
-            print("storage save complete.")
-
-            upload = PartialUpload(file_size=file_size, uploader=user)
-            upload.save()
-
-        print('return!')
-        return Response(
-            {'Location' : 'http://localhost/api/upload/flow/' + str(upload._id)},
-            status=status.HTTP_201_CREATED,
-            headers={
-                "Location": "/api/upload/flow/" + str(upload._id)
-            }
-        )'''
 
 def _check_flow_upload_request(request, pk, attr, check_chunk):
     '''
@@ -260,12 +226,15 @@ class FlowUploadChunkView(APIView):
             
             # TODO: update to support upload to non-root path.
             directory = UserStorage.objects.get(user=request.user).root_dir
-            file_record = File.objects.create(
-                owner=request.user,
-                name=partial_upload.file_name,
-                size=partial_upload.file_size,
-                directory=directory,
-            )
+            try:
+                file_record = File.objects.create(
+                    owner=request.user,
+                    name=partial_upload.file_name,
+                    size=partial_upload.file_size,
+                    directory=directory,
+                )
+            except(IntegrityError): #디렉토리 내부에 동일한 이름의 파일 존재 시 에러
+                return Response({'error' : '해당 디렉토리에 동일한 이름을 가진 파일이 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
             extension=os.path.splitext(file_record.name)[1]
             directory.files.add(file_record)
@@ -297,12 +266,14 @@ class FlowUploadChunkView(APIView):
                     Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
 
             # check if uploaded file is image file.
+            isThumbnail=False
             try:
                 image = Image.open(path)
                 image_thum = MakeImageThumbnail(path=path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
                                                                                 # initial values are width=50, height=50.
 
                 thumbnail_url = image_thum.generate_thumbnail(request.user)
+                isThumbnail=True
             except:
                 print('이미지 파일 아님.')
                 thumbnail_url='not image.'
@@ -311,8 +282,13 @@ class FlowUploadChunkView(APIView):
                     video_thum = MakeVideoThumbnail(path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
                                                                                # initial values are width=50, height=50.
                     thumbnail_url = video_thum.generate_thumbnail(request.user)
+                    isThumbnail=True
                 except:
                     thumbnail_url='not image or video file.'
+
+            if isThumbnail:
+                file_record.is_thumbnail = True
+                file_record.save()
 
             return Response(
                 {'thumbnail_url' : thumbnail_url,
@@ -326,7 +302,7 @@ class FlowUploadChunkView(APIView):
 
 class FileDownloadAPI(generics.GenericAPIView):
     serializer_class = FileDownloadSerializer
-    permission_classes = (IsAuthenticated, ) #추후에 권한 필요하도록 IsAuthenticated로 수정해야 함. 개발용 설정
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, file_id): #특정 사용자의 고유 ID와 함께 파일 이름 전달
         try:
@@ -350,18 +326,26 @@ class FileDownloadAPI(generics.GenericAPIView):
         return response
 
 #파일 ID를 통해 파일 정보를 얻는다.
-class FileInfoAPI(generics.GenericAPIView):
+class FileManagementAPI(generics.GenericAPIView):
     serializer_class = FileSerializer
 
     def get(self, request, file_id):
         try:
-            file=get_object_or_404(File, pk=file_id)
+            file=get_object_or_404(File, owner=request.user, pk=file_id)
         except(Http404):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         serializer=self.serializer_class(file)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, file_id):
+        try:
+            file = get_object_or_404(File, owner=request.user, pk=file_id)
+        except(Http404):
+            return Response({'error' : '파일이 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        file.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # 특정 사용자가 가지고 있는 파일들의 정보를 전부 출력한다.
 class FileListAPI(generics.GenericAPIView):

@@ -2,7 +2,6 @@ import React, {Fragment} from 'react';
 import { Navbar, Nav, NavItem, MenuItem, NavDropdown, Form, FormControl, Button } from 'react-bootstrap';
 
 import { Link } from "react-router-dom";
-import { LinkContainer } from "react-router-bootstrap";
 
 // 네비게이션 바의 내용을 결정한다.
 // 참조 : https://react-bootstrap-v3.netlify.app/components/navs/
@@ -12,7 +11,7 @@ const NavBar = ({isLogin, logout}) => {
     <Navbar>
     <Navbar.Header>
       <Navbar.Brand>
-        <Link to="/">Capstone Test</Link>
+        <Link to="/">Moonge drive</Link>
       </Navbar.Brand>
     </Navbar.Header>
       <Nav bsStyle='pills'>
