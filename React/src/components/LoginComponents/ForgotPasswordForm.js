@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col} from "react-bootstrap";
-import "./style2.css"
+import "../style2.css"
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
 

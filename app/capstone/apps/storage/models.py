@@ -10,7 +10,7 @@ from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
 
 class Directory(models.Model):
-    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -34,7 +34,7 @@ class Directory(models.Model):
 
 
 class File(models.Model):
-    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -124,7 +124,7 @@ class UserStorage(models.Model):
 
 
 class PartialUpload(models.Model):
-    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
