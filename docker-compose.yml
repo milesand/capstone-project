@@ -1,7 +1,5 @@
 version : '3.4'
 
-# 윈도우에서 사용하는 docker는 virtualbox를 사용하는데, 몽고DB는 virtualbox의 shared folder를 지원하지 않는다.
-# 따라서 docker에서 지원하는 Data Volume Container를 이용해야 한다.
 volumes:
   socket:
     external: false
@@ -12,15 +10,19 @@ secrets:
 
 services:
   db:
-    image : mongo
+    image : postgres:12.3-alpine
     container_name: "db"
     environment:
-      MONGO_INITDB_DATABASE: exampledb
+      POSTGRES_DB: capstonedb
+      POSTGRES_USER: cs
+      POSTGRES_PASSWORD: 1234  # TODO: Move this into a secret or something
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./db/data:/data/db/
+      - ./db/data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d/
+      - /etc/passwd:/etc/passwd:ro
     expose:
-      - 27017
+      - 5432
     user: ${USER_ID:?"Run as './udco ...'"}:${GROUP_ID:?"Run as './udco ...'"}
 
   django:
@@ -43,7 +45,7 @@ services:
       DJANGO_SETTINGS_MODULE: capstone.settings.deploy
     #wait-for-it.sh는 db가 켜질 때까지 기다렸다가 django 앱이 켜지게 해줍니다.
     command: >
-      sh -c "/wait-for-it.sh db:27017 -t 0 &&
+      sh -c "/wait-for-it.sh db:5432 -t 0 &&
              python manage.py makemigrations &&
              python manage.py migrate &&
              uwsgi --uid ${USER_ID} --gid ${GROUP_ID} --ini ./uwsgi/Capstone.ini"
