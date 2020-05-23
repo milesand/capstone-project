@@ -1,16 +1,20 @@
 from django.db import transaction
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 from django.dispatch import receiver
 
-from .models import UserStorage, PartialUpload
+from .models import UserStorage, PartialUpload, File
 
 @receiver(post_delete, sender=PartialUpload)
 def delete_partial_upload(sender, instance, using, **kwargs):
-    if not instance.is_complete:
+    print('instance : ', instance)
+    if not instance.is_completed:
 
         # Delete the partial file.
-        instance.file_path().unlink()
-
+        try:
+            instance.file_path().unlink()
+        except:
+            print("partial file does not exist.")
+            return
         # Bump up the user's storage capacity.
         with transaction.atomic():
             # If partial storage exists, then its uploader must have requested an storage,

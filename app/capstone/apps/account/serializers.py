@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
 from .models import User
 from bson.objectid import ObjectId
 
@@ -7,7 +6,10 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import RefreshJSONWebTokenSerializer, VerifyJSONWebTokenSerializer
 from rest_framework_jwt.views import RefreshJSONWebToken, VerifyJSONWebToken
 
-from django.core.validators import RegexValidator
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from capstone.storage.serializers import UserStorageSerializer
+
 #jwt 인증 관련 시리얼라이저 오버라이딩
 RefreshJSONWebTokenSerializer._declared_fields.pop('token')
 VerifyJSONWebTokenSerializer._declared_fields.pop('token')

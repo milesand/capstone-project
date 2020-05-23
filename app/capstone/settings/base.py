@@ -58,8 +58,7 @@ INSTALLED_APPS = [
     'sslserver',
 
     #app 목록
-   'capstone.account.apps.AccountConfig',
-    'capstone.download.apps.DownloadConfig',
+    'capstone.account.apps.AccountConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
 
@@ -164,6 +163,7 @@ WSGI_APPLICATION = 'capstone.wsgi.application'
     }
 }'''
 
+import psycopg2.extensions
 DATABASES = {
     'default': {
         'ENGINE' : 'django.db.backends.postgresql_psycopg2',
@@ -172,6 +172,9 @@ DATABASES = {
         'PASSWORD' : '1234',
         'HOST' : 'localhost', #이부분에 서버 IP 넣기
         'PORT' : '5432',
+    },
+    'OPTIONS' : {
+        'isolation_level' : psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
     }
 }
 # Password validation
