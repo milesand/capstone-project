@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import User
-from bson.objectid import ObjectId
 
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import RefreshJSONWebTokenSerializer, VerifyJSONWebTokenSerializer

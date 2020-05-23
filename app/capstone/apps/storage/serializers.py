@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import UserStorage, File
-from bson.objectid import ObjectId
 
 # User 모델에서 루트 디렉터리 및 소유 디렉터리, 파일들의 정보를 참조할 때 사용
 class UserStorageSerializer(serializers.ModelSerializer):
