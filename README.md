@@ -153,6 +153,16 @@
 
 1. 드래그 앤 드롭을 통한 파일 업로드 -> flow.js에서 지원하는 기능이기 때문에, 쉽게 제작 가능할 것 같습니다.
 
+5/23 수정사항
+----------------
+1. DB를 mongoDB에서 postgreSQL로 변경했습니다. 변경한 이유는 아래와 같습니다.
+    1. 각 사용자가 UserStoarge를 생성할 때 발생했던 race condition 문제를 해결하기 위해서는 transaction.atomic() 함수가 필요했는데, django와 mongoDB를 연결해주는 모듈들은 이 함수를 지원하지 않습니다.
+    2. django에서 mongoDB를 지원하지 않기 때문에 transaction.atomic() 함수 이외에도 추후에 또 다른 문제가 발생할 수 있습니다.
+    
+   이에 따라, docker DB단의 수정이 필요합니다.
+    
+2. React의 flow.js에서 발생했던 asynchronous call 문제를 해결했습니다.
+  
  
 URL 사용법
 ------------------
