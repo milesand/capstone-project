@@ -1,13 +1,13 @@
 import React, { Component, Fragment} from "react";
-import NavBar from "../components/AuthRoutingComponents/NavBar";
+import NavBar from "../components/RoutingComponents/NavBar";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
 
 //라우팅용 모듈들
 import { Route, Switch } from "react-router-dom";
-import NormalRoute from "../components/AuthRoutingComponents/NormalRoute";
-import AuthenticatedRoute from "../components/AuthRoutingComponents/AuthenticatedRoute";
-import NotAuthenticatedRoute from "../components/AuthRoutingComponents/NotAuthenticatedRoute";
-import MailAuthRoute from "../components/AuthRoutingComponents/MailAuthRoute";
+import NormalRoute from "../components/RoutingComponents/NormalRoute";
+import AuthenticatedRoute from "../components/RoutingComponents/AuthenticatedRoute";
+import NotAuthenticatedRoute from "../components/RoutingComponents/NotAuthenticatedRoute";
+import MailAuthRoute from "../components/RoutingComponents/MailAuthRoute";
 import ErrorPage from "../components/LoginComponents/ErrorPage";
 import Home from "./Home";
 import Login from "./Login";

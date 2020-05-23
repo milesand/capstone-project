@@ -56,7 +56,7 @@ api = [
     path("download/<str:file_id>", storage.FileDownloadAPI.as_view()),
 
     # 파일 정보 출력
-    path('file/<str:file_id>', storage.FileInfoAPI.as_view()),
+    path('file/<str:file_id>', storage.FileManagementAPI.as_view()),
     path('file-list', storage.FileListAPI.as_view()),
 
     #팀 관련 기능
@@ -74,5 +74,3 @@ urlpatterns = [
     path('api/', include(api)),
     path('accounts/', include('allauth.urls')),
 ]
-
-urlpatterns += staticfiles_urlpatterns() # html 테스트용
