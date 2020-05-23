@@ -1,13 +1,13 @@
-Django==2.2.12
+Django==3.0.6
 django-allauth==0.41.0
-django-cors-headers==3.2.1
+django-cors-headers==3.3.0
 django-imagekit==4.0.2
 django-rest-auth==0.9.5
 django-sslserver==0.22
 djangorestframework==3.11.0
 djangorestframework-jwt==1.11.0
 moviepy==1.0.3 
-Pillow==6.2.2
+Pillow==7.1.2
 psycopg2==2.8.5
 PyJWT==1.7.1
 requests==2.23.0
