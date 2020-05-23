@@ -23,7 +23,6 @@ from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token # JWT �
 
 import capstone.account.views as account
 import capstone.storage.views as storage
-import capstone.download.views as download
 import capstone.teams.views as teams
 
 api = [
@@ -40,8 +39,9 @@ api = [
     path('jwt-refresh', refresh_jwt_token), # JWT 토큰 재발급
     path('jwt-verify', verify_jwt_token), # JWT 토큰이 유효한지 확인
 
-    #httponly cookie로 는 JWT 토큰 제거
+    #httponly cookie로 저장되어 있는 JWT 토큰 제거
     path('logout', account.LogoutAPI.as_view()),
+
     #소셜 로그인 테스트용
     path('social-login', account.SocialLoginAPI.as_view()),
 
@@ -50,11 +50,14 @@ api = [
 
     # Flow.js를 이용한 업로드
     re_path('upload/flow$', storage.FlowUploadStartView.as_view()),
-    re_path('upload/flow/(?P<pk>[0-9a-f]{24})', storage.FlowUploadChunkView.as_view()),
+    re_path('upload/flow/(?P<pk>[0-9a-z-]{36})', storage.FlowUploadChunkView.as_view()),
 
     # 다운로드
-    path("download/<str:user_name>/<str:file_id>", download.FileDownloadAPI.as_view()),
-    path("download/file-list", download.FileListAPI.as_view()),
+    path("download/<str:file_id>", storage.FileDownloadAPI.as_view()),
+
+    # 파일 정보 출력
+    path('file/<str:file_id>', storage.FileManagementAPI.as_view()),
+    path('file-list', storage.FileListAPI.as_view()),
 
     #팀 관련 기능
     path('team', teams.CreateTeamAPI.as_view()),
@@ -67,10 +70,7 @@ api = [
 ]
 
 urlpatterns = [
-    #path('', include('Account_static.urls')), # 로그인 테스트 페이지
     path('admin', admin.site.urls),
     path('api/', include(api)),
     path('accounts/', include('allauth.urls')),
 ]
-
-urlpatterns += staticfiles_urlpatterns() # html 테스트용

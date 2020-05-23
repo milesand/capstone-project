@@ -1,26 +1,25 @@
 import React, { Component, Fragment} from "react";
-import NavBar from "../components/AuthRoutingComponents/NavBar";
+import NavBar from "../components/RoutingComponents/NavBar";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
 
 //라우팅용 모듈들
 import { Route, Switch } from "react-router-dom";
-import NormalRoute from "../components/AuthRoutingComponents/NormalRoute";
-import AuthenticatedRoute from "../components/AuthRoutingComponents/AuthenticatedRoute";
-import NotAuthenticatedRoute from "../components/AuthRoutingComponents/NotAuthenticatedRoute";
-import MailAuthRoute from "../components/AuthRoutingComponents/MailAuthRoute";
+import NormalRoute from "../components/RoutingComponents/NormalRoute";
+import AuthenticatedRoute from "../components/RoutingComponents/AuthenticatedRoute";
+import NotAuthenticatedRoute from "../components/RoutingComponents/NotAuthenticatedRoute";
+import MailAuthRoute from "../components/RoutingComponents/MailAuthRoute";
 import ErrorPage from "../components/LoginComponents/ErrorPage";
 import Home from "./Home";
 import Login from "./Login";
 import Signup from "./Signup";
 import MailResend from "./MailResend";
 import MailValidation from "./MailValidation";
-import DownloadTest from "./DownloadTest";
 import ForgotID from "./ForgotID";
 import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
-import ThumbTest from "./thumbtest";
-import UploadTest from "./UploadTest";
+import ThumbTest from "./ThumbTest";
+import FileTest from "./FileTest";
 
 class App extends Component {
   constructor(props) {
@@ -227,17 +226,16 @@ class App extends Component {
           { this.state && this.state.isLogin!=null &&
             <Switch>
               <AuthenticatedRoute path="/" exact component={Home} props={baseProps} />
+              <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />                     
               <NormalRoute path="/login" exact component={Login} props={baseProps} />
               <NormalRoute path="/mail-validation/*" exact component={MailValidation} props={baseProps} />
-              <NormalRoute path="/download-test" exact component={DownloadTest} props={baseProps} />
+              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
               <MailAuthRoute path="/mail-resend" exact component={MailResend} props={baseProps} />
               <NotAuthenticatedRoute path="/signup" exact component={Signup} props={baseProps} />
               <NotAuthenticatedRoute path="/forgot-id" exact component={ForgotID} props={baseProps} />
               <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
-              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
-              <NormalRoute path="/upload-test" exact component={UploadTest} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
           }

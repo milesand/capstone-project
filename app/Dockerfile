@@ -15,6 +15,7 @@ RUN apk add --no-cache \
         openssl-dev \
         gcc \
         pcre-dev \
+        postgresql-dev \
         bash &&\
     chmod +x /wait-for-it.sh &&\
     mkdir -p \

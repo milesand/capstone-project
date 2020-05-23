@@ -6,7 +6,7 @@ import os
 
 def set_path(path, fileName):
     fileName=os.path.splitext(fileName)[0] + '.jpg' # save thumbnail as jpg format.
-    destURL = os.path.dirname(path) + ('/thumbnail/thumbnail_%s' % (fileName))
+    destURL = os.path.dirname(path) + ('/thumbnail/%s' % (fileName))
     os.makedirs(os.path.dirname(destURL), exist_ok=True)
     return destURL
 

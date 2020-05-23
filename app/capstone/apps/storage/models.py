@@ -1,15 +1,16 @@
+import uuid
+
 from datetime import datetime, timezone
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 from django.conf import settings
 from django.db import models
-from djongo import models as mongo_models
 
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
 
 class Directory(models.Model):
-    _id = mongo_models.ObjectIdField(primary_key=True)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -18,17 +19,8 @@ class Directory(models.Model):
     parent = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
+        related_name='child_dirs',
         null=True  # Root directories have no parent
-    )
-    child_dirs = mongo_models.ArrayReferenceField(
-        'self',
-        on_delete=models.CASCADE,
-        related_name='+',  # '+' means no backwards relation for django
-    )
-    files = mongo_models.ArrayReferenceField(
-        'File',
-        on_delete=models.CASCADE,
-        related_name='+',
     )
 
     class Meta:
@@ -42,16 +34,18 @@ class Directory(models.Model):
 
 
 class File(models.Model):
-    _id = mongo_models.ObjectIdField(primary_key=True)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=256)
     size = models.BigIntegerField()
-    uploaded_at = models.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_thumbnail = models.BooleanField(default=False)
     directory = models.ForeignKey(
         Directory,
+        related_name='files',
         on_delete=models.CASCADE,
     )
 
@@ -68,6 +62,7 @@ class UserStorage(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="root_info",
         primary_key=True,
     )
     root_dir = models.ForeignKey(
@@ -129,16 +124,19 @@ class UserStorage(models.Model):
         else:
             raise InvalidRemovalError()
 
+    def __str__(self):
+        return str(self.pk)
+
 
 class PartialUpload(models.Model):
-    _id = mongo_models.ObjectIdField(primary_key=True)
+    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     file_size = models.BigIntegerField()
     received_bytes = models.BigIntegerField(default=0)
-    last_receive_time = models.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    last_receive_time = models.DateTimeField(auto_now_add=True)
     file_name = models.CharField(max_length=256, default="")
 
     def __init__(self, *args, **kwargs):

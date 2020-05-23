@@ -58,8 +58,7 @@ INSTALLED_APPS = [
     'sslserver',
 
     #app 목록
-   'capstone.account.apps.AccountConfig',
-    'capstone.download.apps.DownloadConfig',
+    'capstone.account.apps.AccountConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
 
@@ -153,7 +152,7 @@ WSGI_APPLICATION = 'capstone.wsgi.application'
     }
 }'''
 
-DATABASES = { # docker에서 사용할 때 mongoDB 컨테이너와 연결하기 위해 사용한다.
+'''DATABASES = { # docker에서 사용할 때 mongoDB 컨테이너와 연결하기 위해 사용한다.
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'exampledb',
@@ -162,15 +161,22 @@ DATABASES = { # docker에서 사용할 때 mongoDB 컨테이너와 연결하기 
             'port' : 27017,
         }
     }
-}
-
-'''DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
 }'''
 
+import psycopg2.extensions
+DATABASES = {
+    'default': {
+        'ENGINE' : 'django.db.backends.postgresql_psycopg2',
+        'NAME' : 'capstonedb',
+        'USER' : 'cs',
+        'PASSWORD' : '1234',
+        'HOST' : 'db', #이부분에 서버 IP 넣기
+        'PORT' : '5432',
+    },
+    'OPTIONS' : {
+        'isolation_level' : psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 

@@ -82,7 +82,7 @@ class ResendMailAPI(generics.GenericAPIView):
             'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
             'token': account_activation_token.make_token(user)
         })
-        mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
+        mail_title = 'Moonge drive 회원가입 인증 메일입니다.'
         to_email = user.email  # 인증 메일을 받는 주소
         sendMail(message, mail_title, to_email)
         return Response({"message": "이메일 전송 완료."}, status=status.HTTP_200_OK)
@@ -130,7 +130,7 @@ class RegistrationAPI(generics.GenericAPIView):
                     'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
                     'token': account_activation_token.make_token(user)
                 })
-                mail_title = '사이트 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
+                mail_title = 'Moonge drive 회원가입 인증 메일입니다.'  # 인증 메일 제목, 추후에 수정
                 to_email = user.email  # 인증 메일을 받는 주소
                 sendMail(message, mail_title, to_email)
 
@@ -411,7 +411,7 @@ class FindIDPasswordAPI(generics.GenericAPIView):
                         'username': user.username,
                         'password': rand_password
                     })
-                    mail_title = "(사이트 이름) 임시 비밀번호를 보내드립니다."
+                    mail_title = "Moonge drive 임시 비밀번호를 보내드립니다."
                     to_email = user.email
                     sendMail(message, mail_title, to_email)
                     user.password = make_password(rand_password)

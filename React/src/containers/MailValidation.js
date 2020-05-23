@@ -41,7 +41,7 @@ class MailValidation extends Component{
             console.log('content : ', content);
             if(!isErr){
                 this.setState({
-                    guideText: "메일 인증이 완료되었습니다. 사이트 이름(추후에 수정)의 기능을 즐겨보세요!",
+                    guideText: "메일 인증이 완료되었습니다. Moonge drive의 기능을 즐겨보세요!",
                 });
                 console.log(this.state);
                 console.log('메일 인증 완료.', this.state.guideText);
