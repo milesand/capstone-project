@@ -20,9 +20,10 @@ export default class FileTest extends Component { //export default : 다른 모�
   componentDidMount=()=>{
     let target='http://localhost/api/upload/flow';
     let flow=new Flow({
-        target: function(fileObj){
-            return fileObj.targetUrl;
+        target: function(file){
+            return file.targetUrl;
         },
+        //target : target,
         simultaneousUploads : 1,
         withCredentials : true,
         chunkSize : 100*1024*1024
@@ -35,9 +36,9 @@ export default class FileTest extends Component { //export default : 다른 모�
     if(!flow.support) console.log("flow.js 지원 안함.");
 
    
-    flow.on('fileAdded', function(fileObj){
+    flow.on('fileAdded', function(file){
         let data= {
-            fileSize: fileObj.size
+            fileSize: file.size
         };
         const formData  = new FormData();
         for(const name in data) {
@@ -65,17 +66,22 @@ export default class FileTest extends Component { //export default : 다른 모�
             //let url = response.headers.get('Location');
             let url=response['Location'];
             console.log('url : ', url);
-            fileObj.targetUrl=url;
+            file.targetUrl=url;
+            console.log('file url : ', file.targetUrl);
+            return file;
+        })
+        .then(file=>{
+          file.resume();
+          console.log('전송 시작!');
         })
         .catch(e=>alert(e));
     });
 
-    flow.on('filesAdded', function(array, event){
+    flow.on('filesSubmitted', function(array, event){
       for(let i=0; i<array.length; i++){
         console.log('array ', i+1, ' : ', array[i]);
       }
-      console.log('file 등록 완료!');
-      flow.upload();
+      console.log('파일 큐에 추가 완료!');
     })
 
     flow.on('uploadStart', function(){

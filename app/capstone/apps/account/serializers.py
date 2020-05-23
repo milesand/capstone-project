@@ -69,10 +69,10 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
 # 유저 정보 출력
 class UserSerializer(serializers.ModelSerializer):
-    directory_info=UserStorageSerializer(read_only=True)
+    root_info=UserStorageSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ('pk', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList', 'directory_info')
+        fields = ('pk', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList', 'root_info')
 
 #소셜 로그인, 아이디 및 패스워드 제한 없음.
 class SocialLoginSerializer(serializers.Serializer):
