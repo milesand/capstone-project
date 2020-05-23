@@ -61,6 +61,7 @@ class UserStorage(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="root_info",
         primary_key=True,
     )
     root_dir = models.ForeignKey(
@@ -121,6 +122,9 @@ class UserStorage(models.Model):
             self.dir_count -= dir_count
         else:
             raise InvalidRemovalError()
+
+    def __str__(self):
+        return str(self.pk)
 
 
 class PartialUpload(models.Model):
