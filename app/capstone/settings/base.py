@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     'capstone.account.apps.AccountConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
-
 ]
 
 REST_KNOX = {
@@ -177,6 +176,21 @@ DATABASES = {
         'isolation_level' : psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
     }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
