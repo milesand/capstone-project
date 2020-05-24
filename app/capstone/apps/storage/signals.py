@@ -31,7 +31,7 @@ def delete_file(sender, instance, using, **kwargs):
             pass
 
     with transaction.atomic(): # 파일 제거했을 때 UserStorage에 저장된 파일 갯수 및 파일 전체 크기 값 조정
-        user_storage = UserStorage.objects.filter(user=instance.owner).select_for_update().get()
+        user_storage = UserStorage.objects.using(using).filter(user=instance.owner).select_for_update().get()
         user_storage.remove(instance.size)
         user_storage.save()
 
@@ -49,7 +49,7 @@ def delete_partial_upload(sender, instance, using, **kwargs):
             return
         # Bump up the user's storage capacity.
         with transaction.atomic():
-            storage = UserStorage.objects.filter(user=instance.uploader).select_for_update().get()
+            storage = UserStorage.objects.using(using).filter(user=instance.uploader).select_for_update().get()
             storage.remove(instance.file_size)
             storage.save()
 
