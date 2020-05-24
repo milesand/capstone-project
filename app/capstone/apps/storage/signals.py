@@ -11,50 +11,35 @@ import os
 
 @receiver(post_delete, sender=File)
 def delete_file(sender, instance, using, **kwargs):
-    print('instance : ', instance)
-    file_name=str(instance.pk) + os.path.splitext(instance.name)[1]
     if os.path.dirname(os.getcwd()) == '/':  # on docker
-        path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(instance.owner), file_name))
-
+        path = instance.path()
     else:  # for test
-        path = os.path.dirname(os.getcwd()) + str(
-            Path(settings.COMPLETE_UPLOAD_PATH, str(instance.owner), file_name))
+        path = Path(os.path.dirname(os.getcwd()) + str(instance.path()))
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
 
-    if os.path.isfile(path): # 파일 모델 삭제할 때 서버에 저장된 파일 함께 삭제
-        os.remove(path)
-
-    else:
-        print("error : file {0} does not exist.".format(instance.name))
-
-    if instance.is_thumbnail: # 썸네일이 존재할 경우 같이 삭제
-        file_name=os.path.splitext(file_name)[0] + '.jpg'
+    if instance.has_thumbnail: # 썸네일이 존재할 경우 같이 삭제
         if os.path.dirname(os.getcwd()) == '/':  # on docker
-            path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(instance.owner), 'thumbnail', file_name))
-
+            path = instance.thumbnail_path()
         else:  # for test
-            path = os.path.dirname(os.getcwd()) + str(
-                Path(settings.COMPLETE_UPLOAD_PATH, str(instance.owner), 'thumbnail', file_name))
-
-        if os.path.isfile(path):
-            os.remove(path)
-        else:
-            print("error : thumbnail for file {0} does not exist.".format(instance.name))
+            path = Path(os.path.dirname(os.getcwd()) + str(instance.thumbnail_path()))
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
 
     with transaction.atomic(): # 파일 제거했을 때 UserStorage에 저장된 파일 갯수 및 파일 전체 크기 값 조정
-        user_storage=instance.directory.userstorage_set.first()
-        print(instance, instance.directory, instance.directory.userstorage_set.first())
-        if user_storage:
-            user_storage.remove(file_size_sum=instance.size, file_count=1)
-            user_storage.save()
-        print('info save complete!')
-
-    print('file_name : ', file_name, ', path : ', path)
+        user_storage = UserStorage.objects.filter(user=instance.owner).select_for_update().get()
+        user_storage.remove(instance.size)
+        user_storage.save()
 
 
 @receiver(post_delete, sender=PartialUpload)
 def delete_partial_upload(sender, instance, using, **kwargs):
     print('instance : ', instance)
-    if not instance.is_completed:
+    if not instance.is_complete:
 
         # Delete the partial file.
         try:
@@ -70,7 +55,7 @@ def delete_partial_upload(sender, instance, using, **kwargs):
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def setup_user(_sender, instance, created, using, _update_fields):
+def setup_user(sender, instance, created, using, update_fields, **kwargs):
     '''Set up UserStorage and root directory for the user.'''
 
     if not created:
