@@ -23,68 +23,37 @@ from PIL import Image
 
 from .serializers import FileDownloadSerializer
 
+
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         try:
-            print('request : ', request.data)
             file_size = int(request.data['fileSize'])
-            print('fileSize : ', file_size)
             if file_size < 0:
                 raise ValueError
         except (ValueError, KeyError):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        storage = UserStorage.objects.filter(user=user)
-        print(storage)
-        if not storage:
-            print("UserStoarge does NOT exist!!!!!!!")
-            try:
-                with transaction.atomic():
-                    root = Directory.objects.create(
-                        owner=user,
-                        name="",
-                        parent=None,
-                    )
-                    storage = UserStorage.objects.create(
-                        user=user,
-                        root_dir=root,
-                    )
-            except:
-                pass
-        else:
-            print("UserStoarge exist!!!!!!!")
+
         try:
             with transaction.atomic():
-                storage = UserStorage.objects.select_for_update().filter(user=user)
-                print('storage : ', storage, ', storage type : ', type(storage))
-                if not isinstance(storage, UserStorage):
-                    print("not object, type : ", type(storage))
-                    storage=storage[0]
-                print("stoarge : ", storage)
-                print("prev file num : ", storage.file_count)
+                storage = UserStorage.objects.filter(user=user).select_for_update().get()
                 storage.add(file_size)
                 storage.save()
-                print("storage save complete.")
-                print("current file num : ", storage.file_count)
+                upload = PartialUpload.objects.create(file_size=file_size, uploader=user)
         except NotEnoughCapacityException:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-
-        upload = PartialUpload(file_size=file_size, uploader=user)
-        upload.save()
-
-        print('return!')
         return Response(
-            {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)}, # 지우기
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/upload/flow/" + str(upload._id)
+                "Location": "/api/upload/flow/" + str(upload.pk)
             }
         )
+
 
 def _check_flow_upload_request(request, pk, attr, check_chunk):
     '''

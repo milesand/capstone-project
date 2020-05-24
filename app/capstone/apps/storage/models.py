@@ -1,7 +1,7 @@
 import uuid
 
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import PurePosixPath, Path
 
 from django.conf import settings
 from django.db import models
