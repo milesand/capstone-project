@@ -1,12 +1,16 @@
+import logging
+import os
+from pathlib import Path
+
 from django.db import transaction
-from django.db.models.signals import post_delete, pre_delete, post_save
+from django.db.models.signals import post_delete, post_save
 from django.conf import settings
 from django.dispatch import receiver
 
 from .models import UserStorage, PartialUpload, Directory, File
-from pathlib import Path
 
-import os
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(post_delete, sender=File)
@@ -18,7 +22,7 @@ def delete_file(sender, instance, using, **kwargs):
     try:
         path.unlink()
     except FileNotFoundError:
-        pass
+        logger.warning("Missing file when deleting file entry {}", instance.pk)
 
     if instance.has_thumbnail: # 썸네일이 존재할 경우 같이 삭제
         if os.path.dirname(os.getcwd()) == '/':  # on docker
@@ -28,7 +32,7 @@ def delete_file(sender, instance, using, **kwargs):
         try:
             path.unlink()
         except FileNotFoundError:
-            pass
+            logger.warning("Missing thumbnail when deleting file entry {}", instance.pk)
 
     with transaction.atomic(): # 파일 제거했을 때 UserStorage에 저장된 파일 갯수 및 파일 전체 크기 값 조정
         user_storage = UserStorage.objects.using(using).filter(user=instance.owner).select_for_update().get()
@@ -38,15 +42,13 @@ def delete_file(sender, instance, using, **kwargs):
 
 @receiver(post_delete, sender=PartialUpload)
 def delete_partial_upload(sender, instance, using, **kwargs):
-    print('instance : ', instance)
     if not instance.is_complete:
-
         # Delete the partial file.
         try:
             instance.file_path().unlink()
-        except:
-            print("partial file does not exist.")
-            return
+        except FileNotFoundError:
+            logger.warning("Missing partial upload file when deleting entry {}", instance.pk)
+        
         # Bump up the user's storage capacity.
         with transaction.atomic():
             storage = UserStorage.objects.using(using).filter(user=instance.uploader).select_for_update().get()

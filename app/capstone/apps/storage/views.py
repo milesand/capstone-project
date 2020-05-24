@@ -19,6 +19,7 @@ from .serializers import FileSerializer, FileDownloadSerializer
 from PIL import Image, UnidentifiedImageError
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
+
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
@@ -200,7 +201,7 @@ class FlowUploadChunkView(APIView):
 
             if os.path.dirname(os.getcwd()) != '/':  # on develop.
                 file_path = Path(os.path.dirname(os.getcwd())+str(file_path))
-            print('file path : ', file_path)
+            
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             file_path.touch(exist_ok=True)
