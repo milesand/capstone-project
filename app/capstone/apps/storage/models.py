@@ -10,7 +10,7 @@ from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
 
 class Directory(models.Model):
-    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -66,7 +66,8 @@ class Directory(models.Model):
 
 
 class File(models.Model):
-    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
+    '''Metadata of complete uploaded file.'''
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -74,7 +75,7 @@ class File(models.Model):
     name = models.CharField(max_length=256)
     size = models.BigIntegerField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    is_thumbnail = models.BooleanField(default=False)
+    has_thumbnail = models.BooleanField(default=False)
     directory = models.ForeignKey(
         Directory,
         related_name='files',
@@ -89,6 +90,25 @@ class File(models.Model):
             ),
         ]
 
+    def path(self):
+        '''The path this file is saved to in the server filesystem.'''
+        return Path(
+            settings.COMPLETE_UPLOAD_PATH,
+            str(self.owner.pk),
+            str(self.pk),
+        )
+    
+    def thumbnail_path(self):
+        '''
+        The path to thumbnail of this file.
+        This file may not actually have a thumbnail; As in, has_thumbnail is not checked.
+        '''
+        return Path(
+            settings.THUMBNAIL_PATH,
+            str(self.owner.pk),
+            str(self.pk),
+        )
+
 
 class UserStorage(models.Model):
     user = models.OneToOneField(
@@ -97,9 +117,10 @@ class UserStorage(models.Model):
         related_name="root_info",
         primary_key=True,
     )
-    root_dir = models.ForeignKey(
+    root_dir = models.OneToOneField(
         Directory,
         on_delete=models.CASCADE,
+        related_name='+'
     )
 
     # A 63-bit positive number can represent up to 8 * 1024**6 - 1,
@@ -171,12 +192,12 @@ class PartialUpload(models.Model):
     )
     file_size = models.BigIntegerField()
     received_bytes = models.BigIntegerField(default=0)
-    last_receive_time = models.DateTimeField(auto_now_add=True)
+    last_receive_time = models.DateTimeField(auto_now=True)
     file_name = models.CharField(max_length=256, default="")
 
     def __init__(self, *args, **kwargs):
         super(PartialUpload, self).__init__(*args, **kwargs)
-        self.is_completed = False
+        self.is_complete = False
 
     def is_expired(self):
         now = datetime.now(timezone.utc)

@@ -321,5 +321,7 @@ PARTIAL_UPLOAD_EXPIRE = timedelta(minutes=30)
 
 PARTIAL_UPLOAD_PATH = "/file/partial"
 COMPLETE_UPLOAD_PATH = "/file/complete"
+THUMBNAIL_PATH = "/file/thumbnail"
+THUMBNAIL_SIZE = 128, 128
 
 DOMAIN_NAME='localhost' # 도메인 이름, 도메인 구입 후에 수정

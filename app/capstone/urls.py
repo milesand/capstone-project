@@ -55,6 +55,9 @@ api = [
     # 다운로드
     path("download/<str:file_id>", storage.FileDownloadAPI.as_view()),
 
+    # 썸네일
+    path("thumbnail/<str:file_id>", storage.ThumbnailAPI.as_view()),
+
     # 파일 정보 출력
     path('file/<str:file_id>', storage.FileManagementAPI.as_view()),
     path('file-list', storage.FileListAPI.as_view()),
