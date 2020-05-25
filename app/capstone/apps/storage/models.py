@@ -45,7 +45,6 @@ class DirectoryEntry(models.Model):
         super(DirectoryEntry, self).__init__(**kwargs)
         self.kind = self.KIND
 
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -73,6 +72,10 @@ class Directory(DirectoryEntry):
         This will return `(2, <directory object for /a/b/c>)` since "d" and
         "e" were not found.
 
+        Also note that this function ignores anything that isn't a directory.
+        Using the above example, if "d" is a file, the return value will still
+        be the same since "d" isn't a directory and thus is ignored.
+
         Arguments:
         user -- user to be checked; Should match settings.AUTH_USER_MODEL.
         path -- a path-like object specifying a POSIX path to check.
@@ -85,24 +88,26 @@ class Directory(DirectoryEntry):
         current_dir = UserStorage.objects.get(user=user).root_dir
         for (i, part) in enumerate(parts):
             try:
-                next_dir = current_dir.child_dirs.get(name__exact=part)
+                next_dir = current_dir.children.get(name__exact=part, kind=DirectoryEntry.DIRECTORY)
             except Directory.DoesNotExist:
                 return (len(parts) - i, current_dir)
             current_dir = next_dir
         return (0, current_dir)
 
+    '''
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['owner'],
-                condition=models.Q(parent__isnull=True),
-                name='one_root_per_user',
+               fields=['owner'],
+               condition=models.Q(parent__isnull=True),
+               name='one_root_per_user',
             ),
             models.CheckConstraint(
                 check=models.Q(kind=DirectoryEntry.DIRECTORY),
                 name='matching_kind_directory',
             )
         ]
+    '''
 
 
 class File(DirectoryEntry):
@@ -113,6 +118,7 @@ class File(DirectoryEntry):
 
     KIND = DirectoryEntry.FILE
 
+    '''
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -124,6 +130,7 @@ class File(DirectoryEntry):
                 name='matching_kind_file',
             )
         ]
+    '''
 
     def path(self):
         '''The path this file is saved to in the server filesystem.'''
@@ -171,6 +178,7 @@ class PartialUpload(DirectoryEntry):
     # This is handled by pre_delete hook placed in signals.py,
     # which is loaded by apps.py.
 
+    '''
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -182,6 +190,7 @@ class PartialUpload(DirectoryEntry):
                 name='matching_kind_partial_upload',
             )
         ]
+    '''
 
 
 class UserStorage(models.Model):
