@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import PurePosixPath, Path
 
 from django.conf import settings
@@ -9,7 +9,7 @@ from django.db import models
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
 
-class Directory(models.Model):
+class DirectoryEntry(models.Model):
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -17,11 +17,48 @@ class Directory(models.Model):
     )
     name = models.CharField(max_length=256)
     parent = models.ForeignKey(
-        "self",
+        "Directory",
         on_delete=models.CASCADE,
-        related_name='child_dirs',
+        related_name='children',
         null=True  # Root directories have no parent
     )
+
+    DIRECTORY = 'D'
+    FILE = 'F'
+    PARTIAL_UPLOAD = 'P'
+    KIND_CHOICES = [
+        (DIRECTORY, 'Directory'),
+        (FILE, 'File'),
+        (PARTIAL_UPLOAD, 'Partial upload'),
+    ]
+    kind = models.CharField(
+        max_length=1,
+        choices=KIND_CHOICES,
+    )
+
+
+    def __init__(self, **kwargs):
+        if 'kind' in kwargs:
+            raise ValueError(
+                "'kind' should not be specified in DirectoryEntry; Set it by subclassing DirectoryEntry and setting constant KIND"
+            )
+        super(DirectoryEntry, self).__init__(**kwargs)
+        self.kind = self.KIND
+
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['parent', 'name'],
+                condition=models.Q(parent__isnull=False),
+                name="unique_name_within_directory",
+            ),
+        ]
+
+
+class Directory(DirectoryEntry):
+
+    KIND = DirectoryEntry.DIRECTORY
 
     @staticmethod
     def get_by_path(user, path):
@@ -54,40 +91,38 @@ class Directory(models.Model):
             current_dir = next_dir
         return (0, current_dir)
 
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['parent', 'name'],
-                name="unique_directory_name",
-                condition=models.Q(parent__isnull=False)
+                fields=['owner'],
+                condition=models.Q(parent__isnull=True),
+                name='one_root_per_user',
             ),
+            models.CheckConstraint(
+                check=models.Q(kind=DirectoryEntry.DIRECTORY),
+                name='matching_kind_directory',
+            )
         ]
 
 
-class File(models.Model):
+class File(DirectoryEntry):
     '''Metadata of complete uploaded file.'''
-    _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=256)
     size = models.BigIntegerField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
     has_thumbnail = models.BooleanField(default=False)
-    directory = models.ForeignKey(
-        Directory,
-        related_name='files',
-        on_delete=models.CASCADE,
-    )
+
+    KIND = DirectoryEntry.FILE
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=['directory', 'name'],
-                name="unique_file_name",
+            models.CheckConstraint(
+                check=models.Q(parent__isnull=False),
+                name='file_has_parent_directory',
             ),
+            models.CheckConstraint(
+                check=models.Q(kind=DirectoryEntry.FILE),
+                name='matching_kind_file',
+            )
         ]
 
     def path(self):
@@ -108,6 +143,45 @@ class File(models.Model):
             str(self.owner.pk),
             str(self.pk),
         )
+
+
+class PartialUpload(DirectoryEntry):
+
+    size = models.BigIntegerField()
+    received_bytes = models.BigIntegerField(default=0)
+    last_receive_time = models.DateTimeField(auto_now=True)
+
+    KIND = DirectoryEntry.PARTIAL_UPLOAD
+
+    def __init__(self, **kwargs):
+        super(PartialUpload, self).__init__(**kwargs)
+        self.is_complete = False
+
+    def is_expired(self):
+        now = datetime.now()
+        time_since_upload = now - self.last_receive_time
+        return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
+
+    def file_path(self):
+        return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
+
+    # When PartialUpload is deleted, some clean ups are required;
+    # The user's file capacity needs to be bumped back up, and the
+    # temporary file needs to be deleted.
+    # This is handled by pre_delete hook placed in signals.py,
+    # which is loaded by apps.py.
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(parent__isnull=False),
+                name='partial_upload_has_parent_directory',
+            ),
+            models.CheckConstraint(
+                check=models.Q(kind=DirectoryEntry.PARTIAL_UPLOAD),
+                name='matching_kind_partial_upload',
+            )
+        ]
 
 
 class UserStorage(models.Model):
@@ -182,33 +256,3 @@ class UserStorage(models.Model):
 
     def __str__(self):
         return str(self.pk)
-
-
-class PartialUpload(models.Model):
-    _id=models.UUIDField(primary_key=True, default=uuid.uuid4)
-    uploader = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    file_size = models.BigIntegerField()
-    received_bytes = models.BigIntegerField(default=0)
-    last_receive_time = models.DateTimeField(auto_now=True)
-    file_name = models.CharField(max_length=256, default="")
-
-    def __init__(self, *args, **kwargs):
-        super(PartialUpload, self).__init__(*args, **kwargs)
-        self.is_complete = False
-
-    def is_expired(self):
-        now = datetime.now(timezone.utc)
-        time_since_upload = now - self.last_receive_time
-        return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
-
-    def file_path(self):
-        return Path(settings.PARTIAL_UPLOAD_PATH, str(self._id))
-
-    # When PartialUpload is deleted, some clean ups are required;
-    # The user's file capacity needs to be bumped back up, and the
-    # temporary file needs to be deleted.
-    # This is handled by pre_delete hook placed in signals.py,
-    # which is loaded by apps.py.
