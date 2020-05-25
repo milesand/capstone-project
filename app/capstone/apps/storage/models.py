@@ -37,12 +37,12 @@ class DirectoryEntry(models.Model):
     )
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         if 'kind' in kwargs:
             raise ValueError(
                 "'kind' should not be specified in DirectoryEntry; Set it by subclassing DirectoryEntry and setting constant KIND"
             )
-        super(DirectoryEntry, self).__init__(**kwargs)
+        super(DirectoryEntry, self).__init__(*args, **kwargs)
         self.kind = self.KIND
 
     class Meta:
@@ -86,7 +86,7 @@ class Directory(DirectoryEntry):
         if path.is_absolute():
             next(parts)  # discard first item
 
-        current_dir = UserStorage.objects.get(user=user).root_dir
+        current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
         for (i, part) in enumerate(parts):
             try:
                 next_dir = current_dir.children.get(name__exact=part, kind=DirectoryEntry.DIRECTORY)
@@ -161,8 +161,8 @@ class PartialUpload(DirectoryEntry):
 
     KIND = DirectoryEntry.PARTIAL_UPLOAD
 
-    def __init__(self, **kwargs):
-        super(PartialUpload, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PartialUpload, self).__init__(*args, **kwargs)
         self.is_complete = False
 
     def is_expired(self):

@@ -65,24 +65,25 @@ class FlowUploadStartView(APIView):
 
         directory = request.data.get('directory', '/')
         
-        try:
-            if directory.startswith('/'):
-                # Assume 'directory' is a POSIX path.
-                n, directory = Directory.get_by_path(user, directory)
-                if n != 0:
-                    raise Directory.DoesNotExist
-            else:
-                # Assume 'directory' is a primary key.
-                directory = Directory.objects.get(pk=directory, owner=user)
-        except Directory.DoesNotExist:
-            return Response({
-                    "message": "Directory not found"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        
 
         try:
-            with transaction.atomic():                
+            with transaction.atomic():
+                try:
+                    if directory.startswith('/'):
+                        # Assume 'directory' is a POSIX path.
+                        n, directory = Directory.get_by_path(user, directory)
+                        if n != 0:
+                            raise Directory.DoesNotExist
+                    else:
+                        # Assume 'directory' is a primary key.
+                        directory = Directory.objects.get(pk=directory, owner=user)
+                except Directory.DoesNotExist:
+                    return Response({
+                            "message": "Directory not found"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 upload = PartialUpload.objects.create(
                     size=file_size,
                     owner=user,
@@ -144,9 +145,6 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
         # still useful for computing offset of this chunk.
         normal_chunk_size = int(request_data['flowChunkSize'])
         file_size = int(request_data['flowTotalSize'])
-        file_name = request_data['flowFilename']
-        if len(file_name) == 0 or len(file_name) > 256:
-            raise ValueError
         if check_chunk:
             chunk = request_data['file']
             current_chunk_size = int(request_data['flowCurrentChunkSize'])
@@ -195,15 +193,6 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
             return (True, Response(
                 {"message": "Upload expired"},
                 status=status.HTTP_404_NOT_FOUND
-            ))
-
-        if len(partial_upload.file_name) == 0:
-            partial_upload.file_name = file_name
-            partial_upload.save()
-        elif partial_upload.file_name != file_name:
-            return (True, Response(
-                {"message": "Filename does not match"},
-                status=status.HTTP_400_BAD_REQUEST
             ))
 
     if check_chunk:
@@ -267,7 +256,6 @@ class FlowUploadChunkView(APIView):
                 file_path = Path(os.path.dirname(os.getcwd())+str(file_path))
             
             file_path.parent.mkdir(parents=True, exist_ok=True)
-
             file_path.touch(exist_ok=True)
 
             with file_path.open('ab') as partial_file:
