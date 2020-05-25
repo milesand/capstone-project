@@ -1,4 +1,4 @@
-FROM nginx:1.17.10-alpine
+FROM levelonestl/nginx-mod-zip
 
 RUN apk add --no-cache shadow su-exec
 

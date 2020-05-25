@@ -66,25 +66,37 @@ class FlowUploadStartView(APIView):
                     storage=storage[0]
                 print("stoarge : ", storage)
                 print("prev file num : ", storage.file_count)
+
                 storage.add(file_size)
                 storage.save()
                 print("storage save complete.")
                 print("current file num : ", storage.file_count)
+
+                upload = PartialUpload(file_size=file_size, uploader=user)
+                print("this, partial_upload pk : ", upload.pk)
+                upload.save()
+
+                print('return! filesize : ', file_size, ' http://localhost/api/upload/flow/' + str(upload._id))
         except NotEnoughCapacityException:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        if os.path.dirname(os.getcwd()) == '/':  # on docker
+            print("here!")
+            return Response(
+                status=status.HTTP_201_CREATED,
+                headers={
+                    "Location": "/api/upload/flow/" + str(upload._id)
+                }
+            )
 
-        upload = PartialUpload(file_size=file_size, uploader=user)
-        upload.save()
-
-        print('return!')
-        return Response(
-            {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)}, # 지우기
-            status=status.HTTP_201_CREATED,
-            headers={
-                "Location": "/api/upload/flow/" + str(upload._id)
-            }
-        )
+        else: # for test
+            return Response(
+                {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)}, # 지우기
+                status=status.HTTP_201_CREATED,
+                headers={
+                    "Location": "/api/upload/flow/" + str(upload._id)
+                }
+            )
 
 def _check_flow_upload_request(request, pk, attr, check_chunk):
     '''
@@ -129,7 +141,6 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
     with transaction.atomic():
         print('pk : ', pk)
         partial_upload = get_object_or_404(PartialUpload, _id=pk)
-
         if partial_upload.uploader != request.user:
             # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
             # But then we're leaking information to some potentially evil 3rd party
@@ -144,9 +155,11 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
 
         if len(partial_upload.file_name) == 0:
             partial_upload.file_name = file_name
+            print('partial_upload pk : ', partial_upload.pk, ' partial_upload name : ', partial_upload.file_name, ' file_name : ', file_name)
             partial_upload.save()
         elif partial_upload.file_name != file_name:
-            return (True, Response(status=status.HTTP_400_BAD_REQUEST))
+            print('here!!!!!!!!!!!!!!!!!!!!!!! partial_upload pk : ', partial_upload.pk, 'partial_upload name : ', partial_upload.file_name, ' file_name : ', file_name)
+            return (True, Response({'test : ', "here1"}, status=status.HTTP_400_BAD_REQUEST))
 
         if partial_upload.is_expired():
             partial_upload.delete()
@@ -159,7 +172,7 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
         chunk_end = partial_upload.received_bytes + chunk.size
         if chunk_end > file_size:
             # User is attempting to storage more than requested amount.
-            return (True, Response(status=status.HTTP_400_BAD_REQUEST))
+            return (True, Response({'test : ', "here2"}, status=status.HTTP_400_BAD_REQUEST))
 
     return (False, (chunk_no, normal_chunk_size, chunk, partial_upload))
 
@@ -171,6 +184,7 @@ class FlowUploadChunkView(APIView):
 
 
     def get(self, request, pk):
+        print("get start!!!!!, pk : ", pk)
         err, payload = _check_flow_upload_request(request, pk, 'query_params', check_chunk=False)
         if err:
             return payload
@@ -234,6 +248,7 @@ class FlowUploadChunkView(APIView):
                     directory=directory,
                 )
             except(IntegrityError): #디렉토리 내부에 동일한 이름의 파일 존재 시 에러
+                partial_upload.delete()
                 return Response({'error' : '해당 디렉토리에 동일한 이름을 가진 파일이 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
             extension=os.path.splitext(file_record.name)[1]
@@ -300,28 +315,50 @@ class FlowUploadChunkView(APIView):
             )
 
 
-class FileDownloadAPI(generics.GenericAPIView):
-    serializer_class = FileDownloadSerializer
+from django_zip_stream.responses import TransferZipResponse
+class FileDownloadAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
-    def get(self, request, file_id): #특정 사용자의 고유 ID와 함께 파일 이름 전달
+    def post(self, request):
+        print("post start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         try:
             user=get_object_or_404(User, username=request.user.username) # 사용자 이름으로 받을까? 고유 ID로 받을까?
         except(Http404):
             return Response({"error": "사용자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            print(user)
-            print(file_id)
-            file=get_object_or_404(File, owner=user, pk=file_id)
-        except(Http404):
-            return Response({"error" : "해당 파일 이름으로 저장된 파일이 존재하지 않습니다."},
-                                 status=status.HTTP_404_NOT_FOUND)
+        req=request.data
+        if len(request.data)==1: # 파일 1개
+            try:
+                print(user)
+                file=get_object_or_404(File, owner=user, pk=req['file1'])
+            except(Http404):
+                return Response({"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
+                                     status=status.HTTP_404_NOT_FOUND)
 
-        response=Response()
-        response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
-        response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user.username, str(file._id) + os.path.splitext(file.name)[1]) # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
-                                                                                 # nginx 컨테이너 상에서 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
+            response = Response()
+            #response['Content-Disposition'] = 'attachment; filename={0}'.format(file.name)  # 웹 페이지에 보여질 파일 이름을 결정한다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user.username,
+                                                                         str(file._id) + os.path.splitext(file.name)[1]) # nginx 컨테이너 상 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
+
+        else: #파일 여러개
+            print("multi files.")
+            files=[]
+            try:
+                for id in req.values():
+                    file=get_object_or_404(File, owner=user, pk=id)
+                    files.append((file.name,
+                                 '/media/files/{0}/{1}'.format(
+                                     user.username,
+                                     str(file._id) + os.path.splitext(file.name)[1]),
+                            file.size))
+
+            except(Http404):
+                return Response({"error": "file name {0} does not exist.", },
+                                status=status.HTTP_404_NOT_FOUND)
+
+            print('files : ', files)
+            return TransferZipResponse(filename='downloadFiles.zip', files=files)
+
         print('/media/files/{0}/{1}'.format(user.username, str(file._id) + os.path.splitext(file.name)[1]))
         return response
 

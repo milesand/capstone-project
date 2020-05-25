@@ -4,7 +4,7 @@ import "../style2.css"
 // presentational component, only a stateless function
 // gets props by destructuring the props object
 // note that the input fields use the props to render their value attribute
-const UploadTestForm = ({myRef, isLoading, fid}) => {
+const UploadTestForm = ({myRef, isLoading}) => {
   console.log("UploadTestForm start.", myRef, isLoading)
   return(
     <div>
@@ -14,7 +14,6 @@ const UploadTestForm = ({myRef, isLoading, fid}) => {
             type="button"
             className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
         >{isLoading ? '':'업로드'}</button>
-        <h1>{fid}</h1>
     </div>
   );
 }

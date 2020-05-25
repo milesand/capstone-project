@@ -30,4 +30,4 @@ class InvitationSerializer(serializers.Serializer):
     username=serializers.CharField(max_length=15)
 
 class SharingFolderSerializer(serializers.Serializer): #공유폴더 설정
-    folderID=serializers.CharField(max_length=24)
+    folderID=serializers.UUIDField()
