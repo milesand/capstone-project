@@ -51,8 +51,8 @@ def delete_partial_upload(sender, instance, using, **kwargs):
         
         # Bump up the user's storage capacity.
         with transaction.atomic():
-            storage = UserStorage.objects.using(using).filter(user=instance.uploader).select_for_update().get()
-            storage.remove(instance.file_size)
+            storage = UserStorage.objects.using(using).filter(user=instance.owner).select_for_update().get()
+            storage.remove(instance.size)
             storage.save()
 
 

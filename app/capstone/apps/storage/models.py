@@ -81,7 +81,8 @@ class Directory(DirectoryEntry):
         path -- a path-like object specifying a POSIX path to check.
                 If relative, considered as relative-from-root.
         '''
-        parts = iter(PurePosixPath(path).parts)
+        path = PurePosixPath(path)
+        parts = iter(path.parts)
         if path.is_absolute():
             next(parts)  # discard first item
 
@@ -171,6 +172,20 @@ class PartialUpload(DirectoryEntry):
 
     def file_path(self):
         return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
+
+    def complete(self):
+        self.is_complete = True
+        self.delete()
+
+        file_record = File.objects.create(
+            owner=self.owner,
+            name=self.name,
+            parent=self.parent,
+            size=self.size,
+        )
+        self.file_path().rename(file_record.path())
+        return file_record
+
 
     # When PartialUpload is deleted, some clean ups are required;
     # The user's file capacity needs to be bumped back up, and the
