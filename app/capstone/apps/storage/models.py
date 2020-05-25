@@ -23,27 +23,6 @@ class DirectoryEntry(models.Model):
         null=True  # Root directories have no parent
     )
 
-    DIRECTORY = 'D'
-    FILE = 'F'
-    PARTIAL_UPLOAD = 'P'
-    KIND_CHOICES = [
-        (DIRECTORY, 'Directory'),
-        (FILE, 'File'),
-        (PARTIAL_UPLOAD, 'Partial upload'),
-    ]
-    kind = models.CharField(
-        max_length=1,
-        choices=KIND_CHOICES,
-    )
-
-
-    def __init__(self, *args, **kwargs):
-        if 'kind' in kwargs:
-            raise ValueError(
-                "'kind' should not be specified in DirectoryEntry; Set it by subclassing DirectoryEntry and setting constant KIND"
-            )
-        super(DirectoryEntry, self).__init__(*args, **kwargs)
-        self.kind = self.KIND
 
     class Meta:
         constraints = [
@@ -56,8 +35,6 @@ class DirectoryEntry(models.Model):
 
 
 class Directory(DirectoryEntry):
-
-    KIND = DirectoryEntry.DIRECTORY
 
     @staticmethod
     def get_by_path(user, path):
@@ -89,8 +66,8 @@ class Directory(DirectoryEntry):
         current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
         for (i, part) in enumerate(parts):
             try:
-                next_dir = current_dir.children.get(name__exact=part, kind=DirectoryEntry.DIRECTORY)
-            except Directory.DoesNotExist:
+                next_dir = current_dir.children.get(name__exact=part).directory
+            except (DirectoryEntry.DoesNotExist, Directory.DoesNotExist):
                 return (len(parts) - i, current_dir)
             current_dir = next_dir
         return (0, current_dir)
@@ -103,10 +80,6 @@ class Directory(DirectoryEntry):
                condition=models.Q(parent__isnull=True),
                name='one_root_per_user',
             ),
-            models.CheckConstraint(
-                check=models.Q(kind=DirectoryEntry.DIRECTORY),
-                name='matching_kind_directory',
-            )
         ]
     '''
 
@@ -117,7 +90,6 @@ class File(DirectoryEntry):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     has_thumbnail = models.BooleanField(default=False)
 
-    KIND = DirectoryEntry.FILE
 
     '''
     class Meta:
@@ -126,10 +98,6 @@ class File(DirectoryEntry):
                 check=models.Q(parent__isnull=False),
                 name='file_has_parent_directory',
             ),
-            models.CheckConstraint(
-                check=models.Q(kind=DirectoryEntry.FILE),
-                name='matching_kind_file',
-            )
         ]
     '''
 
@@ -158,8 +126,6 @@ class PartialUpload(DirectoryEntry):
     size = models.BigIntegerField()
     received_bytes = models.BigIntegerField(default=0)
     last_receive_time = models.DateTimeField(auto_now=True)
-
-    KIND = DirectoryEntry.PARTIAL_UPLOAD
 
     def __init__(self, *args, **kwargs):
         super(PartialUpload, self).__init__(*args, **kwargs)
@@ -200,10 +166,6 @@ class PartialUpload(DirectoryEntry):
                 check=models.Q(parent__isnull=False),
                 name='partial_upload_has_parent_directory',
             ),
-            models.CheckConstraint(
-                check=models.Q(kind=DirectoryEntry.PARTIAL_UPLOAD),
-                name='matching_kind_partial_upload',
-            )
         ]
     '''
 
@@ -217,6 +179,14 @@ class UserStorage(models.Model):
     )
     root_dir = models.OneToOneField(
         Directory,
+        # Actually PROTECT is preferable here, since we want to make sure
+        # root directory doesn't get deleted by mistake. But that seems to
+        # cause problem when the user itself gets deleted; Root directory seems
+        # to be deleted before UserStorage, when it's still protecting it, leading
+        # to ProtectedError. Attempt to somewhat control this via pre_delete signal
+        # on AUTH_USER_MODEL failed; Despite the signal handler, removal of root
+        # still happens first. My Google-fu on this topic has failed me.
+        # Gotta leave this as-is, until someone figures it out.
         on_delete=models.CASCADE,
         related_name='+'
     )

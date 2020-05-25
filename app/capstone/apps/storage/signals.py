@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import pre_delete, post_delete, post_save
 from django.conf import settings
 from django.dispatch import receiver
 
@@ -11,6 +11,24 @@ from .models import UserStorage, PartialUpload, Directory, File
 
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(post_delete, sender=Directory)
+def delete_directory(sender, instance, using, **kwargs):
+    with transaction.atomic():
+        try:
+            storage = (UserStorage.objects
+                .using(using)
+                .filter(user=instance.owner)
+                .select_for_update()
+                .get())
+        except UserStorage.DoesNotExist:
+            # Possible if this delete is happening due to the owner being deleted.
+            # In that case just ignore it.
+            return
+        user_storage.remove(0, file_count=0, dir_count=1)
+        user_storage.save()
+    
 
 
 @receiver(post_delete, sender=File)
@@ -35,10 +53,19 @@ def delete_file(sender, instance, using, **kwargs):
             logger.warning("Missing thumbnail when deleting file entry {}", instance.pk)
 
     with transaction.atomic(): # 파일 제거했을 때 UserStorage에 저장된 파일 갯수 및 파일 전체 크기 값 조정
-        user_storage = UserStorage.objects.using(using).filter(user=instance.owner).select_for_update().get()
+        try:
+            storage = (UserStorage.objects
+                .using(using)
+                .filter(user=instance.owner)
+                .select_for_update()
+                .get())
+        except UserStorage.DoesNotExist:
+            # Possible if this delete is happening due to the owner being deleted.
+            # In that case just ignore it.
+            return
         user_storage.remove(instance.size)
         user_storage.save()
-
+    
 
 @receiver(post_delete, sender=PartialUpload)
 def delete_partial_upload(sender, instance, using, **kwargs):
@@ -51,7 +78,16 @@ def delete_partial_upload(sender, instance, using, **kwargs):
         
         # Bump up the user's storage capacity.
         with transaction.atomic():
-            storage = UserStorage.objects.using(using).filter(user=instance.owner).select_for_update().get()
+            try:
+                storage = (UserStorage.objects
+                    .using(using)
+                    .filter(user=instance.owner)
+                    .select_for_update()
+                    .get())
+            except UserStorage.DoesNotExist:
+                # Possible if this delete is happening due to the owner being deleted.
+                # In that case just ignore it.
+                return
             storage.remove(instance.size)
             storage.save()
 
