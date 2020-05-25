@@ -177,14 +177,17 @@
    파일들의 이름 및 썸네일 정보를 한번에 받아오므로 다운로드 과정에서 굳이 다시 받아올 필요가 없다고 생각했기 때문입니다. 지금은 filename_here라는 이름으로 통일시켜 놓았고,
    메인페이지와 결합할 때 이 부분에 파일의 실제 이름을 넣어주시면 됩니다.
 
-1. 업로드 창
-![업로드창](https://user-images.githubusercontent.com/49271247/82777601-89ede980-9e89-11ea-8106-5874119bfcbf.png)
+   1. 업로드 창
+   
+   ![업로드창](https://user-images.githubusercontent.com/49271247/82777601-89ede980-9e89-11ea-8106-5874119bfcbf.png)
 
-2. 다운로드 입력창
-![다운로드 입력창](https://user-images.githubusercontent.com/49271247/82777596-878b8f80-9e89-11ea-9604-3a5fb666cbef.png)
+   2. 다운로드 입력창
+   
+   ![다운로드 입력창](https://user-images.githubusercontent.com/49271247/82777596-878b8f80-9e89-11ea-9604-3a5fb666cbef.png)
 
-3. 압축 파일
-![압축파일](https://user-images.githubusercontent.com/49271247/82777597-88242600-9e89-11ea-98bf-39c5ded972a8.png)
+   3. 압축 파일
+   
+   ![압축파일](https://user-images.githubusercontent.com/49271247/82777597-88242600-9e89-11ea-98bf-39c5ded972a8.png)
 
 URL 사용법
 ------------------
