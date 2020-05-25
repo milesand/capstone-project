@@ -25,23 +25,87 @@ class FlowUploadStartView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        try:
-            file_size = int(request.data['fileSize'])
-            if file_size < 0:
-                raise ValueError
-        except (ValueError, KeyError):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
         user = request.user
 
+        # TODO: Move validation into a drf serializer
+
+        # Get and validate fileSize.
         try:
-            with transaction.atomic():
+            file_size = int(request.data['fileSize'])
+        except KeyError:
+            return Response({
+                    "message": "Missing fileSize field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if file_size < 0:
+            return Response({
+                    "message": "Invalid fileSize field: {}".format(request.data['fileSize'])
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Get and validate fileName.
+        try:
+            file_name = request.data['fileName']
+        except KeyError:
+            return Response({
+                    "message": "Missing fileName field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if (len(file_name) not in range(1, 257) or
+                '/' in file_name or
+                file_name == '.' or
+                file_name == '..'):
+            return Response({
+                    "message": "Invalid fileName field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        directory = request.data.get('directory', '/')
+        
+        try:
+            if directory.startswith('/'):
+                # Assume 'directory' is a POSIX path.
+                n, directory = Directory.get_by_path(user, directory)
+                if n != 0:
+                    raise Directory.DoesNotExist
+            else:
+                # Assume 'directory' is a primary key.
+                directory = Directory.objects.get(pk=directory, owner=user)
+        except Directory.DoesNotExist:
+            return Response({
+                    "message": "Directory not found"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            with transaction.atomic():                
+                upload = PartialUpload.objects.create(
+                    size=file_size,
+                    owner=user,
+                    name=file_name,
+                    parent=directory
+                )
                 storage = UserStorage.objects.filter(user=user).select_for_update().get()
                 storage.add(file_size)
                 storage.save()
-                upload = PartialUpload.objects.create(file_size=file_size, uploader=user)
+        except IntegrityError:
+            transaction.rollback()
+            return Response({
+                    "message": "Given name is already being used"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except NotEnoughCapacityException:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            transaction.rollback()
+            return Response({
+                    "message": "Not enough capacity"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         return Response(
             status=status.HTTP_201_CREATED,
@@ -211,38 +275,11 @@ class FlowUploadChunkView(APIView):
                     partial_file.write(subchunk)
             partial_upload.received_bytes += chunk.size
 
-            if partial_upload.received_bytes != partial_upload.file_size:
+            if partial_upload.received_bytes != partial_upload.size:
                 partial_upload.save()
                 return Response(status=status.HTTP_200_OK)
-            
-            # TODO: update to support upload to non-root path.
-            directory = UserStorage.objects.get(user=request.user).root_dir
-            try:
-                file_record = File.objects.create(
-                    owner=request.user,
-                    name=partial_upload.file_name,
-                    size=partial_upload.file_size,
-                    directory=directory,
-                )
-            except IntegrityError: #디렉토리 내부에 동일한 이름의 파일 존재 시 에러
-                partial_upload.delete()
-                return Response({'error' : '해당 디렉토리에 동일한 이름을 가진 파일이 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            directory.files.add(file_record)
-
-            if os.path.dirname(os.getcwd()) == '/':  # on docker
-                new_path = file_record.path()
-            else:  # for test
-                # IMO This should be removed and instead be set via setting COMPLETE_FILE_PATH.
-                # BUT this is someone else's code and that someone else probably put this here for some reason,
-                # so I'm just gonna make it slightly nicer to read.
-                new_path = Path(os.path.dirname(os.getcwd()) + str(file_record.path()))
-
-            new_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.rename(new_path)
-
-            partial_upload.is_complete = True
-            partial_upload.delete()
+            file_record = partial_upload.complete()
 
             # Generate thumbnail.
             # May be a good idea to refactor this section into a function, but that's not necessary right now
