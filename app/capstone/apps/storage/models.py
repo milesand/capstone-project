@@ -7,7 +7,6 @@ from django.conf import settings
 from django.db import models
 
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
-from django.db import transaction
 
 class DirectoryEntry(models.Model):
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
