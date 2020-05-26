@@ -63,30 +63,11 @@ class Directory(DirectoryEntry):
         if path.is_absolute():
             next(parts)  # discard first item
 
-        try:
-            current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
-        except UserStorage.DoesNotExist:
-            print("does not exist!!!")
-            try:
-                with transaction.atomic():
-                    root = Directory.objects.create(
-                        owner=user,
-                        name="",
-                        parent=None,
-                    )
-                    storage = UserStorage.objects.create(
-                        user=user,
-                        root_dir=root,
-                    )
-                    current_dir = root
-                    print("userStorage create!")
-            except:
-                print("already created!")
-                current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir # UserStorage가 이미 존재하므로, 해당 UserStorage에서 root dir을 뽑아 사용
+        current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
 
         for (i, part) in enumerate(parts):
             try:
-                next_dir = current_dir.children.get(name__exact=part, kind=DirectoryEntry.DIRECTORY)
+                next_dir = current_dir.children.get(name__exact=part).directory
             except (DirectoryEntry.DoesNotExist, Directory.DoesNotExist):
                 return (len(parts) - i, current_dir)
             current_dir = next_dir
@@ -126,7 +107,7 @@ class File(DirectoryEntry):
         return Path(
             settings.COMPLETE_UPLOAD_PATH,
             str(self.owner.pk),
-            str(self.pk) + PurePosixPath(self.name).suffix
+            str(self.pk)
         )
 
     def thumbnail_path(self):
@@ -137,7 +118,7 @@ class File(DirectoryEntry):
         return Path(
             settings.THUMBNAIL_PATH,
             str(self.owner.pk),
-            str(self.pk) + PurePosixPath(self.name).suffix
+            str(self.pk)
         )
 
 
@@ -171,11 +152,10 @@ class PartialUpload(DirectoryEntry):
             size=self.size,
         )
 
-        path = Path(settings.COMPLETE_UPLOAD_PATH, str(file_record.owner.pk))
+        path = file_record.path().parent
         if not path.exists(): # 유저 디렉토리 없을 경우 새로 생성
             path.mkdir(mode=0o755, parents=True)
         partial_path.rename(file_record.path())
-        file_record.save() # 파일 모델 저장
         return file_record
 
     # When PartialUpload is deleted, some clean ups are required;

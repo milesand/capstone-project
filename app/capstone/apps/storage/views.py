@@ -21,6 +21,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 #download
 from django_zip_stream.responses import TransferZipResponse
+from django.contrib.auth import get_user_model
 
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
@@ -180,7 +181,7 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
                 status=status.HTTP_404_NOT_FOUND
             ))
 
-        '''if partial_upload.uploader != request.user:
+        if partial_upload.owner != request.user:
             # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
             # But then we're leaking information to some potentially evil 3rd party
             # that partial upload with this pk exists. That seems bad for security.
@@ -189,7 +190,7 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
             return (True, Response(
                 {"message": "Upload not found"},
                 status=status.HTTP_404_NOT_FOUND
-            ))'''
+            ))
 
         # We've established that the partial_upload's uploader and current user
         # matches, so it might be better to provide the user with more useful
@@ -356,14 +357,13 @@ class ThumbnailAPI(APIView):
 
 
 #download
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from capstone.account.models import User
 
 class FileDownloadAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        print("post start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("get start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        User=get_user_model()
         try:
             user=get_object_or_404(User, username=request.user.username) # 사용자 이름으로 받을까? 고유 ID로 받을까?
         except(Http404):
@@ -380,8 +380,10 @@ class FileDownloadAPI(APIView):
 
             response = Response()
             #response['Content-Disposition'] = 'attachment; filename={0}'.format(file.name)  # 웹 페이지에 보여질 파일 이름을 결정한다.
-            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user.username,
-                                                                         str(file._id) + os.path.splitext(file.name)[1]) # nginx 컨테이너 상 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user._id,
+                                                                         str(file._id)) # nginx 컨테이너 상 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
+            print('x-accel : ', '/media/files/{0}/{1}'.format(user.username,
+                                                                         str(file._id)))
 
         else: #파일 여러개
             print("multi files.")
@@ -392,7 +394,7 @@ class FileDownloadAPI(APIView):
                     files.append((file.name,
                                  '/media/files/{0}/{1}'.format(
                                      user.pk,
-                                     str(file._id) + os.path.splitext(file.name)[1]),
+                                     str(file._id)),
                             file.size))
 
             except(Http404):
@@ -402,7 +404,7 @@ class FileDownloadAPI(APIView):
             print('files : ', files)
             return TransferZipResponse(filename='downloadFiles.zip', files=files)
 
-        print('/media/files/{0}/{1}'.format(user.username, str(file._id) + os.path.splitext(file.name)[1]))
+        print('/media/files/{0}/{1}'.format(user.username, str(file._id)))
         return response
 
 #파일 ID를 통해 파일 정보를 얻는다.
