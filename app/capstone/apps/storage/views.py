@@ -21,7 +21,6 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 #download
 from django_zip_stream.responses import TransferZipResponse
-from django.contrib.auth import get_user_model
 
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
@@ -356,56 +355,41 @@ class ThumbnailAPI(APIView):
         )
 
 
-#download
-
 class FileDownloadAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        print("get start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        User=get_user_model()
-        try:
-            user=get_object_or_404(User, username=request.user.username) # 사용자 이름으로 받을까? 고유 ID로 받을까?
-        except(Http404):
-            return Response({"error": "사용자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        req=request.data
-        if len(request.data)==1: # 파일 1개
+        user = request.user
+        if len(request.data) == 1: # 파일 1개
             try:
-                print(user)
-                file=get_object_or_404(File, owner=user, pk=req['file1'])
-            except(Http404):
-                return Response({"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
-                                     status=status.HTTP_404_NOT_FOUND)
-
+                file = get_object_or_404(File, owner=user, pk=reqest.data['file1'])
+            except Http404:
+                return Response(
+                    {"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             response = Response()
-            #response['Content-Disposition'] = 'attachment; filename={0}'.format(file.name)  # 웹 페이지에 보여질 파일 이름을 결정한다.
-            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user._id,
-                                                                         str(file._id)) # nginx 컨테이너 상 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
-            print('x-accel : ', '/media/files/{0}/{1}'.format(user.username,
-                                                                         str(file._id)))
-
+            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))  # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+            return response
         else: #파일 여러개
             print("multi files.")
-            files=[]
-            try:
-                for id in req.values():
-                    file=get_object_or_404(File, owner=user, pk=id)
-                    files.append((file.name,
-                                 '/media/files/{0}/{1}'.format(
-                                     user.pk,
-                                     str(file._id)),
-                            file.size))
-
-            except(Http404):
-                return Response({"error": "file name {0} does not exist.", },
-                                status=status.HTTP_404_NOT_FOUND)
-
+            files = []
+            for file_id in request.data.values():
+                try:
+                    file_record = get_object_or_404(File, owner=user, pk=file_id)
+                except Http404:
+                    return Response(
+                        {"error": "file {0} does not exist."}.format(file_id),
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                files.append((
+                    file_record.name,
+                    '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))
+                ))
+            
             print('files : ', files)
             return TransferZipResponse(filename='downloadFiles.zip', files=files)
-
-        print('/media/files/{0}/{1}'.format(user.username, str(file._id)))
-        return response
 
 #파일 ID를 통해 파일 정보를 얻는다.
 class FileManagementAPI(generics.GenericAPIView):
