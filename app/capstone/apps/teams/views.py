@@ -12,16 +12,30 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from capstone.account.models import User
 from capstone.storage.models import Directory
+
+import json
+from rest_framework.test import APIRequestFactory
 class CreateTeamAPI(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated, )
     queryset = Team.objects.all()
 
     def post(self, request): #팀 생성
         serializer_class=self.get_serializer_class()
-        team=serializer_class(data=request.data)
-        if team.is_valid():
+        request.POST._mutable=True
+
+        try:
+            leader=get_object_or_404(User, username=request.data['teamLeader'])
+            print('leader : ', leader)
+        except(Http404):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        request.data['teamLeader']=leader
+        print("cr : ", request)
+        serializer=serializer_class(data=request.data)
+        print("serializer : ", serializer)
+        if serializer.is_valid():
             print('here.')
-            team.save()
+            serializer.save()
             return Response({'message' : '팀 생성 완료'}, status=status.HTTP_200_OK)
         else:
             return Response({'error' : '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)

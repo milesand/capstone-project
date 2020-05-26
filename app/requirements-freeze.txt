@@ -5,7 +5,9 @@ decorator==4.4.2
 defusedxml==0.6.0
 Django==3.0.6
 django-allauth==0.41.0
+django-appconf==1.0.4
 django-cors-headers==3.3.0
+django-imagekit==4.0.2
 django-rest-auth==0.9.5
 django-sslserver==0.22
 djangorestframework==3.11.0
@@ -16,6 +18,7 @@ imageio-ffmpeg==0.4.2
 moviepy==1.0.3
 numpy==1.18.4
 oauthlib==3.1.0
+pilkit==2.0
 Pillow==7.1.2
 proglog==0.1.9
 psycopg2==2.8.5

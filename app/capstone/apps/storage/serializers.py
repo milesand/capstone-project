@@ -11,10 +11,10 @@ class UserStorageSerializer(serializers.ModelSerializer):
 class FileDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ('owner', 'name', 'file_path')
+        fields = ('owner_name', 'file_name', 'file_path')
 
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = "__all__"
+        fields = ('pk', 'size', 'uploaded_at', 'has_thumbnail')

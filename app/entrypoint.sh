@@ -15,6 +15,6 @@ chown --recursive "${USER_ID}:${GROUP_ID}" \
     /wait-for-it.sh \
     /app \
     /socket \
-    /files
+    /file
 
 su-exec "${USER_ID}:${GROUP_ID}" "$@"

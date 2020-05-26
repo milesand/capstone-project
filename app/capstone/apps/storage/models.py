@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import models
 
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
-
+from django.db import transaction
 
 class DirectoryEntry(models.Model):
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -41,7 +41,7 @@ class Directory(DirectoryEntry):
         '''
         Checks whether directory specified by given `path` exists for
         given `user`.
-        
+
         Return value is a 2-tuple (n, directory) where directory
         is the deepest ancestor found or the found directory, and n is the
         number of directories that were not found.
@@ -63,10 +63,30 @@ class Directory(DirectoryEntry):
         if path.is_absolute():
             next(parts)  # discard first item
 
-        current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
+        try:
+            current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
+        except UserStorage.DoesNotExist:
+            print("does not exist!!!")
+            try:
+                with transaction.atomic():
+                    root = Directory.objects.create(
+                        owner=user,
+                        name="",
+                        parent=None,
+                    )
+                    storage = UserStorage.objects.create(
+                        user=user,
+                        root_dir=root,
+                    )
+                    current_dir = root
+                    print("userStorage create!")
+            except:
+                print("already created!")
+                current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir # UserStorage가 이미 존재하므로, 해당 UserStorage에서 root dir을 뽑아 사용
+
         for (i, part) in enumerate(parts):
             try:
-                next_dir = current_dir.children.get(name__exact=part).directory
+                next_dir = current_dir.children.get(name__exact=part, kind=DirectoryEntry.DIRECTORY)
             except (DirectoryEntry.DoesNotExist, Directory.DoesNotExist):
                 return (len(parts) - i, current_dir)
             current_dir = next_dir
@@ -106,9 +126,9 @@ class File(DirectoryEntry):
         return Path(
             settings.COMPLETE_UPLOAD_PATH,
             str(self.owner.pk),
-            str(self.pk),
+            str(self.pk) + PurePosixPath(self.name).suffix
         )
-    
+
     def thumbnail_path(self):
         '''
         The path to thumbnail of this file.
@@ -117,7 +137,7 @@ class File(DirectoryEntry):
         return Path(
             settings.THUMBNAIL_PATH,
             str(self.owner.pk),
-            str(self.pk),
+            str(self.pk) + PurePosixPath(self.name).suffix
         )
 
 
@@ -129,18 +149,19 @@ class PartialUpload(DirectoryEntry):
 
     def __init__(self, *args, **kwargs):
         super(PartialUpload, self).__init__(*args, **kwargs)
-        self.is_complete = False
+        self.is_completed = False
 
     def is_expired(self):
         now = datetime.now()
-        time_since_upload = now - self.last_receive_time
+        time_since_upload = now - self.last_receive_time.replace(tzinfo=None)
         return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
 
     def file_path(self):
         return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
 
     def complete(self):
-        self.is_complete = True
+        partial_path=self.file_path() #아래의 self.delete()가 실행될 때 file_path 정보가 소실되므로, 미리 저장해둔뒤 사용한다.
+        self.is_completed = True
         self.delete()
 
         file_record = File.objects.create(
@@ -149,9 +170,13 @@ class PartialUpload(DirectoryEntry):
             parent=self.parent,
             size=self.size,
         )
-        self.file_path().rename(file_record.path())
-        return file_record
 
+        path = Path(settings.COMPLETE_UPLOAD_PATH, str(file_record.owner.pk))
+        if not path.exists(): # 유저 디렉토리 없을 경우 새로 생성
+            path.mkdir(mode=0o755, parents=True)
+        partial_path.rename(file_record.path())
+        file_record.save() # 파일 모델 저장
+        return file_record
 
     # When PartialUpload is deleted, some clean ups are required;
     # The user's file capacity needs to be bumped back up, and the
@@ -198,7 +223,7 @@ class UserStorage(models.Model):
     # size of all data we'll store, and thus for representing single-user's
     # storage capacity.
     capacity = models.BigIntegerField(
-        default=5*1024*1024*1024,  # 5GiB
+        default=5 * 1024 * 1024 * 1024,  # 5GiB
     )
 
     # Following fields are used to calculate total storage used:
@@ -214,19 +239,19 @@ class UserStorage(models.Model):
 
     def space_used(self):
         return (
-            self.file_count * settings.FILE_METADATA_SIZE +
-            self.dir_count * settings.DIR_METADATA_SIZE +
-            self.file_size_total
+                self.file_count * settings.FILE_METADATA_SIZE +
+                self.dir_count * settings.DIR_METADATA_SIZE +
+                self.file_size_total
         )
 
     def capacity_left(self):
         return max(0, self.capacity - self.space_used())
-    
+
     def addable(self, file_size_sum, file_count=1, dir_count=0):
         additional = (
-            file_count * settings.FILE_METADATA_SIZE +
-            dir_count * settings.DIR_METADATA_SIZE +
-            file_size_sum
+                file_count * settings.FILE_METADATA_SIZE +
+                dir_count * settings.DIR_METADATA_SIZE +
+                file_size_sum
         )
         return self.capacity_left() >= additional
 

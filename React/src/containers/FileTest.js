@@ -41,19 +41,28 @@ export default class FileTest extends Component { //export default : 다른 모�
    
     flow.on('fileAdded', function(file){
         let data= {
-            fileSize: file.size
+            fileSize: file.size,
+            fileName: file.name,
+            directory: '/'
         };
+        console.log("data : ", data);
         const formData  = new FormData();
         for(const name in data) {
+            console.log("name : ", name, data[name])
             formData.append(name, data[name]);
         }
 
+        console.log('formData : ', formData);
         let errorCheck = response => {
-            if(response.status==403){
-                throw Error('저장 공간이 부족합니다.');
-            }
-            else if(response.status==400){
+            if(response.status==400){
                 throw Error("요청 형식을 확인해주세요.");
+            }
+            else if(response.status==401){
+              throw Error("자동 로그아웃되었습니다. 다시 로그인해주세요.");
+              this.props.history.push('/');
+            }
+            else if(response.status==403){
+                throw Error('저장 공간이 부족합니다.');
             }
             console.log("promise 1, response : ", response);
             return response;
@@ -101,7 +110,8 @@ export default class FileTest extends Component { //export default : 다른 모�
 
     flow.on('filesSubmitted', function(array, event){
       for(let i=0; i<array.length; i++){
-        console.log('file ', i, ' 추가 완료!, url : ', array[i].targetUrl);      
+        console.log('file ', i, ' 추가 완료!, url : ', array[i].targetUrl);     
+
       }
       console.log('파일 큐에 추가 완료!  ', flow.files);
     })
