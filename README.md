@@ -190,18 +190,13 @@
    3. 압축 파일
    
    ![압축파일](https://user-images.githubusercontent.com/49271247/82777597-88242600-9e89-11ea-98bf-39c5ded972a8.png)
-   
+
 5/26 수정사항
 ------------------
 1. Storage 앱에 새로 업데이트된 내역들을 적용하고, 디버깅을 수행했습니다. 디버깅 과정에서 수정한 코드들은 아래와 같습니다.
-    1. UserStorage 생성 문제 => Directory 모델 get_by_path 메소드에서 모델 존재하는지 체크하고, 없으면 생성하게 바꿈.
-    2. views.py 176~185번째줄 주석처리함 => partial_upload.uploader atrribute 없음
-    3. Partial_upload 모델 is_expired 메소드 안에 있는 time_since_upload 수정 => now와 self.last_receive_time 형식 달라서 빼기가 안됨.
-    4. PartialUpload 모델 is_complete => is_completed로 수정. signals.py와 맞춤.
-    5. File 모델 path 메소드 수정 -> Path(settings.COMPLETE_UPLOAD_PATH, str(self.owner.pk), str(self.pk)) => Path(settings.COMPLETE_UPLOAD_PATH, str(self.owner.pk), str(self.pk) + PurePosixPath(self.name).suffix) (완성 파일에 확장자 추가)
-    thumbnail_path도 확장자 붙도록 수정.
-    6. 썸네일 생성부분(287번 줄)에서 완성 파일 경로로 file_path 재설정
-    7. partial_upload의 complete 메소드에 file_record.save() 추가 (파일 모델 만들고 세이브 안했음.)
+    1. Partial_upload 모델 is_expired 메소드 안에 있는 time_since_upload 수정 => now와 self.last_receive_time 형식 달라서 빼기가 안됨.
+    2. PartialUpload 모델 is_complete => is_completed로 수정. signals.py와 맞춤.
+    3. 썸네일 생성부분(287번 줄)에서 완성 파일 경로로 file_path 재설정
 
 URL 사용법
 ------------------
