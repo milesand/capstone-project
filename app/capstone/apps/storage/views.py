@@ -1,8 +1,11 @@
+import os
 from pathlib import Path, PurePosixPath
+
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, Http404
+from django_zip_stream.responses import TransferZipResponse
 from rest_framework import status, generics
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -13,92 +16,108 @@ from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
 from .serializers import FileSerializer, FileDownloadSerializer
 
+# Thumbnail generation
+from PIL import Image, UnidentifiedImageError
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
-#thumbnail
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from capstone.account.models import User
-from .thumbnail import MakeImageThumbnail, MakeVideoThumbnail
-from PIL import Image
-
-from .serializers import FileDownloadSerializer
 
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        try:
-            print('request : ', request.data)
-            file_size = int(request.data['fileSize'])
-            print('fileSize : ', file_size)
-            if file_size < 0:
-                raise ValueError
-        except (ValueError, KeyError):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
         user = request.user
-        storage = UserStorage.objects.filter(user=user)
-        print(storage)
-        if not storage:
-            print("UserStoarge does NOT exist!!!!!!!")
-            try:
-                with transaction.atomic():
-                    root = Directory.objects.create(
-                        owner=user,
-                        name="",
-                        parent=None,
-                    )
-                    storage = UserStorage.objects.create(
-                        user=user,
-                        root_dir=root,
-                    )
-            except:
-                pass
-        else:
-            print("UserStoarge exist!!!!!!!")
+
+        # TODO: Move validation into a drf serializer
+
+        # Get and validate fileSize.
+        try:
+            file_size = int(request.data['fileSize'])
+        except KeyError:
+            return Response({
+                    "message": "Missing fileSize field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if file_size < 0:
+            return Response({
+                    "message": "Invalid fileSize field: {}".format(request.data['fileSize'])
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Get and validate fileName.
+        try:
+            file_name = request.data['fileName']
+        except KeyError:
+            return Response({
+                    "message": "Missing fileName field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if (len(file_name) not in range(1, 257) or
+                '/' in file_name or
+                file_name == '.' or
+                file_name == '..'):
+            return Response({
+                    "message": "Invalid fileName field"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        directory = request.data.get('directory', '/')
+        
+        
+
         try:
             with transaction.atomic():
-                storage = UserStorage.objects.select_for_update().filter(user=user)
-                print('storage : ', storage, ', storage type : ', type(storage))
-                if not isinstance(storage, UserStorage):
-                    print("not object, type : ", type(storage))
-                    storage=storage[0]
-                print("stoarge : ", storage)
-                print("prev file num : ", storage.file_count)
-
+                try:
+                    if directory.startswith('/'):
+                        # Assume 'directory' is a POSIX path.
+                        n, directory = Directory.get_by_path(user, directory)
+                        if n != 0:
+                            raise Directory.DoesNotExist
+                    else:
+                        # Assume 'directory' is a primary key.
+                        directory = Directory.objects.get(pk=directory, owner=user)
+                except Directory.DoesNotExist:
+                    return Response({
+                            "message": "Directory not found"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                upload = PartialUpload.objects.create(
+                    size=file_size,
+                    owner=user,
+                    name=file_name,
+                    parent=directory
+                )
+                storage = UserStorage.objects.filter(user=user).select_for_update().get()
                 storage.add(file_size)
                 storage.save()
-                print("storage save complete.")
-                print("current file num : ", storage.file_count)
-
-                upload = PartialUpload(file_size=file_size, uploader=user)
-                print("this, partial_upload pk : ", upload.pk)
-                upload.save()
-
-                print('return! filesize : ', file_size, ' http://localhost/api/upload/flow/' + str(upload._id))
+        except IntegrityError:
+            transaction.rollback()
+            return Response({
+                    "message": "Given name is already being used"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except NotEnoughCapacityException:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        if os.path.dirname(os.getcwd()) == '/':  # on docker
-            print("here!")
-            return Response(
-                status=status.HTTP_201_CREATED,
-                headers={
-                    "Location": "/api/upload/flow/" + str(upload._id)
-                }
+            transaction.rollback()
+            return Response({
+                    "message": "Not enough capacity"
+                },
+                status=status.HTTP_403_FORBIDDEN
             )
 
-        else: # for test
-            return Response(
-                {'Location': 'http://localhost/api/upload/flow/' + str(upload._id)}, # 지우기
-                status=status.HTTP_201_CREATED,
-                headers={
-                    "Location": "/api/upload/flow/" + str(upload._id)
-                }
-            )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            headers={
+                "Location": "/api/upload/flow/" + str(upload.pk)
+            }
+        )
 
-def _check_flow_upload_request(request, pk, attr, check_chunk):
+
+def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
     '''
     Checks if there's an error with this flow storage request.
     If there's an error, returns `(True, error_response)`.
@@ -107,6 +126,8 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
     `partial_upload` being database entry corresponding to this request.
 
     if check_chunk was False, then chunk data will not be checked and returned `chunk` will be None.
+    if lock is True, returned partial_upload will be locked; Use this if you need to update and save
+    the returned partial_upload.
     '''
     try:
         request_data = getattr(request, attr)
@@ -125,9 +146,6 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
         # still useful for computing offset of this chunk.
         normal_chunk_size = int(request_data['flowChunkSize'])
         file_size = int(request_data['flowTotalSize'])
-        file_name = request_data['flowFilename']
-        if len(file_name) == 0 or len(file_name) > 256:
-            raise ValueError
         if check_chunk:
             chunk = request_data['file']
             current_chunk_size = int(request_data['flowCurrentChunkSize'])
@@ -136,43 +154,55 @@ def _check_flow_upload_request(request, pk, attr, check_chunk):
         else:
             chunk = None
     except (KeyError, ValueError):
-        return (True, Response(status=status.HTTP_400_BAD_REQUEST))
+        return (True, Response(
+            {"message": "Invalid request parameter"},
+            status=status.HTTP_400_BAD_REQUEST
+        ))
 
     with transaction.atomic():
-        print('pk : ', pk)
-        partial_upload = get_object_or_404(PartialUpload, _id=pk)
+        try:
+            if lock:
+                partial_upload = PartialUpload.objects.filter(pk=pk).select_for_update().get()
+            else:
+                partial_upload = PartialUpload.objects.get(pk=pk)
+        except PartialUpload.DoesNotExist:
+            return (True, Response(
+                {"message": "Upload not found"},
+                status=status.HTTP_404_NOT_FOUND
+            ))
         if partial_upload.uploader != request.user:
             # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
             # But then we're leaking information to some potentially evil 3rd party
             # that partial upload with this pk exists. That seems bad for security.
             # So interpret this 404 not as NOT FOUND, but as MAYBE OR MAYBE NOT FOUND
             # BUT I AM NOT GOING TO TELL YOU AND I AM NOT LETTING YOU USE IT ANYWAYS.
-            return (True, Response(status=status.HTTP_404_NOT_FOUND))
+            return (True, Response(
+                {"message": "Upload not found"},
+                status=status.HTTP_404_NOT_FOUND
+            ))
 
         # We've established that the partial_upload's uploader and current user
         # matches, so it might be better to provide the user with more useful
         # responses other than 404.
-
-        if len(partial_upload.file_name) == 0:
-            partial_upload.file_name = file_name
-            print('partial_upload pk : ', partial_upload.pk, ' partial_upload name : ', partial_upload.file_name, ' file_name : ', file_name)
-            partial_upload.save()
-        elif partial_upload.file_name != file_name:
-            print('here!!!!!!!!!!!!!!!!!!!!!!! partial_upload pk : ', partial_upload.pk, 'partial_upload name : ', partial_upload.file_name, ' file_name : ', file_name)
-            return (True, Response({'test : ', "here1"}, status=status.HTTP_400_BAD_REQUEST))
 
         if partial_upload.is_expired():
             partial_upload.delete()
             # 410 GONE would be more appropriate, but flow doesn't understand it,
             # and Flow attempting to storage after expiration because bad internet
             # seems like a legit case. In this case we need to tell Flow to stop.
-            return (True, Response(status=status.HTTP_404_NOT_FOUND))
+            return (True, Response(
+                {"message": "Upload expired"},
+                status=status.HTTP_404_NOT_FOUND
+            ))
 
     if check_chunk:
         chunk_end = partial_upload.received_bytes + chunk.size
         if chunk_end > file_size:
-            # User is attempting to storage more than requested amount.
-            return (True, Response({'test : ', "here2"}, status=status.HTTP_400_BAD_REQUEST))
+            # User is attempting to store more than requested amount.
+            return (True, Response(
+                {"message": "File size exceeds requested amount"},
+                status=status.HTTP_400_BAD_REQUEST
+            ))
 
     return (False, (chunk_no, normal_chunk_size, chunk, partial_upload))
 
@@ -184,8 +214,7 @@ class FlowUploadChunkView(APIView):
 
 
     def get(self, request, pk):
-        print("get start!!!!!, pk : ", pk)
-        err, payload = _check_flow_upload_request(request, pk, 'query_params', check_chunk=False)
+        err, payload = _check_flow_upload_request(request, pk, 'query_params', check_chunk=False, lock=False)
         if err:
             return payload
 
@@ -206,7 +235,7 @@ class FlowUploadChunkView(APIView):
 
     def post(self, request, pk):
         with transaction.atomic():
-            err, payload = _check_flow_upload_request(request, pk, 'data', check_chunk=True)
+            err, payload = _check_flow_upload_request(request, pk, 'data', check_chunk=True, lock=True)
             if err:
                 return payload
 
@@ -222,11 +251,11 @@ class FlowUploadChunkView(APIView):
                 return Response(status=status.HTTP_200_OK)
 
             file_path = partial_upload.file_path()
-            if os.path.dirname(os.getcwd()) != '/':  # on develop.
-                file_path=Path(os.path.dirname(os.getcwd())+str(file_path))
 
-            print('file path : ', file_path)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            if os.path.dirname(os.getcwd()) != '/':  # on develop.
+                file_path = Path(os.path.dirname(os.getcwd())+str(file_path))
+            
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.touch(exist_ok=True)
 
             with file_path.open('ab') as partial_file:
@@ -234,133 +263,122 @@ class FlowUploadChunkView(APIView):
                     partial_file.write(subchunk)
             partial_upload.received_bytes += chunk.size
 
-            if partial_upload.received_bytes != partial_upload.file_size:
+            if partial_upload.received_bytes != partial_upload.size:
                 partial_upload.save()
                 return Response(status=status.HTTP_200_OK)
-            
-            # TODO: update to support upload to non-root path.
-            directory = UserStorage.objects.get(user=request.user).root_dir
+
+            file_record = partial_upload.complete()
+
+            # Generate thumbnail.
+            # May be a good idea to refactor this section into a function, but that's not necessary right now
+            # and I'll leave it as a TODO.
+            thumbnail_path = file_record.thumbnail_path()
+            thumbnail_path.parent.mkdir(parents=True, exist_ok=True)
+            thumbnail_generated = False
             try:
-                file_record = File.objects.create(
-                    owner=request.user,
-                    name=partial_upload.file_name,
-                    size=partial_upload.file_size,
-                    directory=directory,
-                )
-            except(IntegrityError): #디렉토리 내부에 동일한 이름의 파일 존재 시 에러
-                partial_upload.delete()
-                return Response({'error' : '해당 디렉토리에 동일한 이름을 가진 파일이 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                # Assume this is an image file and try to read it.
+                with Image.open(new_path) as img:
+                    img.thumbnail(settings.THUMBNAIL_SIZE)
+                    img.save(thumbnail_path, format="JPEG")
+                thumbnail_generated = True
+            except UnidentifiedImageError:
+                pass
 
-            extension=os.path.splitext(file_record.name)[1]
-            directory.files.add(file_record)
-            if os.path.dirname(os.getcwd()) == '/':  # on docker
-                new_path = Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)+extension) # (수정) 경로에 사용자 아이디 추가.
-                os.makedirs(os.path.dirname(new_path), exist_ok=True) # 사용자 디렉터리 없을 경우 새로 생성.
-
-            else:  # for test
-                new_path = os.path.dirname(os.getcwd()) + str(
-                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), str(file_record._id)+ extension))
-                os.makedirs(os.path.dirname(new_path), exist_ok=True)
-
-            print('new_path : ', new_path)
-            file_path.rename(new_path)
-
-            partial_upload.is_complete = True
-            partial_upload.delete()
-
-            # make thumbnail.
-
-            extension=os.path.splitext(file_record.name)[1] # get file extension.
-            save_name=str(file_record._id) + extension
-            #setting file path.
-            if os.path.dirname(os.getcwd()) == '/':  # on docker
-                path = str(Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
-
-            else:  # for test
-                path = os.path.dirname(os.getcwd()) + str(
-                    Path(settings.COMPLETE_UPLOAD_PATH, str(request.user), save_name))
-
-            # check if uploaded file is image file.
-            isThumbnail=False
-            try:
-                image = Image.open(path)
-                image_thum = MakeImageThumbnail(path=path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
-                                                                                # initial values are width=50, height=50.
-
-                thumbnail_url = image_thum.generate_thumbnail(request.user)
-                isThumbnail=True
-            except:
-                print('이미지 파일 아님.')
-                thumbnail_url='not image.'
+            if not thumbnail_generated:
                 try:
-                    print('동영상 파일임.')
-                    video_thum = MakeVideoThumbnail(path, width=50, height=50) # can set size of the thumbnail by changing the width value and height value.
-                                                                               # initial values are width=50, height=50.
-                    thumbnail_url = video_thum.generate_thumbnail(request.user)
-                    isThumbnail=True
-                except:
-                    thumbnail_url='not image or video file.'
+                    # The file wasn't image; Try movie instead.
+                    with VideoFileClip(str(new_path), audio=False) as clip:
+                        # Pick an early frame, but not the initial one since those may be completely black
+                        # in some cases. Note that these numbers were arbitrarily picked.
+                        frame_time = min(clip.duration * 0.001, 10.0)
+                        frame = clip.get_frame(frame_time)
+                except IOError:
+                    pass
+                else:
+                    # else block for try statement is executed when no exception was caught;
+                    # This is a bit obscure, but does what I want here.
+                    img = Image.fromarray(frame)
+                    img.thumbnail(settings.THUMBNAIL_SIZE)
+                    img.save(thumbnail_path, format="JPEG")
+                    thumbnail_generated = True
 
-            if isThumbnail:
-                file_record.is_thumbnail = True
+            if thumbnail_generated:
+                file_record.has_thumbnail = True
                 file_record.save()
 
             return Response(
-                {'thumbnail_url' : thumbnail_url,
-                 'id' : str(file_record._id)}, # show thumbnail image's path to frontend.
+                {'id' : str(file_record.pk)},
                 status=status.HTTP_201_CREATED,
                 headers={
-                    "Location": "/api/file" + str(file_record._id)
+                    "Location": "/api/file/" + str(file_record.pk)
                 },
             )
 
 
-from django_zip_stream.responses import TransferZipResponse
+class ThumbnailAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, file_id): # 특정 사용자의 고유 ID와 함께 파일 이름 전달
+        user = request.user
+        try:
+            file = get_object_or_404(File, owner=user, pk=file_id)
+        except Http404:
+            return Response(
+                {"error" : "파일을 찾지 못했습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if not file.has_thumbnail:
+            return Response(
+                {"error" : "썸네일을 찾지 못했습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        return Response(
+            status=status.HTTP_200_OK,
+            headers={
+                'Content-Disposition': 'inline',
+                'X-Accel-Redirect': '/media/thumbnail/{0}/{1}'.format(str(user.pk), str(file.pk))
+            },
+            content_type='image/jpeg',
+        )
+
+
 class FileDownloadAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        print("post start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        try:
-            user=get_object_or_404(User, username=request.user.username) # 사용자 이름으로 받을까? 고유 ID로 받을까?
-        except(Http404):
-            return Response({"error": "사용자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        req=request.data
-        if len(request.data)==1: # 파일 1개
+        user = request.user
+        if len(request.data) == 1: # 파일 1개
             try:
-                print(user)
-                file=get_object_or_404(File, owner=user, pk=req['file1'])
-            except(Http404):
-                return Response({"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
-                                     status=status.HTTP_404_NOT_FOUND)
-
+                file = get_object_or_404(File, owner=user, pk=reqest.data['file1'])
+            except Http404:
+                return Response(
+                    {"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             response = Response()
-            #response['Content-Disposition'] = 'attachment; filename={0}'.format(file.name)  # 웹 페이지에 보여질 파일 이름을 결정한다.
-            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(user.username,
-                                                                         str(file._id) + os.path.splitext(file.name)[1]) # nginx 컨테이너 상 /media/files/<사용자 닉네임> 폴더에서 파일을 전달해준다.
-
+            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))  # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+            return response
         else: #파일 여러개
             print("multi files.")
-            files=[]
-            try:
-                for id in req.values():
-                    file=get_object_or_404(File, owner=user, pk=id)
-                    files.append((file.name,
-                                 '/media/files/{0}/{1}'.format(
-                                     user.username,
-                                     str(file._id) + os.path.splitext(file.name)[1]),
-                            file.size))
-
-            except(Http404):
-                return Response({"error": "file name {0} does not exist.", },
-                                status=status.HTTP_404_NOT_FOUND)
-
+            files = []
+            for file_id in request.data.values():
+                try:
+                    file_record = get_object_or_404(File, owner=user, pk=file_id)
+                except Http404:
+                    return Response(
+                        {"error": "file {0} does not exist."}.format(file_id),
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                files.append((
+                    file_record.name,
+                    '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))
+                ))
+            
             print('files : ', files)
             return TransferZipResponse(filename='downloadFiles.zip', files=files)
 
-        print('/media/files/{0}/{1}'.format(user.username, str(file._id) + os.path.splitext(file.name)[1]))
-        return response
 
 #파일 ID를 통해 파일 정보를 얻는다.
 class FileManagementAPI(generics.GenericAPIView):

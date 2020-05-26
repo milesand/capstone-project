@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     'capstone.account.apps.AccountConfig',
     'capstone.storage.apps.StorageConfig',
     'capstone.teams.apps.TeamsConfig',
-
 ]
 
 REST_KNOX = {
@@ -172,11 +171,26 @@ DATABASES = {
         'PASSWORD' : '1234',
         'HOST' : 'db', #이부분에 서버 IP 넣기
         'PORT' : '5432',
+        'OPTIONS': {
+            'isolation_level' : psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+        }
     },
-    'OPTIONS' : {
-        'isolation_level' : psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
-    }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -321,5 +335,7 @@ PARTIAL_UPLOAD_EXPIRE = timedelta(minutes=30)
 
 PARTIAL_UPLOAD_PATH = "/file/partial"
 COMPLETE_UPLOAD_PATH = "/file/complete"
+THUMBNAIL_PATH = "/file/thumbnail"
+THUMBNAIL_SIZE = 128, 128
 
 DOMAIN_NAME='localhost' # 도메인 이름, 도메인 구입 후에 수정

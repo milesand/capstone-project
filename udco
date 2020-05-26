@@ -9,6 +9,9 @@ fi
 if [ ! -d 'file/complete' ]; then
     mkdir file/complete
 fi
+if [ ! -d 'file/thumbnail' ]; then
+    mkdir file/complete
+fi
 if [ ! -d 'db/data' ]; then
     mkdir -p db/data
 elif [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
