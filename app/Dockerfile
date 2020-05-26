@@ -4,6 +4,8 @@ ENV PYTHONUNBUFFERED 1
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /
 
 RUN apk add --no-cache \
+        git \
+        gcc \
         python3-dev \
         py3-pip \
         jpeg-dev \
@@ -13,7 +15,6 @@ RUN apk add --no-cache \
         musl-dev \
         libffi-dev \
         openssl-dev \
-        gcc \
         pcre-dev \
         postgresql-dev \
         bash &&\

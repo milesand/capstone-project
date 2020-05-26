@@ -52,8 +52,7 @@ api = [
     re_path('upload/flow$', storage.FlowUploadStartView.as_view()),
     re_path('upload/flow/(?P<pk>[0-9a-z-]{36})', storage.FlowUploadChunkView.as_view()),
 
-    # 다운로드
-    path("download/<str:file_id>", storage.FileDownloadAPI.as_view()),
+    path("download", storage.FileDownloadAPI.as_view()),
 
     # 썸네일
     path("thumbnail/<str:file_id>", storage.ThumbnailAPI.as_view()),

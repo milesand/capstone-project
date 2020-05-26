@@ -163,7 +163,34 @@
     
 2. React의 flow.js에서 발생했던 asynchronous call 문제를 해결했습니다.
   
- 
+5/25 수정사항
+------------------
+1. 다중 업로드시에 발생하던 asynchronous call 문제가 계속 발생하여 다시 수정했습니다. 테스트를 수행했을 때 오류가 발생하지 않았긴 했지만, 또다시 동일한 문제가 발생할 수 있습니다.
+2. 다중 다운로드 기능을 구현했습니다. 구현을 위해 nginx docker base image를 levelonestl/nginx-mod-zip으로 변경했습니다. 작동 과정은 아래와 같습니다.
+
+   1. 로그인한 뒤 /file-test로 들어갑니다.
+   2. 업로드 버튼을 이용하여 파일들을 업로드합니다.
+   3. 다운로드 아래의 입력창에 파일들의 ID를 공백으로 구분하여 입력합니다. ID가 하나일때는 기존 방식으로, 여러 개일 때는 downloadFiles.zip 으로 다운로드됩니다. 아이디 확인은 /api/file-list
+      로 가시면 각 파일들의 정보가 나오는데, 여기서 _id 값을 쌍따옴표 빼고 사용하시면 됩니다.실제로 사용할 때는 {file1 : <file1 ID>, file2 : <file2 ID>, file3 : <file3 ID>, ...} 형식으로 /api/download에 POST 요청을 보내주시면 됩니다.
+   
+   4. downloadFiles.zip 파일을 통해 입력했던 ID들을 가지고 있는 파일들을 확인하실 수 있습니다.
+   
+   수정과정에서 기존에 파일을 다운로드 하기 전 fetch call을 통해 해당 id를 가지는 파일 이름을 불러오는 기능을 제거했는데, 이는 디렉토리에 들어갔을 때 해당 디렉토리 내부에 있는
+   파일들의 이름 및 썸네일 정보를 한번에 받아오므로 다운로드 과정에서 굳이 다시 받아올 필요가 없다고 생각했기 때문입니다. 지금은 filename_here라는 이름으로 통일시켜 놓았고,
+   메인페이지와 결합할 때 이 부분에 파일의 실제 이름을 넣어주시면 됩니다.
+
+   1. 업로드 창
+   
+   ![업로드창](https://user-images.githubusercontent.com/49271247/82777601-89ede980-9e89-11ea-8106-5874119bfcbf.png)
+
+   2. 다운로드 입력창
+   
+   ![다운로드 입력창](https://user-images.githubusercontent.com/49271247/82777596-878b8f80-9e89-11ea-9604-3a5fb666cbef.png)
+
+   3. 압축 파일
+   
+   ![압축파일](https://user-images.githubusercontent.com/49271247/82777597-88242600-9e89-11ea-98bf-39c5ded972a8.png)
+
 URL 사용법
 ------------------
 리액트 폼

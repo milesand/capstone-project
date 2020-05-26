@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, Http404
+from django_zip_stream.responses import TransferZipResponse
 from rest_framework import status, generics
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -169,7 +170,6 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
                 {"message": "Upload not found"},
                 status=status.HTTP_404_NOT_FOUND
             ))
-
         if partial_upload.uploader != request.user:
             # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
             # But then we're leaking information to some potentially evil 3rd party
@@ -343,25 +343,41 @@ class ThumbnailAPI(APIView):
         )
 
 
-class FileDownloadAPI(generics.GenericAPIView):
-    serializer_class = FileDownloadSerializer
+class FileDownloadAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
-    def get(self, request, file_id): # 특정 사용자의 고유 ID와 함께 파일 이름 전달
+    def post(self, request):
         user = request.user
-        try:
-            file = get_object_or_404(File, owner=user, pk=file_id)
-        except Http404:
-            return Response(
-                {"error" : "해당 파일 이름으로 저장된 파일이 존재하지 않습니다."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        response = Response()
-        response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
-        response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))  # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
-
-        return response
+        if len(request.data) == 1: # 파일 1개
+            try:
+                file = get_object_or_404(File, owner=user, pk=reqest.data['file1'])
+            except Http404:
+                return Response(
+                    {"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            response = Response()
+            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))  # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+            return response
+        else: #파일 여러개
+            print("multi files.")
+            files = []
+            for file_id in request.data.values():
+                try:
+                    file_record = get_object_or_404(File, owner=user, pk=file_id)
+                except Http404:
+                    return Response(
+                        {"error": "file {0} does not exist."}.format(file_id),
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                files.append((
+                    file_record.name,
+                    '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))
+                ))
+            
+            print('files : ', files)
+            return TransferZipResponse(filename='downloadFiles.zip', files=files)
 
 
 #파일 ID를 통해 파일 정보를 얻는다.
