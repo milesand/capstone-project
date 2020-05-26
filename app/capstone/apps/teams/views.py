@@ -17,7 +17,6 @@ import json
 from rest_framework.test import APIRequestFactory
 class CreateTeamAPI(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated, )
-    queryset = Team.objects.all()
 
     def post(self, request): #팀 생성
         serializer_class=self.get_serializer_class()
@@ -44,6 +43,9 @@ class CreateTeamAPI(generics.ListCreateAPIView):
         if self.request.method=='GET':
             return TeamSerializer
         return CreateTeamSerializer
+
+    def get_queryset(self):
+        return Team.objects.filter(teamLeader=self.request.user)
 
 class TeamAPI(generics.GenericAPIView):
     serializer_class = TeamSerializer
