@@ -140,7 +140,7 @@ class PartialUpload(DirectoryEntry):
         return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
 
     def complete(self):
-        partial_path=self.file_path() #아래의 self.delete()가 실행될 때 file_path 정보가 소실되므로, 미리 저장해둔뒤 사용한다.
+        partial_path = self.file_path()  # self.delete()가 실행될 때 file_path 정보가 소실되므로, 미리 저장해둔뒤 사용한다.
         self.is_completed = True
         self.delete()
 
@@ -151,10 +151,9 @@ class PartialUpload(DirectoryEntry):
             size=self.size,
         )
 
-        path = file_record.path().parent
-        if not path.exists(): # 유저 디렉토리 없을 경우 새로 생성
-            path.mkdir(mode=0o755, parents=True)
-        partial_path.rename(file_record.path())
+        path = file_record.path()
+        path.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+        partial_path.rename(path)
         return file_record
 
     # When PartialUpload is deleted, some clean ups are required;
