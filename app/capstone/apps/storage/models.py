@@ -1,10 +1,10 @@
 import uuid
 
-from datetime import datetime
 from pathlib import PurePosixPath, Path
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from .exceptions import NotEnoughCapacityException, InvalidRemovalError
 
@@ -132,8 +132,8 @@ class PartialUpload(DirectoryEntry):
         self.is_completed = False
 
     def is_expired(self):
-        now = datetime.now()
-        time_since_upload = now - self.last_receive_time.replace(tzinfo=None)
+        now = timezone.now()
+        time_since_upload = now - self.last_receive_time
         return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
 
     def file_path(self):
