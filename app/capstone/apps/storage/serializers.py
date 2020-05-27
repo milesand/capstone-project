@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserStorage, File
+from .models import UserStorage, Directory, File
 
 # User 모델에서 루트 디렉터리 및 소유 디렉터리, 파일들의 정보를 참조할 때 사용
 class UserStorageSerializer(serializers.ModelSerializer):
@@ -18,3 +18,9 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = ('pk', 'size', 'uploaded_at', 'has_thumbnail')
+
+
+class DirectorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Directory
+        fields = ('pk', 'owner', 'name', 'parent')

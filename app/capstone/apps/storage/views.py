@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path, PurePosixPath
 
@@ -13,7 +14,7 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, FileDownloadSerializer
+from .serializers import FileSerializer, FileDownloadSerializer, DirectorySerializer
 
 # Thumbnail generation
 from PIL import Image, UnidentifiedImageError
@@ -21,6 +22,9 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 #download
 from django_zip_stream.responses import TransferZipResponse
+
+
+logger = logging.getLogger(__name__)
 
 
 def valid_dir_entry_name(name):
@@ -379,6 +383,59 @@ class CreateDirectoryView(APIView):
             headers={
                 "Location": "/api/directory/" + str(directory_record.pk)
             }
+        )
+
+
+class DirectoryView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        # We take only id here for convinience. Might be better to support path, too.
+        try:
+            directory = (
+                Directory.objects
+                .filter(owner=request.user, pk=pk)
+                .prefetch_related('children')
+                .get()
+            )
+        except Directory.DoesNotExist:
+            return Response(
+                {"message": "Directory not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        data = DirectorySerializer(directory).data
+
+        for field_name in ("subdirectories", "files", "partial_uploads"):
+            data[field_name] = {}
+
+        for child in directory.children:
+            try:
+                child_dir = child.direcotry
+                data['subdirectories'][child_dir.name] = str(child_dir.pk)
+                continue
+            except Directory.DoesNotExist:
+                pass
+            try:
+                child_file = child.file
+                data['files'][child_file.name] = FileSerializer(child_file).data
+                continue
+            except File.DoesNotExist:
+                pass
+            try:
+                child_pu = child.partialupload
+                data['partial_uploads'][child_pu.name] = str(child_pu.pk)
+                continue
+            except PartialUpload.DoesNotExist:
+                pass
+            logger.warn(
+                "Child of unknown type found during serialization: {}",
+                str(child.pk)
+            )
+        
+        return Response(
+            data,
+            status=status.HTTP_200_OK
         )
 
 
