@@ -22,12 +22,21 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 #download
 from django_zip_stream.responses import TransferZipResponse
 
+
+def valid_dir_entry_name(name):
+    return (
+        len(name) in range(1, 257) and
+        '/' not in file_name and
+        file_name != '.' and
+        file_name != '..'
+    )
+
+
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        print("request : ", request.data)
         user = request.user
 
         # TODO: Move validation into a drf serializer
@@ -36,36 +45,26 @@ class FlowUploadStartView(APIView):
         try:
             file_size = int(request.data['fileSize'])
         except KeyError:
-            print('here1.')
-            return Response({
-                "message": "Missing fileSize field"
-            },
+            return Response(
+                { "message": "Missing fileSize field" },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if file_size < 0:
-            print("here2.")
-            return Response({
-                "message": "Invalid fileSize field: {}".format(request.data['fileSize'])
-            },
+            return Response(
+                { "message": "Invalid fileSize field: {}".format(request.data['fileSize']) },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # Get and validate fileName.
         try:
             file_name = request.data['fileName']
         except KeyError:
-            print('here3.')
-            return Response({
-                "message": "Missing fileName field"
-            },
+            return Response(
+                { "message": "Missing fileName field" },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if (len(file_name) not in range(1, 257) or
-                '/' in file_name or
-                file_name == '.' or
-                file_name == '..'):
-            return Response({
-                "message": "Invalid fileName field"
-            },
+        if not valid_dir_entry_name(file_name):
+            return Response(
+                { "message": "Invalid fileName field" },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -78,7 +77,6 @@ class FlowUploadStartView(APIView):
                     if directory.startswith('/'):
                         # Assume 'directory' is a POSIX path.
                         n, directory = Directory.get_by_path(user, directory)
-                        print("successfully end, n : ", n, ' directory : ', directory)
                         if n != 0:
                             raise Directory.DoesNotExist
                     else:
@@ -86,10 +84,8 @@ class FlowUploadStartView(APIView):
                         directory = Directory.objects.get(pk=directory, owner=user)
 
                 except Directory.DoesNotExist:
-                    print("here4.")
-                    return Response({
-                        "message": "Directory not found"
-                    },
+                    return Response(
+                        { "message": "Directory not found" },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
@@ -103,18 +99,15 @@ class FlowUploadStartView(APIView):
                 storage.add(file_size)
                 storage.save()
         except IntegrityError:
-            print("here5.")
             transaction.rollback()
-            return Response({
-                "message": "Given name is already being used"
-            },
+            return Response(
+                { "message": "Given name is already being used" },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except NotEnoughCapacityException:
             transaction.rollback()
-            return Response({
-                "message": "Not enough capacity"
-            },
+            return Response(
+                { "message": "Not enough capacity" },
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -325,6 +318,68 @@ class FlowUploadChunkView(APIView):
                     "Location": "/api/file/" + str(file_record.pk)
                 },
             )
+
+
+class CreateDirectoryView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        fields = {}
+        for field in ('parent', 'name'):
+            try:
+                fields[field] = request.data[field]
+            except KeyError:
+                return Response(
+                    { "message": "Missing field: {}".format(field) },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if not valid_dir_entry_name(fields['name']):
+            return Response(
+                { "message": "Invalid field: name" },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        n, parent = Directory.get_by_path_or_id(request.user, field['parent'])
+        if n != 0:
+            return Response(
+                { "message": "Parent directory does not exist" },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            with transaction.atomic():
+                storage = (
+                    UserStorage
+                        .objects
+                        .filter(user=request.user)
+                        .select_for_update()
+                        .get()
+                )
+                storage.add(0, dir_count=1)
+                storage.save()
+                directory_record = Directory.objects.create(
+                    owner=request.user,
+                    parent=parent,
+                    name=name,
+                )
+        except NotEnoughCapacityException:
+            transaction.rollback()
+            return Response(
+                { "message": "Not enough capacity" },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        except IntegrityError:
+            transaction.rollback()
+            return Response(
+                { "message": "Given name is already being used" },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            status=status.HTTP_201_CREATED,
+            headers={
+                "Location": "/api/directory/" + str(directory_record.pk)
+            }
+        )
 
 
 class ThumbnailAPI(APIView):
