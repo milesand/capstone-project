@@ -1,7 +1,14 @@
 from django.contrib import admin
-from .models import UserStorage, PartialUpload
+from .models import DirectoryEntry, Directory, File, PartialUpload
 
 # Register your models here.
 
-admin.site.register(UserStorage)
-admin.site.register(PartialUpload)
+admin.site.register(
+    [
+        DirectoryEntry,
+        Directory,
+        File,
+        PartialUpload,
+    ]
+)
+
