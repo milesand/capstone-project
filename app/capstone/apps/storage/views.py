@@ -1,11 +1,14 @@
 import logging
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, Http404
+from django_zip_stream.responses import TransferZipResponse
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from PIL import Image, UnidentifiedImageError
 from rest_framework import status, generics
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -14,14 +17,7 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, FileDownloadSerializer, DirectorySerializer
-
-# Thumbnail generation
-from PIL import Image, UnidentifiedImageError
-from moviepy.video.io.VideoFileClip import VideoFileClip
-
-#download
-from django_zip_stream.responses import TransferZipResponse
+from .serializers import FileSerializer, DirectorySerializer
 
 
 logger = logging.getLogger(__name__)
@@ -50,12 +46,12 @@ class FlowUploadStartView(APIView):
             file_size = int(request.data['fileSize'])
         except KeyError:
             return Response(
-                { "message": "Missing fileSize field" },
+                {"message": "Missing fileSize field"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if file_size < 0:
             return Response(
-                { "message": "Invalid fileSize field: {}".format(request.data['fileSize']) },
+                {"message": "Invalid fileSize field: {}".format(request.data['fileSize'])},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # Get and validate fileName.
@@ -63,12 +59,12 @@ class FlowUploadStartView(APIView):
             file_name = request.data['fileName']
         except KeyError:
             return Response(
-                { "message": "Missing fileName field" },
+                {"message": "Missing fileName field"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if not valid_dir_entry_name(file_name):
             return Response(
-                { "message": "Invalid fileName field" },
+                {"message": "Invalid fileName field"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -89,7 +85,7 @@ class FlowUploadStartView(APIView):
 
                 except Directory.DoesNotExist:
                     return Response(
-                        { "message": "Directory not found" },
+                        {"message": "Directory not found"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
@@ -105,13 +101,13 @@ class FlowUploadStartView(APIView):
         except IntegrityError:
             transaction.rollback()
             return Response(
-                { "message": "Given name is already being used" },
+                {"message": "Given name is already being used"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except NotEnoughCapacityException:
             transaction.rollback()
             return Response(
-                { "message": "Not enough capacity" },
+                {"message": "Not enough capacity"},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -178,8 +174,8 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
             ))
 
         if partial_upload.owner != request.user:
-            # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more appropriate.
-            # But then we're leaking information to some potentially evil 3rd party
+            # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more
+            # appropriate. But then we're leaking information to some potentially evil 3rd party
             # that partial upload with this pk exists. That seems bad for security.
             # So interpret this 404 not as NOT FOUND, but as MAYBE OR MAYBE NOT FOUND
             # BUT I AM NOT GOING TO TELL YOU AND I AM NOT LETTING YOU USE IT ANYWAYS.
@@ -221,7 +217,9 @@ class FlowUploadChunkView(APIView):
 
 
     def get(self, request, pk):
-        err, payload = _check_flow_upload_request(request, pk, 'query_params', check_chunk=False, lock=False)
+        err, payload = _check_flow_upload_request(
+            request, pk, 'query_params', check_chunk=False, lock=False
+        )
         if err:
             return payload
 
@@ -242,15 +240,17 @@ class FlowUploadChunkView(APIView):
 
     def post(self, request, pk):
         with transaction.atomic():
-            err, payload = _check_flow_upload_request(request, pk, 'data', check_chunk=True, lock=True)
+            err, payload = _check_flow_upload_request(
+                request, pk, 'data', check_chunk=True, lock=True
+            )
             if err:
                 return payload
 
             chunk_no, normal_chunk_size, chunk, partial_upload = payload
             chunk_start = (chunk_no - 1) * normal_chunk_size
             if partial_upload.received_bytes < chunk_start:
-                # We're not ready to write this chunk yet, because we haven't written previous chunks.
-                # Tell flow to send this again later.
+                # We're not ready to write this chunk yet, because we haven't written previous
+                # chunks. Tell flow to send this again later.
                 return Response(status=status.HTTP_204_NO_CONTENT)
             if partial_upload.received_bytes > chunk_start:
                 # We already received this chunk, but for some reason flow sent it again.
@@ -277,13 +277,13 @@ class FlowUploadChunkView(APIView):
             file_record = partial_upload.complete()
             print("complete call end!")
             # Generate thumbnail.
-            # May be a good idea to refactor this section into a function, but that's not necessary right now
-            # and I'll leave it as a TODO.
+            # May be a good idea to refactor this section into a function, but that's
+            # not necessary right now and I'll leave it as a TODO.
             thumbnail_path = file_record.thumbnail_path()
             thumbnail_path.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
             thumbnail_generated = False
 
-            file_path=file_record.path()
+            file_path = file_record.path()
             try:
                 # Assume this is an image file and try to read it.
                 with Image.open(file_path) as img:
@@ -297,8 +297,9 @@ class FlowUploadChunkView(APIView):
                 try:
                     # The file wasn't image; Try movie instead.
                     with VideoFileClip(str(file_path), audio=False) as clip:
-                        # Pick an early frame, but not the initial one since those may be completely black
-                        # in some cases. Note that these numbers were arbitrarily picked.
+                        # Pick an early frame, but not the initial one since those may
+                        # be completely black in some cases. Note that these numbers
+                        # were arbitrarily picked.
                         frame_time = min(clip.duration * 0.001, 10.0)
                         frame = clip.get_frame(frame_time)
                 except IOError:
@@ -335,28 +336,28 @@ class CreateDirectoryView(APIView):
                 fields[field] = request.data[field]
             except KeyError:
                 return Response(
-                    { "message": "Missing field: {}".format(field) },
+                    {"message": "Missing field: {}".format(field)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         if not valid_dir_entry_name(fields['name']):
             return Response(
-                { "message": "Invalid field: name" },
+                {"message": "Invalid field: name"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         n, parent = Directory.get_by_path_or_id(request.user, fields['parent'])
         if n != 0:
             return Response(
-                { "message": "Parent directory does not exist" },
+                {"message": "Parent directory does not exist"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
             with transaction.atomic():
                 storage = (
                     UserStorage
-                        .objects
-                        .filter(user=request.user)
-                        .select_for_update()
-                        .get()
+                    .objects
+                    .filter(user=request.user)
+                    .select_for_update()
+                    .get()
                 )
                 storage.add(0, dir_count=1)
                 storage.save()
@@ -368,13 +369,13 @@ class CreateDirectoryView(APIView):
         except NotEnoughCapacityException:
             transaction.rollback()
             return Response(
-                { "message": "Not enough capacity" },
+                {"message": "Not enough capacity"},
                 status=status.HTTP_403_FORBIDDEN,
             )
         except IntegrityError:
             transaction.rollback()
             return Response(
-                { "message": "Given name is already being used" },
+                {"message": "Given name is already being used"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -429,11 +430,11 @@ class DirectoryView(APIView):
                 continue
             except PartialUpload.DoesNotExist:
                 pass
-            logger.warn(
-                "Child of unknown type found during serialization: {}",
+            logger.warning(
+                "Child of unknown type found during serialization: %s",
                 str(child.pk)
             )
-        
+
         return Response(
             data,
             status=status.HTTP_200_OK
@@ -475,15 +476,18 @@ class FileDownloadAPI(APIView):
         user = request.user
         if len(request.data) == 1: # 파일 1개
             try:
-                file = get_object_or_404(File, owner=user, pk=reqest.data['file1'])
+                file = get_object_or_404(File, owner=user, pk=request.data['file1'])
             except Http404:
                 return Response(
                     {"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
                     status=status.HTTP_404_NOT_FOUND
                 )
             response = Response()
-            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name) # 웹 페이지에 보여질 파일 이름을 결정한다.
-            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))  # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name)
+            # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(
+                str(user.pk), str(file.pk)
+            )
             return response
         else: #파일 여러개
             print("multi files.")
@@ -493,14 +497,14 @@ class FileDownloadAPI(APIView):
                     file_record = get_object_or_404(File, owner=user, pk=file_id)
                 except Http404:
                     return Response(
-                        {"error": "file {0} does not exist."}.format(file_id),
+                        {"error": "file {0} does not exist.".format(file_id)},
                         status=status.HTTP_404_NOT_FOUND
                     )
                 files.append((
                     file_record.name,
                     '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))
                 ))
-            
+
             print('files : ', files)
             return TransferZipResponse(filename='downloadFiles.zip', files=files)
 
@@ -510,11 +514,11 @@ class FileManagementAPI(generics.GenericAPIView):
 
     def get(self, request, file_id):
         try:
-            file=get_object_or_404(File, owner=request.user, pk=file_id)
-        except(Http404):
+            file_record = get_object_or_404(File, owner=request.user, pk=file_id)
+        except Http404:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        serializer=self.serializer_class(file)
+        serializer = self.serializer_class(file_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, file_id):
@@ -532,9 +536,9 @@ class FileListAPI(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request):
-        self.queryset=File.objects.filter(owner=request.user)
+        self.queryset = File.objects.filter(owner=request.user)
         print(self.queryset)
-        serializer=self.serializer_class(self.queryset, many=True)
+        serializer = self.serializer_class(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # 테스트용
