@@ -62,7 +62,7 @@ api = [
     path('mkdir', storage.CreateDirectoryView.as_view()),
 
     # 디렉토리 정보
-    path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()),
+    re_path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()),
 
     # 파일 정보 출력
     path('file/<str:file_id>', storage.FileManagementAPI.as_view()),

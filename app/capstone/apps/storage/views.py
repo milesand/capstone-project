@@ -30,9 +30,9 @@ logger = logging.getLogger(__name__)
 def valid_dir_entry_name(name):
     return (
         len(name) in range(1, 257) and
-        '/' not in file_name and
-        file_name != '.' and
-        file_name != '..'
+        '/' not in name and
+        name != '.' and
+        name != '..'
     )
 
 
@@ -343,7 +343,7 @@ class CreateDirectoryView(APIView):
                 { "message": "Invalid field: name" },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        n, parent = Directory.get_by_path_or_id(request.user, field['parent'])
+        n, parent = Directory.get_by_path_or_id(request.user, fields['parent'])
         if n != 0:
             return Response(
                 { "message": "Parent directory does not exist" },
@@ -363,7 +363,7 @@ class CreateDirectoryView(APIView):
                 directory_record = Directory.objects.create(
                     owner=request.user,
                     parent=parent,
-                    name=name,
+                    name=fields['name'],
                 )
         except NotEnoughCapacityException:
             transaction.rollback()
@@ -409,9 +409,10 @@ class DirectoryView(APIView):
         for field_name in ("subdirectories", "files", "partial_uploads"):
             data[field_name] = {}
 
-        for child in directory.children:
+        for child in directory.children.all():
             try:
-                child_dir = child.direcotry
+                child_dir = child.directory
+
                 data['subdirectories'][child_dir.name] = str(child_dir.pk)
                 continue
             except Directory.DoesNotExist:
