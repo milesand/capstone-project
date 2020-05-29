@@ -1,0 +1,59 @@
+@keyframes contextFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.contextMenu {
+  z-index: 9999 !important;
+  min-width: 200px;
+  background-color: #ffffff;
+  box-shadow: 1px 1px 7px #bebebe;
+  border-radius: 5px 5px 5px 5px;
+  line-height: 1.8rem;
+  font-size: 17px;
+  padding:10px 0px 10px 0px;
+  font-family: "Poppins", sans-serif;
+  color:#5e5e5e;
+  outline-width: 0px !important;
+  line-height: 2rem;
+
+}
+.contextMenu::after {
+  height:10px;
+}
+
+/* 커서 누르는 모양으로 바꾸려고 추가함*/
+.contextMenu a{ 
+  text-decoration: none !important;
+}
+
+.contextMenuItem {
+  padding:0px 20px 0px 20px;
+  outline-width: 0px !important;
+  -ms-user-select: none; 
+  -moz-user-select: -moz-none; 
+  -webkit-user-select: none; 
+  -khtml-user-select: none; 
+  user-select:none;
+
+
+}
+
+.contextMenuItem:hover {
+  background-color: #eeeeee !important;
+  border-style:none !important;
+}
+.contextMenuDivider {
+  padding:1px 0px 0px 0px;
+  background-color:#dddddd;
+  margin-top:6px;
+  margin-bottom: 6px;
+}
+
+
+.contextMenuText {
+  margin-left: 10px;
+}

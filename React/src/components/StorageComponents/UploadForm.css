@@ -1,0 +1,67 @@
+
+
+.Upload-button {
+    background-color: rgb(248, 239, 239)!important;
+    background-image: url("./download-shape.png");
+    background-size: 120px;
+    background-repeat: no-repeat;
+    background-position: center 40%;
+    padding-top : 150px;
+    vertical-align: bottom;
+    border-width: 3px !important;
+    border-style: dashed;
+    font-size : 20px;
+    margin:50px auto;
+    border-radius: .25em;
+    height : 500px;
+    width : 765px;
+}
+
+.Upload-button:hover {
+    background-color: rgb(228, 225, 225)!important;
+}
+
+.Upload-process{
+    background-color: rgb(0, 0, 0);
+    width:50px;
+}
+
+.bar{
+    width : 120%;
+}
+
+.button-resume{
+    background-color: rgb(255, 255, 255);
+    background-image: url("./resume.png");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    border: 0;
+    height: 20px;
+    width: 20px;
+}
+
+.button-pause{
+    background-color: rgb(255, 255, 255);
+    background-image: url("./pause.png");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    border: 0;
+    height: 20px;
+    width: 20px;
+}
+
+.button-delete{
+    background-color: rgb(255, 255, 255);
+    background-image: url("./delete.png");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    border: 0;
+    height: 20px;
+    width: 20px;
+}
+
+.upload-screen{
+    overflow-y: auto;
+    height: 600px;
+    width: 100%;
+}

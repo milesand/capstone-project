@@ -1,12 +1,12 @@
 import React from 'react';
-import '../style2.css';
-import {Col} from 'react-bootstrap';
+import "./LoginStyle.css";
+import {Col} from 'reactstrap';
 import logo from './mail.png';
 import {Link} from 'react-router-dom'
 const MailResendForm=({username, email, returnToLogin}) => {
 
     return(
-        <div className="MailResend">
+        <div className="LS MailResend">
         <div className="wrapper fadeInDown">
           <div id="formContent">
             

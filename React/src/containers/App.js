@@ -1,6 +1,8 @@
 import React, { Component, Fragment} from "react";
-import NavBar from "../components/RoutingComponents/NavBar";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; //토스트 알림을 위한 css
+import Toast from './Toast';
 
 //라우팅용 모듈들
 import { Route, Switch } from "react-router-dom";
@@ -49,7 +51,7 @@ class App extends Component {
       console.log("err checwgjoiwjgiowejgoiewk.");
       console.log(response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
-        console.log("here. error exist.");
+        console.log("here. error exist, this : ", this);
         this.setState({
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
@@ -200,6 +202,13 @@ class App extends Component {
     });  
   }
 
+  notify = (message) => { //toast notification
+    if(String(message)!='[object Object]'){ //이름이 긴 파일을 업로드 했을 때 처리
+      message=String(message);
+    } 
+    Toast.info(message);
+  };
+
   render() {
     const baseProps = {
       username: this.state.username,
@@ -210,23 +219,16 @@ class App extends Component {
       isLoading: this.state.isLoading,
       userStateChange: this.userStateChange,
       toggleLoadingState: this.toggleLoadingState,
+      logout: this.logout,
+      notify: this.notify
     };
 
     console.log("base test.", baseProps);
     return (   
        <Fragment>
-         
-          
+          <ToastContainer />
           { this.state && this.state.isLogin!=null &&
-          <NavBar        
-            isLogin={this.state.isLogin}
-            logout={this.logout}
-          />
-          }
-          { this.state && this.state.isLogin!=null &&
-            <Switch>
-              <AuthenticatedRoute path="/" exact component={Home} props={baseProps} />
-              <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />                     
+            <Switch>        
               <NormalRoute path="/login" exact component={Login} props={baseProps} />
               <NormalRoute path="/mail-validation/*" exact component={MailValidation} props={baseProps} />
               <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
@@ -236,6 +238,8 @@ class App extends Component {
               <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
+              <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />
+              <AuthenticatedRoute path="/" component={Home} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
           }
@@ -244,5 +248,4 @@ class App extends Component {
   }
 }
 
-//export default App;
 export default withRouter(App); //로그아웃 했을 때 로그인화면으로 리다이렉트하기 위해 바꿔준다.

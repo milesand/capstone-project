@@ -1,13 +1,13 @@
 import React from 'react';
-import '../style2.css';
-import {Col, Row} from 'react-bootstrap';
+import "./LoginStyle.css";
+import {Col, Row} from 'reactstrap';
 import { Link } from "react-router-dom";
 import logo from './login4.png';
 
 const DisplayIDForm=({username}) => {
 
     return(
-        <div className="DisplayID">
+        <div className="LS DisplayID">
         <div className="wrapper fadeInDown">
           <div id="formContent">
             

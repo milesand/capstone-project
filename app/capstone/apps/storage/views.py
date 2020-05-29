@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, DirectorySerializer
+from .serializers import FileSerializer, DirectorySerializer, PartialSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -112,6 +112,7 @@ class FlowUploadStartView(APIView):
             )
 
         return Response(
+            {"Location": "http://localhost/api/upload/flow/" + str(upload.pk)}, # 테스트용, 꼭 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "/api/upload/flow/" + str(upload.pk)
@@ -259,9 +260,6 @@ class FlowUploadChunkView(APIView):
 
             file_path = partial_upload.file_path()
 
-            if os.path.dirname(os.getcwd()) != '/':  # on develop.
-                file_path = Path(os.path.dirname(os.getcwd()) + str(file_path))
-
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.touch(exist_ok=True)
 
@@ -275,7 +273,6 @@ class FlowUploadChunkView(APIView):
                 return Response(status=status.HTTP_200_OK)
 
             file_record = partial_upload.complete()
-            print("complete call end!")
             # Generate thumbnail.
             # May be a good idea to refactor this section into a function, but that's
             # not necessary right now and I'll leave it as a TODO.
@@ -494,7 +491,6 @@ class FileDownloadAPI(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
             response = Response()
-            response['Content-Dispostion'] = 'attachment; filename={0}'.format(file.name)
             # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
             response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(
                 str(user.pk), str(file.pk)
@@ -513,7 +509,7 @@ class FileDownloadAPI(APIView):
                     )
                 files.append((
                     file_record.name,
-                    '/media/files/{0}/{1}'.format(str(user.pk), str(file.pk))
+                    '/media/files/{0}/{1}'.format(str(user.pk), str(file_record.pk))
                 ))
 
             print('files : ', files)
@@ -555,5 +551,21 @@ class FileListAPI(generics.GenericAPIView):
     # 테스트용
     def delete(self, request):
         self.queryset = File.objects.filter(owner=request.user)
+        self.queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PartialAPI(generics.GenericAPIView): # 테스트용, 삭제 안된 partial file 목록 출력  삭제.
+    serializer_class = PartialSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        self.queryset=PartialUpload.objects.filter(owner=request.user)
+        print(self.queryset)
+        serializer=self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 테스트용
+    def delete(self, request):
+        self.queryset = PartialUpload.objects.filter(owner=request.user)
         self.queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

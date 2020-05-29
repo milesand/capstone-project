@@ -11,7 +11,7 @@ export default class Login extends Component { //export default : 다른 모듈�
       password: "",
       isLoading: false
     };
-    console.log("로그인 시작.");
+    console.log("로그인 시작, notify : ", this.props.notify);
   }
 
   //유저 로그인 상태 체크
@@ -78,7 +78,7 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(content => {
           this.props.userStateChange(true, true, content.username, content.nickname, content.email);
           this.props.history.push('/');
-        }).catch(e=>alert(e))
+        }).catch(e=>this.props.notify(e))
       }
     })
   }
@@ -110,7 +110,7 @@ export default class Login extends Component { //export default : 다른 모듈�
       console.log('facebook content : ', content);
       this.props.userStateChange(true, true, content.username, content.nickname, content.email);
       this.props.history.push('/');
-    }).catch(e=>alert(e))
+    }).catch(e=>this.props.notify(e))
   }
 
   // 일반 로그인
@@ -151,8 +151,8 @@ export default class Login extends Component { //export default : 다른 모듈�
       });
       this.props.toggleLoadingState();
       this.props.history.push('/');
-    }).catch(error=>{
-          alert(error);
+    }).catch(e=>{
+          this.props.notify(e);
           this.props.toggleLoadingState();
     });
   }

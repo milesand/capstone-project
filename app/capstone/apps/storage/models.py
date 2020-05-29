@@ -1,4 +1,4 @@
-import uuid
+import uuid, os
 
 from pathlib import PurePosixPath, Path
 
@@ -120,22 +120,43 @@ class File(DirectoryEntry):
 
     def path(self):
         '''The path this file is saved to in the server filesystem.'''
-        return Path(
-            settings.COMPLETE_UPLOAD_PATH,
-            str(self.owner.pk),
-            str(self.pk)
-        )
+        if os.path.dirname(os.getcwd()) != '/':  # on develop.
+            print(str(os.path.dirname(os.getcwd())))
+            print("for develop!, path : ", Path(
+                str(os.path.dirname(os.getcwd())) + settings.COMPLETE_UPLOAD_PATH,
+                str(self.owner.pk),
+                str(self.pk)
+            ))
+            return Path(
+                str(os.path.dirname(os.getcwd())) + settings.COMPLETE_UPLOAD_PATH,
+                str(self.owner.pk),
+                str(self.pk)
+            )
+
+        else: # on docker.
+            return Path(
+                settings.COMPLETE_UPLOAD_PATH,
+                str(self.owner.pk),
+                str(self.pk)
+            )
 
     def thumbnail_path(self):
         '''
         The path to thumbnail of this file.
         This file may not actually have a thumbnail; As in, has_thumbnail is not checked.
         '''
-        return Path(
-            settings.THUMBNAIL_PATH,
-            str(self.owner.pk),
-            str(self.pk)
-        )
+        if os.path.dirname(os.getcwd()) != '/':  # on develop.
+            return Path(
+                str(os.path.dirname(os.getcwd())) + settings.THUMBNAIL_PATH,
+                str(self.owner.pk),
+                str(self.pk)
+            )
+        else: # on docker.
+            return Path(
+                settings.THUMBNAIL_PATH,
+                str(self.owner.pk),
+                str(self.pk)
+            )
 
 
 class PartialUpload(DirectoryEntry):
@@ -154,7 +175,12 @@ class PartialUpload(DirectoryEntry):
         return time_since_upload > settings.PARTIAL_UPLOAD_EXPIRE
 
     def file_path(self):
-        return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
+        if os.path.dirname(os.getcwd()) != '/':  # on develop.
+            return Path(
+                str(os.path.dirname(os.getcwd())) + settings.PARTIAL_UPLOAD_PATH, str(self.pk)
+            )
+        else: # on docker.
+            return Path(settings.PARTIAL_UPLOAD_PATH, str(self.pk))
 
     def complete(self):
         partial_path = self.file_path()  # self.delete()가 실행될 때 file_path 정보가 소실되므로, 미리 저장해둔뒤 사용한다.

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Row, Col} from "react-bootstrap";
-import "../style2.css"
+import { Row, Col} from "reactstrap";
+import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 
 

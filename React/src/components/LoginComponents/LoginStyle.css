@@ -1,0 +1,361 @@
+/* body {
+    font-family: "Poppins", sans-serif;
+    height: 100vh;
+  } */
+  .LS {
+    width:100%;
+    height: 100vh;
+    background: #f4f3ef;
+    font-size: 1rem;
+  }
+
+  .LS a {
+    color: #92badd;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 400;
+  }
+
+  .LS h2 {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin: 40px 8px 10px 8px;
+    color: #cccccc;
+  }
+
+
+
+  /* STRUCTURE */
+  .LS .wrapper {
+    display: flex;
+    align-items: center !important;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    min-height: 100%;
+    padding: 20px;
+    background-color:#f4f3ef;
+  }
+
+  .LS #formContent {
+    margin:auto;
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border-radius: 10px 10px 10px 10px;
+    background: #fff;
+    padding: 30px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    padding: 0px;
+    /* -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3); */
+    /* box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3); */
+    box-shadow: 0 .125rem 0.6rem rgba(0,0,0,0.15) !important;
+    text-align: center;
+  }
+
+  .LS #formFooter {
+    background-color: #f6f6f6;
+    border-top: 1px solid #dce8f1;
+    padding: 12px;
+    text-align: center;
+    -webkit-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+  }
+
+
+
+  /* TABS */
+
+  .LS h2.inactive {
+    color: #cccccc;
+  }
+
+  .LS  h2.active {
+    color: #0d0d0d;
+    border-bottom: 2px solid #5fbae9;
+  }
+  .LS .authFormText {
+    font-size: 16px;
+    color: #111111;
+  }
+  
+  .LS .authFormHeadTextS {
+    font-weight: 700;
+    font-size: 30px;
+    color: #5fbae9;
+  }
+  
+  .LS .authFormTextS {
+    font-size: 20px;
+    color: #5fbae9;
+  }
+  .LS .authTextContainer {
+    margin: 40px;
+  }
+
+
+  /* FORM TYPOGRAPHY*/
+  .LS link[type=button],
+  .LS button[type=button],
+  .LS button[type=submit],
+  .LS input[type=button],
+  .LS input[type=submit],
+  .LS input[type=reset] {
+    background-color: #56baed;
+    border: none;
+    color: white;
+    padding: 15px 0px 15px 0px; 
+    width: 45%;
+   
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 13px;
+    -webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+    box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+    -webkit-border-radius: 5px 5px 5px 5px;
+    border-radius: 5px 5px 5px 5px;
+    margin: 5px 20px 40px 20px;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    -ms-transition: all 0.2s ease-in-out;
+    -o-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .LS input[type=button]:hover,
+  .LS input[type=submit]:hover,
+  .LS input[type=reset]:hover {
+    background-color: #39ace7;
+  }
+
+  .LS input[type=button]:active,
+  .LS input[type=submit]:active,
+  .LS input[type=reset]:active {
+    -moz-transform: scale(0.95);
+    -webkit-transform: scale(0.95);
+    -o-transform: scale(0.95);
+    -ms-transform: scale(0.95);
+    transform: scale(0.95);
+  }
+
+  .LS input[type=text],
+  .LS input[type=password],
+  .LS input[type=password_val],
+  .LS input[type=email],
+  .LS input[type=phone],
+  .LS .register {
+    background-color: #f6f6f6;
+    border: none;
+    color: #0d0d0d;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    width: 75%;
+    border: 2px solid #f6f6f6;
+    outline-color: transparent;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+    -webkit-border-radius: 5px 5px 5px 5px;
+    border-radius: 5px 5px 5px 5px;
+  }
+
+  .LS input[type=text]:focus,
+  .LS input[type=password]:focus,
+  .LS input[type=password_val]:focus,
+  .LS input[type=email]:focus,
+  .LS input[type=phone]:focus, 
+  .LS .register:focus {
+    background-color: #fff;
+    border-bottom: 2px solid #5fbae9;
+    /* border-color: #5fbae9; */
+  }
+
+  .LS input[type=text]:placeholder,
+  .LS input[type=password]:placeholder,
+  .LS input[type=password_val]:placeholder,
+  .LS input[type=email]:placeholder,
+  .LS input[type=phone]:placeholder, 
+  .LS .register:placeholder {
+    color: #cccccc;
+  }
+
+
+
+  .LS #usericon {
+    width: 30%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .LS .register {
+    margin:0px !important ;
+    padding:5px 0px 5px 0px!important;
+    min-width:80% !important;
+    box-shadow: none !important;
+  }
+  .LS #emailicon {
+    width: 30%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .LS .register {
+    margin:0px !important ;
+    padding:5px 0px 5px 0px!important;
+    min-width:80% !important;
+    box-shadow: none !important;
+  }
+  .LS input#register-facebook, 
+  .LS input#login-facebook {
+    background-color: #6796EB;
+  }
+  .LS input#register-google, 
+  .LS input#login-google {
+    background-image: url("./googleButtonImg.png");
+    background-size: 161px;
+    background-repeat:   no-repeat;
+    background-position: center center; 
+  }
+
+  .LS .register-sns {
+    display:flex;
+    margin-top:20px;
+  }
+  .LS .form-group {
+    margin-bottom: 0 !important;
+  }
+
+  /* ANIMATIONS */
+
+  /* Simple CSS3 Fade-in-down Animation */
+  .fadeInDown {
+    -webkit-animation-name: fadeInDown;
+    animation-name: fadeInDown;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+  }
+
+  @-webkit-keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      -webkit-transform: translate3d(0, -100%, 0);
+      transform: translate3d(0, -100%, 0);
+    }
+
+    100% {
+      opacity: 1;
+      -webkit-transform: none;
+      transform: none;
+    }
+  }
+
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      -webkit-transform: translate3d(0, -100%, 0);
+      transform: translate3d(0, -100%, 0);
+    }
+
+    100% {
+      opacity: 1;
+      -webkit-transform: none;
+      transform: none;
+    }
+  }
+
+  /* Simple CSS3 Fade-in Animation */
+  @-webkit-keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @-moz-keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .fadeIn {
+    opacity: 0;
+    -webkit-animation: fadeIn ease-in 1;
+    -moz-animation: fadeIn ease-in 1;
+    animation: fadeIn ease-in 1;
+
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+
+    -webkit-animation-duration: 1s;
+    -moz-animation-duration: 1s;
+    animation-duration: 1s;
+
+    -webkit-animation-delay: 0.3s;
+    -moz-animation-delay: 0.3s;
+    animation-delay: 0.3s;
+  }
+
+
+  /* Simple CSS3 Fade-in Animation */
+  .underlineHover:after {
+    display: block;
+    left: 0;
+    bottom: -10px;
+    width: 0;
+    height: 2px;
+    background-color: #56baed;
+    content: "";
+    transition: width 0.2s;
+  }
+
+  .underlineHover:hover {
+    color: #5F5F5F;
+  }
+
+  .underlineHover:hover:after {
+    width: 100%;
+  }
+
+  .facebook-button{
+    font-size: 12px;
+    padding: 7px;
+    background-color: rgba(0, 0, 255, 0.76);
+    color: white;
+    border-width: 2px;
+    border-color: black;
+  }
+
+  /* OTHERS */
+
+  .LS:focus {
+    outline: none;
+  }

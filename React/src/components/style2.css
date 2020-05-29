@@ -1,16 +1,21 @@
-body {
+/* body {
     font-family: "Poppins", sans-serif;
     height: 100vh;
+  } */
+  .LS {
+    height: 100vh;
+    background: #f4f3ef;
+    font-size: 0.8rem;
   }
 
-  a {
+  .LS a {
     color: #92badd;
     display: inline-block;
     text-decoration: none;
     font-weight: 400;
   }
 
-  h2 {
+  .LS h2 {
     text-align: center;
     font-size: 16px;
     font-weight: 600;
@@ -24,9 +29,9 @@ body {
 
   /* STRUCTURE */
 
-  .wrapper {
+  .LS .wrapper {
     display: flex;
-    align-items: center;
+    align-items: center !important;
     flex-direction: column;
     justify-content: center;
     width: 100%;
@@ -34,7 +39,8 @@ body {
     padding: 20px;
   }
 
-  #formContent {
+  .LS #formContent {
+    margin:auto;
     -webkit-border-radius: 10px 10px 10px 10px;
     border-radius: 10px 10px 10px 10px;
     background: #fff;
@@ -43,12 +49,13 @@ body {
     max-width: 450px;
     position: relative;
     padding: 0px;
-    -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
-    box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
+    /* -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3); */
+    /* box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3); */
+    box-shadow: 0 .125rem 0.6rem rgba(0,0,0,0.15) !important;
     text-align: center;
   }
 
-  #formFooter {
+  .LS #formFooter {
     background-color: #f6f6f6;
     border-top: 1px solid #dce8f1;
     padding: 12px;
@@ -61,40 +68,41 @@ body {
 
   /* TABS */
 
-  h2.inactive {
+  .LS h2.inactive {
     color: #cccccc;
   }
 
-  h2.active {
+  .LS  h2.active {
     color: #0d0d0d;
     border-bottom: 2px solid #5fbae9;
-  }.authFormText {
+  }
+  .LS .authFormText {
     font-size: 16px;
     color: #111111;
   }
   
-  .authFormHeadTextS {
+  .LS .authFormHeadTextS {
     font-weight: 700;
     font-size: 30px;
     color: #5fbae9;
   }
   
-  .authFormTextS {
+  .LS .authFormTextS {
     font-size: 20px;
     color: #5fbae9;
   }
-  .authTextContainer {
+  .LS .authTextContainer {
     margin: 40px;
   }
 
 
   /* FORM TYPOGRAPHY*/
-  link[type=button],
-  button[type=button],
-  button[type=submit],
-  input[type=button],
-  input[type=submit],
-  input[type=reset] {
+  .LS link[type=button],
+  .LS button[type=button],
+  .LS button[type=submit],
+  .LS input[type=button],
+  .LS input[type=submit],
+  .LS input[type=reset] {
     background-color: #56baed;
     border: none;
     color: white;
@@ -118,15 +126,15 @@ body {
     transition: all 0.2s ease-in-out;
   }
 
-  input[type=button]:hover,
-  input[type=submit]:hover,
-  input[type=reset]:hover {
+  .LS input[type=button]:hover,
+  .LS input[type=submit]:hover,
+  .LS input[type=reset]:hover {
     background-color: #39ace7;
   }
 
-  input[type=button]:active,
-  input[type=submit]:active,
-  input[type=reset]:active {
+  .LS input[type=button]:active,
+  .LS input[type=submit]:active,
+  .LS input[type=reset]:active {
     -moz-transform: scale(0.95);
     -webkit-transform: scale(0.95);
     -o-transform: scale(0.95);
@@ -134,12 +142,12 @@ body {
     transform: scale(0.95);
   }
 
-  input[type=text],
-  input[type=password],
-  input[type=password_val],
-  input[type=email],
-  input[type=phone],
-  .register {
+  .LS input[type=text],
+  .LS input[type=password],
+  .LS input[type=password_val],
+  .LS input[type=email],
+  .LS input[type=phone],
+  .LS .register {
     background-color: #f6f6f6;
     border: none;
     color: #0d0d0d;
@@ -151,72 +159,75 @@ body {
     margin: 5px;
     width: 75%;
     border: 2px solid #f6f6f6;
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -ms-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
+    outline-color: transparent;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
     -webkit-border-radius: 5px 5px 5px 5px;
     border-radius: 5px 5px 5px 5px;
   }
 
-  input[type=text]:focus,
-  input[type=password]:focus,
-  input[type=password_val]:focus,
-  input[type=email]:focus,
-  input[type=phone]:focus, 
-  .register:focus {
+  .LS input[type=text]:focus,
+  .LS input[type=password]:focus,
+  .LS input[type=password_val]:focus,
+  .LS input[type=email]:focus,
+  .LS input[type=phone]:focus, 
+  .LS .register:focus {
     background-color: #fff;
     border-bottom: 2px solid #5fbae9;
+    /* border-color: #5fbae9; */
   }
 
-  input[type=text]:placeholder,
-  input[type=password]:placeholder,
-  input[type=password_val]:placeholder,
-  input[type=email]:placeholder,
-  input[type=phone]:placeholder, 
-  .register:placeholder {
+  .LS input[type=text]:placeholder,
+  .LS input[type=password]:placeholder,
+  .LS input[type=password_val]:placeholder,
+  .LS input[type=email]:placeholder,
+  .LS input[type=phone]:placeholder, 
+  .LS .register:placeholder {
     color: #cccccc;
   }
 
 
 
-  #usericon {
+  .LS #usericon {
     width: 30%;
     margin-top: 20px;
     margin-bottom: 20px;
   }
-  .register {
+  .LS .register {
     margin:0px !important ;
     padding:5px 0px 5px 0px!important;
     min-width:80% !important;
     box-shadow: none !important;
   }
-  #emailicon {
+  .LS #emailicon {
     width: 30%;
     margin-top: 20px;
     margin-bottom: 20px;
   }
-  .register {
+  .LS .register {
     margin:0px !important ;
     padding:5px 0px 5px 0px!important;
     min-width:80% !important;
     box-shadow: none !important;
   }
-  input#register-facebook, input#login-facebook {
+  .LS input#register-facebook, 
+  .LS input#login-facebook {
     background-color: #6796EB;
   }
-  input#register-google, input#login-google {
-    background-image: url("LoginComponents/googleButtonImg.png");
+  .LS input#register-google, 
+  .LS input#login-google {
     background-size: 161px;
     background-repeat:   no-repeat;
     background-position: center center; 
   }
 
-  .register-sns {
+  .LS .register-sns {
     margin-top:20px;
   }
-  .form-group {
+  .LS .form-group {
     margin-bottom: 0 !important;
   }
 
@@ -342,6 +353,6 @@ body {
 
   /* OTHERS */
 
-  *:focus {
+  .LS:focus {
     outline: none;
   }

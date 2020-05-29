@@ -1,12 +1,9 @@
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from capstone.account.models import User
+from django.contrib.auth import get_user_model
 from .models import Team
-
-from django.shortcuts import Http404, get_object_or_404
 from rest_framework import serializers
-from django.db import models
-
+import os
+os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from capstone.account.serializers import UserIDNickSerializer
 
 class CreateTeamSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,7 +11,17 @@ class CreateTeamSerializer(serializers.ModelSerializer):
         fields=('teamName', 'teamLeader')
         #fields = '__all__'
 
+    def create(self, validated_data):
+        team=Team.objects.create(
+            teamName=validated_data['teamName'],
+            teamLeader=validated_data['teamLeader'],
+            teamLeaderNick=validated_data['teamLeader'].nickname,
+        )
+        team.save()
+        return team
+
 class TeamSerializer(serializers.ModelSerializer):
+    memberList=UserIDNickSerializer(many=True)
     class Meta:
         model=Team
         fields = '__all__'
@@ -25,7 +32,15 @@ class ChangeTeamNameSerializer(serializers.ModelSerializer):
         fields=('teamName', )
 
 class InvitationSerializer(serializers.Serializer):
-    username=serializers.CharField(max_length=15)
+    username=serializers.CharField(max_length=100)
 
 class SharingFolderSerializer(serializers.Serializer): #공유폴더 설정
     folderID=serializers.UUIDField()
+
+class UserSearchSerializer(serializers.Serializer):
+    username=serializers.CharField()
+
+class UserSearchResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=get_user_model()
+        fields=('pk', 'nickname', 'email')

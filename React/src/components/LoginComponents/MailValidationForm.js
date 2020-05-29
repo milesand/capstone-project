@@ -1,12 +1,12 @@
 import React from 'react';
-import '../style2.css';
-import {Col} from 'react-bootstrap';
+import "./LoginStyle.css";
+import {Col} from 'reactstrap';
 import logo from './login4.png';
 
 const MailValidationForm=({guideText, toHome, isValid}) => {
     console.log("vali test.");
     return(
-        <div className="wrapper fadeInDown">
+        <div className="LS wrapper fadeInDown">
           <div id="formContent">
             
             <Col xs={12} className="fadeIn">

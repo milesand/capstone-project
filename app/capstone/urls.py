@@ -75,7 +75,10 @@ api = [
     path('team/<str:teamID>/acceptance', teams.AcceptInvitationAPI.as_view()),
     path('team/<str:teamID>/secession', teams.SecessionAPI.as_view()),
     path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
+    path('join-team', teams.JoinTeamAPI.as_view()), # 현재 가입중인 팀 목록 출력
+    path('search-user/<str:team_pk>/<str:name>', teams.UserSearchAPI.as_view()), # 일부 문자열을 통해 사용자 검색
 
+    path('partial', storage.PartialAPI.as_view()), #partial file 목록 출력 및 전체 제거, 테스트용
 ]
 
 urlpatterns = [

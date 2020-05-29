@@ -33,20 +33,15 @@ def delete_directory(sender, instance, using, **kwargs):
 
 @receiver(post_delete, sender=File)
 def delete_file(sender, instance, using, **kwargs):
-    if os.path.dirname(os.getcwd()) == '/':  # on docker
-        path=instance.path()
-    else: # for test
-        path = Path(os.path.dirname(os.getcwd()) + str(instance.path()))
+    path=instance.path()
+
     try:
         path.unlink()
     except FileNotFoundError:
         logger.warning("Missing file when deleting file entry {}", instance.pk)
 
     if instance.has_thumbnail: # 썸네일이 존재할 경우 같이 삭제
-        if os.path.dirname(os.getcwd()) == '/':  # on docker
-            path = instance.thumbnail_path()
-        else:  # for test
-            path = Path(os.path.dirname(os.getcwd()) + str(instance.thumbnail_path()))
+        path = instance.thumbnail_path()
         try:
             path.unlink()
         except FileNotFoundError:
