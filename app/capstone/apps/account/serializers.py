@@ -71,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
     root_info=UserStorageSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ('pk', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'memberList', 'root_info')
+        fields = ('pk', 'username', 'nickname', 'password', 'phone_num', 'email', 'is_mail_authenticated', 'social_auth', 'invitationList', 'teamList', 'root_info')
 
 #소셜 로그인, 아이디 및 패스워드 제한 없음.
 class SocialLoginSerializer(serializers.Serializer):
@@ -99,3 +99,8 @@ class TeamListSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=('_id', 'username', 'invitationList',)
+
+class UserIDNickSerializer(serializers.ModelSerializer): # teams 앱에서 사용
+    class Meta:
+        model=User
+        fields=('_id', 'username', 'nickname', )

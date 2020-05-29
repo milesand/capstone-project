@@ -1,6 +1,6 @@
 import React from 'react';
-import {Col, Row} from "react-bootstrap";
-import "../style2.css"
+import {Col, Row} from "reactstrap";
+import "./LoginStyle.css"
 import logo from './login4.png'; 
 import { Link } from "react-router-dom";
 
@@ -10,6 +10,7 @@ const SignupForm = ({username, nickname, password, password_val, email, phone, i
                      phone_err_message, changeUsername, changeNickname, changePassword, changePassword_val, 
                      changeEmail, changePhone, submit, validate}) => {
     return (
+      <div className="LS">
       <div className="Signup wrapper fadeInDown">
         <div id="formContent">
           
@@ -18,12 +19,14 @@ const SignupForm = ({username, nickname, password, password_val, email, phone, i
           </Col>
 
         <form method="POST" onSubmit={submit}>
-        <label>아이디</label><br></br>
+          <div className="signup-row">
+        <label>아이디</label><br/>
         <input type="text" id="username" className="fadeIn" name="login" placeholder="ID" /*placeholder : 화면의 입력창에 표시할 글자*/
               autoFocus
               value={username}
               onChange={changeUsername}
               />
+        </div>
         <div style={{ color: "red", fontSize: "12px" }}>
           {username_err_message}
         </div>
@@ -80,12 +83,13 @@ const SignupForm = ({username, nickname, password, password_val, email, phone, i
                  
                 </Col>
                 <Col xs={6}>
-                   <Link to="/" className="underlineHover"> ID/비밀번호 찾기</Link>
+                   <Link to="/forgot-id" className="underlineHover"> ID/비밀번호 찾기</Link>
                   
                 </Col>
               </Row>
             </div>
         </div>
+      </div>
       </div>
     );
   }

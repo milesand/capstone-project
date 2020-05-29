@@ -52,7 +52,7 @@ export default class ForgotPassword extends Component{
               
               //redirect? push 대신 replace?
         }).catch(error=>{
-          alert(error);
+          this.props.notify(error);
           this.props.toggleLoadingState();
         });
       }

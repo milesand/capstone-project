@@ -1,6 +1,6 @@
 import React from 'react';
-import { Row, Col} from "react-bootstrap";
-import "../style2.css"
+import { Row, Col} from "reactstrap";
+import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
 
@@ -8,7 +8,7 @@ import logo from './login4.png';
 const ForgotPasswordForm = ({email, username, isLoading, changeEmail, changeUsername, sendPassword}) => {
     console.log('fpForm : ', isLoading);
     return (
-      <div className="Login">
+      <div className="LS Login">
         <div className="wrapper fadeInDown">
           <div id="formContent">
   

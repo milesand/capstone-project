@@ -46,7 +46,7 @@ export default class ForgotID extends Component{
                                        state: {username: content.username,
                                                email: this.state.email}});
           
-        }).catch(error=>alert(error));
+        }).catch(error=>this.props.notify(error));
       }
 
       valChangeControl(e){

@@ -1,11 +1,11 @@
 import React from 'react';
-import '../style2.css';
-import {Col} from 'react-bootstrap';
+import "./LoginStyle.css";
+import {Col} from 'reactstrap';
 import logo from './mail.png';
 const MailResendForm=({nickname, email, resendAuthEmail, isLoading}) => {
     console.log("MailResendForm called!!!");
     return(
-        <div className="MailResend">
+        <div className="LS MailResend">
         <div className="wrapper fadeInDown">
           <div id="formContent">
             

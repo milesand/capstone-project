@@ -1,6 +1,6 @@
 import React from 'react';
-import { Row, Col} from "react-bootstrap";
-import "../style2.css"
+import { Row, Col} from "reactstrap";
+import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
 import FacebookLogin from 'react-facebook-login';
@@ -11,7 +11,7 @@ import FacebookLogin from 'react-facebook-login';
 const LoginForm = ({username, password, isLoading, changeUsername,  changePassword,
                     normalLogin, googleLogin, facebookLogin}) => {
     return (
-      <div className="Login">
+      <div className="LS Login">
         <div className="wrapper fadeInDown">
           <div id="formContent">
           <form method="POST" onSubmit={normalLogin}>

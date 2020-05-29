@@ -250,7 +250,6 @@ class AllUserAPI(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-
 # 특정 접속 유저의 프로필을 출력하거나, 회원에서 제거하는 API
 class UserAPI(generics.GenericAPIView):
     serializer_class = UserSerializer
@@ -439,3 +438,4 @@ class DeleteAPI(APIView):
         user = User.objects.all()
         user.delete()
         return Response(status=status.HTTP_200_OK)
+

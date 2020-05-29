@@ -1,13 +1,13 @@
 import React from 'react';
-import { Row, Col} from "react-bootstrap";
-import "../style2.css"
+import { Row, Col} from "reactstrap";
+import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
 
 
 const ForgotIDForm = ({email, changeEmail, sendID}) => {
     return (
-      <div className="Login">
+      <div className="LS Login">
         <div className="wrapper fadeInDown">
           <div id="formContent">
   
@@ -40,9 +40,12 @@ const ForgotIDForm = ({email, changeEmail, sendID}) => {
 
             <div id="formFooter">
               <Row>
-                <Col xs={12}>
-                   <Link to="/forgot-password" className="underlineHover"> 비밀번호 찾기</Link>
-                </Col>
+                  <Col xs={6}>
+                      <Link to="/" className="underlineHover">로그인</Link>
+                  </Col>
+                  <Col xs={6}>
+                  <Link to="/forgot-password" className="underlineHover"> 비밀번호 찾기</Link>       
+                  </Col>
               </Row>
             </div>
           </div>

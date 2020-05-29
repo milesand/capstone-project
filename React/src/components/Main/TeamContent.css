@@ -1,0 +1,541 @@
+
+.team-content {
+    overflow-y: hidden !important;
+
+}
+
+
+
+
+/* 팀생성 버튼 */
+.add-team-button {
+    background-color:#5f73c4 !important;
+    border-width: 0px !important;
+    margin-top:5px !important;
+    margin-right: 10px;
+    border-radius: .25em;
+
+}
+.add-team-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.add-team-button:active {
+    box-shadow: 0.1px 0.1px 5px #c2c2c2 !important;
+}
+.add-team-button:hover {
+    background-color: #4b6ae6 !important;
+}
+
+
+/* 팀탈퇴 버튼 */
+.leave-team-button {
+    background-color:#d46464 !important;
+    border-width: 0px !important;
+    margin-top:5px !important;
+}
+
+.leave-team-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.leave-team-button:active {
+    box-shadow: 0.1px 0.1px 5px #c2c2c2 !important;
+}
+.leave-team-button:hover {
+    background-color: #e74747 !important;
+}
+
+
+
+
+/* 팀 생성 modal */
+.team-add-modal {
+    color:#6e6e6e;
+}
+.team-add-from {
+    text-align: center;
+}
+.team-add-header h5 {
+    color:#4d4d4d;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+.team-add-body {
+    display: flex;
+    border-width: 0px !important;
+    /* float:left; */
+}
+.team-add-name {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.team-add-text{
+    margin-left:auto;
+    margin-right: auto;
+    width:350px !important;
+    border-color:#ced4da;
+    border-right:0px;
+    border-radius: 5px !important;
+    color:#707070 !important;
+}
+.team-add-text:hover {
+    box-shadow:none !important;
+    border-width: 2px !important;
+    border-color:#929292 !important;
+    color:#707070 !important;
+}
+.team-add-text:focus {
+    box-shadow:none !important;
+    border-width: 2px !important;
+    border-color:#929292 !important;
+}
+.team-add-footer {
+    display:inline !important;
+    text-align: center !important;
+}
+.team-add-button-create {
+    background-color: #5f73c4 !important;
+    border-width: 0px !important;
+}
+.team-add-button-create:focus {
+     box-shadow:0px 0px transparent !important;
+}
+.team-add-button-create:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}
+.team-add-button-cancel:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-add-button-create:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}
+
+
+
+
+
+
+
+
+/* 팀 리스트 */
+.team-table {
+
+    min-height: 650px !important;
+    max-height: 650px !important;
+    border-radius: 10px  !important;
+    background-color: white;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15) !important;
+    font-size: 15px;
+    word-break:break-all;
+}
+
+.team-list {
+    border-collapse: collapse;
+    width:99% !important;
+    margin-right: 5px;
+    float: right;
+}
+
+.team-list  tbody,
+.team-list thead{
+    overflow-y:auto; 
+    overflow-x:hidden; 
+    float:left;
+     width:100%; 
+     height:640px;
+}
+.team-list  tbody::-webkit-scrollbar {
+
+    background-color: transparent !important;
+}
+.team-list  tbody::-webkit-scrollbar-track {
+
+    margin-top:5px !important;
+    margin-bottom: 5px !important;
+    background-color: transparent !important;
+}
+.team-list  tbody::-webkit-scrollbar-thumb {
+    max-height: 100px !important;
+    min-height: 100px !important;
+    height: 100px;
+}
+
+.team-list  tbody tr{
+    max-height: 40px !important;
+    min-height: 40px !important;
+     width:100%;
+     outline-color: transparent;
+     border-radius: 10px;
+
+    }
+.team-list tr:last-child {
+    min-width: 200px !important;
+}
+.team-list tbody td{
+    height: 40px !important;
+    min-width:60px;
+    width:309px;
+    color:#4d4d4d;
+}
+.thd-share {
+    min-width:100px;
+}
+.thd-buttons {
+    min-width:150px;
+}
+
+.team-list tbody th {
+
+    width:100px;
+    color:#5f73c4;
+}
+
+.team-table-body:first-child th{
+    width:300px !important;
+}
+
+.team-table-button {
+    min-width: 150px;
+    text-align: center;
+}
+
+.team-modify-button {
+    background-color:#5f73c4 !important;
+    border-color: transparent !important;
+
+}
+.team-modify-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-modify-button:hover {
+    background-color:#4867e0 !important;
+}
+.team-invite-button {
+    margin-right: 10px;
+    background-color:#5f73c4 !important;
+    border-color: transparent !important;
+}
+.team-invite-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-invite-button:hover {
+    background-color:#4867e0 !important;
+}
+
+
+
+
+
+
+/* 초대 Modal */
+.team-invite-modal {
+    color:#6e6e6e;
+}
+.modal-header h5 {
+    margin-left: auto;
+    margin-right: auto;
+    color:#4d4d4d;
+}
+.modal-footer {
+    display:inline !important;
+    text-align: center !important;
+}
+.team-invite-button-invite {
+    background-color: #5f73c4 !important;
+    border-width: 0px !important;
+}
+.team-invite-button-invite:focus {
+     box-shadow:0px 0px transparent !important;
+}
+.team-invite-button-invite:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}
+.team-invite-button-cancel:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-invite-button-cancel:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}
+/* 초대 Modal 유저리스트 */
+.friend-list {
+    border-collapse: inherit; 
+    border-spacing: 0px;
+    width:99% !important;
+    float: right;
+    border-radius: 6px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #c9c9c9;
+
+}
+.friend-list  thead{float:left; width:890px;}
+.friend-list  tbody{
+    overflow-y:auto; 
+    overflow-x:hidden; 
+    float:left;
+     width:100%; 
+     height:300px;
+}
+.friend-list  tbody::-webkit-scrollbar {
+
+    background-color: transparent !important;
+}
+.friend-list  tbody::-webkit-scrollbar-track {
+
+    margin-top:5px !important;
+    margin-bottom: 5px !important;
+    background-color: transparent !important;
+}
+.friend-list  tbody::-webkit-scrollbar-thumb {
+    max-height: 100px !important;
+    min-height: 100px !important;
+    height: 100px;
+    outline-color: transparent !important;
+     outline-width: 0px !important;
+}
+
+.friend-list .team-item {
+    display:block;
+    border-radius: 5px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: transparent;
+    outline-color: transparent !important;
+    outline-width: 0px !important;
+     width:100%;
+     margin-bottom:2px !important;
+}
+
+
+
+
+
+
+/* 수정 창 */
+.team-modify-modal {
+    border-radius: 20px !important;
+}
+.modal-content {
+    border-radius: 10px !important;
+    border-color: transparent !important;
+    box-shadow: 0.2px 0.2px 6px #8f8f8f !important;
+}
+.team-rename {
+    display:flex !important;
+    text-align: left !important;
+    margin-bottom: 10px;
+     
+}
+.team-rename-text {
+    float:left;
+    font-size: 1.1rem;
+}
+
+.rename-group {
+    margin-right: 50px !important;
+    float:right !important;
+  
+  }
+
+  .rename{
+    margin-bottom: auto;
+    margin-top: auto;
+    background-color: #f4f3ef !important;
+    /* background-color: transparent !important; */
+    height:38px !important;
+    }
+   
+    .rename-input{
+        margin-left:5px;
+        width:250px !important;
+    border-color:#ced4da;
+    border-right:0px !important;
+    border-bottom-left-radius: 10px !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+    color:#707070 !important;
+    /* z-index: 2000 !important; */
+    }
+
+   .rename-input:focus{
+    box-shadow:none !important;
+    border-width: 2px !important;
+    border-color:#929292 !important;
+    color:#707070 !important;
+      }
+  
+    .rename-icon-button{
+    width: 40px !important;
+    float: right !important;
+    display: flex;
+    border-color:#ced4da !important;
+    border-left:0px !important;
+    justify-content: center;
+    align-items: center;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    border-bottom-left-radius: 0px !important;
+    border-top-left-radius: 0px !important;
+    margin-left:-4px !important;
+    background-color: white !important;
+    text-decoration:none !important;
+  
+    }
+
+    .rename-input:focus ~ .rename-icon-button{
+        border-bottom-left-radius: 0px !important;
+        border-top-left-radius: 0px !important;
+      border-width: 2px !important;
+      padding:1px;
+      margin-left:-5px;
+     border-color:#929292 !important;
+    }
+
+    .rename-icon-button:hover,
+    .rename-icon-button:focus {
+      background-color: #929292 !important;
+      border-color: #929292 !important;
+      color:white !important;
+    }
+    .rename-icon-button:hover,
+    .rename-icon-button:focus {
+      box-shadow: none !important;
+    }
+    .rename-icon-button:active {
+      box-shadow: 0.1px 0.1px 3px gray !important;
+    }
+
+  
+    .rename-icon {
+      color:gray !important;
+    }
+    .rename-icon-button:hover  .rename-icon,
+    .rename-icon-button:focus  .rename-icon {
+      color:#ffffff !important;
+    }
+
+    .rename-disabled {
+        background-color: transparent !important;
+        border-color: transparent !important;
+    }
+    .rename-disabled ~.rename-icon-button {
+        border-color: transparent !important;
+    }
+    .rename-disabled ~.rename-icon-button:hover,
+    .rename-disabled ~.rename-icon-button:focus,
+    .rename-disabled ~.rename-icon-button:active {
+        background-color: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+    .rename-disabled ~.rename-icon-button:hover .rename-icon,
+    .rename-disabled ~.rename-icon-button:focus .rename-icon,
+    .rename-disabled ~.rename-icon-button:active .rename-icon {
+        color:#646464 !important;
+    }
+  
+    .team-rename-text {
+        color:#5f73c4;
+        font-weight: 500;
+        margin-top:7px;
+        font-size: 16px;
+    }
+    .team-leader {
+        margin-top:10px;
+        border-collapse: collapse;
+        width:99% !important;
+        float: left;
+    }
+   
+    .leader-table-button {
+        min-width:140px;
+    }
+
+    .member-list {
+        border-collapse: collapse;
+        margin-top:10px;
+        width:99% !important;
+        margin-left:auto;
+        margin-right: auto;
+        float: left;
+
+    }
+
+    .member-list  tbody,
+    .member-list thead{
+        overflow-y:auto; 
+        overflow-x:hidden; 
+        float:left;
+         width:100%; 
+         height:200px
+    }
+    .member-list  tbody::-webkit-scrollbar {
+    
+        background-color: transparent !important;
+    }
+    .member-list  tbody::-webkit-scrollbar-track {
+    
+        margin-top:5px !important;
+        margin-bottom: 5px !important;
+        background-color: transparent !important;
+    }
+    .member-list  tbody::-webkit-scrollbar-thumb {
+        max-height: 100px !important;
+        min-height: 100px !important;
+        height: 100px;
+    }
+    
+    .member-list  tbody tr{
+        max-height: 40px !important;
+        min-height: 40px !important;
+         width:100%;
+         outline-color: transparent;
+         border-radius: 10px;
+        }
+
+    .member-list tbody td{
+        height: 40px !important;
+        min-width:60px;
+        /* width:309px; */
+        color:#4d4d4d;
+    }
+ 
+    
+    .member-list tbody th {
+        color:#5f73c4;
+    }
+     
+    .member-table-button {
+        min-width: 100px !important;
+        text-align: center;
+    }
+    
+    .member-modify-button:focus {
+        box-shadow:0px 0px transparent !important;
+    }
+    .member-invite-button {
+        margin-right: 10px;
+    }
+    .member-invite-button:focus {
+        box-shadow:0px 0px transparent !important;
+    }
+
+    .modify-textS {
+        float:left;
+        margin-top:10px;
+        width:300px !important;
+        /* margin-left:5px; */
+        color:#5f73c4;
+        font-weight: 500;
+    }
+
+    .team-leave-modal {
+        margin-top:150px !important;
+        width: 300px !important;
+        text-align: center;
+        color:#464646 !important;
+        font-weight: 500;
+    }
+    
