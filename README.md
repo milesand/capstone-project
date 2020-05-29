@@ -283,6 +283,7 @@ API
 | /upload/flow$|파일 업로드 시작 전에 파일 크기를 서버로 전송|-|-|-|
 | /upload/flow/(?P<pk>[0-9a-f]{24})|chunk 전송|특정 chunk를 이미 전송받았는지 확인|-|-|
 | /download/<str:file_id> |-|파일 다운로드|-|-|
+| /mkdir | 디렉토리 생성 |-|-|-|
 
 * /file/<str:file_id>로 GET 요청을 보내면, 현재 로그인한 사용자가 가지고 있는 특정 파일의 정보를 받을 수 있습니다. 사용자가 웹페이지에서 특정 아이콘을 클릭하면, 그 아이콘이 가지고 있는
   파일 ID를 통해서 파일의 상세 정보를 받을 수 있습니다.
@@ -295,7 +296,43 @@ API
 
 * /download/<str:file_id>로 GET 요청을 보내면 그 파일 ID를 가진 파일을 다운로드 받을 수 있습니다.
 
+* /mkdir에 POST 요청을 보내면 현재 사용자가 소유한 새 디렉토리를 생성합니다. HTTP body는 다음 필드를 포함해야합니다:
+  * `parent`: 디렉토리가 생성될 상위 디렉토리. 상위 디렉토리의 경로나(`/`, `/parent_dir` 등) ID(`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`) 형식으로 지정 가능합니다.
+  * `name`: 새 디렉토리의 이름. 상위 디렉토리에 같은 이름의 디렉토리나 파일이 없어야 합니다.
 
+* /directory/<id>에 GET 요청을 보내면 해당 id를 가진 디렉토리의 정보를 반롼합니다. 반환되는 정보의 형식은 다음과 같습니다.
+  * 'pk`: 현재 디렉토리의 ID.
+  * 'owner': 디렉토리 소유자의 ID.
+  * 'name': 디렉토리의 이름.
+  * 'parent': 상위 디렉토리의 ID.
+  * `subdirectories`: 하위 디렉토리의 이름을 키, id를 값으로 하는 딕셔너리.
+  * `files`: 디렉토리에 든 파일의 목록; 이름을 키로 하며, /file/ 엔드포인트가 반환하는 것과 같은 값을 값으로 하는 딕셔너리.
+  * `partial_uploads`: 해당 디렉토리에 진행중인 업로드의 목록; 이름을 키로 하며, id를 값으로 하는 딕셔너리.
+   
+  예를 들어, 다음과 같은 형식으로 반환됩니다.
+  ```json
+  {
+    "pk": "12f79f24-5521-4274-9de4-a77eda8a1fa5",
+    "owner": "aca27a1e-c940-4f91-b490-92a404209848",
+    "name": "Pictures",
+    "parent": "86882148-dba7-46ad-814b-ce6389a1c1d0",
+    "subdirectories": {
+      "2020-03": "5de3a6a2-58ea-4385-9d6f-6d898e610279",
+      "2020-04": "88063b0f-7cf6-4829-b949-0353c725ca81"
+    },
+    "files": {
+      "wallpaper.png": {
+        "pk": "f840d10f-1149-4919-ba4b-895a9ca5df98",
+        "size": 253952,
+        "uploaded_at": "2020-01-29T12:34:56.000000Z",
+        "has_thumbnail": true
+      }
+    },
+    "partial_uploads": {
+      "cat.jpeg": "df66ea02-61bf-405f-85ea-94ee497089d5"
+    }
+  }
+  ```
 
 
 사용예
