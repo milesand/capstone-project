@@ -1,8 +1,9 @@
 import React, { Component, Fragment, forwardRef } from "react";
 import UploadForm from "./UploadForm";
 import Flow from '@flowjs/flow.js';
-import {ToastContainer} from 'react-toastify';
-
+import CustomFileBrowser from './CustomFileBrowser'
+import './UploadContent.css';
+import {Button} from 'reactstrap';
 //업로드
 class UploadContent extends Component {
   constructor(props) {
@@ -10,14 +11,17 @@ class UploadContent extends Component {
     this.state = {
         fileID: "",
         fileList: [],
+        uploadDir: '/',
         isSubmitted: false,
         isCompleted: true,
         flow: props.flow,
+        isPathSet: false
     };
     this.myRef=React.createRef()
-    console.log("state : ", this.state);
-    console.log("props : ", props);
+    this.props.setModalHeadText('업로드 경로 설정');
+    console.log("upload content, props : ", props);
   }
+
 
   componentWillUnmount() {
     this.props.setFlow(this.state.flow);
@@ -28,6 +32,13 @@ class UploadContent extends Component {
       isSubmitted: true,
       fileList: array
     });
+  }
+
+  changeUploadPath=(path)=>{ //업로드 경로 변경
+    console.log('in upload, change path : ', path);
+    this.setState({
+      uploadDir: path
+    })
   }
 
   componentDidMount=()=>{
@@ -54,19 +65,17 @@ class UploadContent extends Component {
     else{
       this.showProcess(this.state.flow.files);
     }
-    this.state.flow.assignBrowse(this.myRef.current);
-    this.state.flow.assignDrop(this.myRef.current);
+    this.setUploadAreaEvent(); //업로드 공간에 업로드 처리 컴포넌트 배정
 
     if(!this.state.flow.support) console.log("flow.js 지원 안함.");
 
-    console.log("업/다운로드 테스트.", this.state.flow.isUploading());
     this.state.flow.on('fileAdded', function(file){
         let data= {
             fileSize: file.size,
             fileName: file.name,
-            directory: '/'
+            directory: this.state.uploadDir
         };
-        console.log("data : ", data);
+        console.log("upload path : ", this.state.uploadDir);
         const formData  = new FormData();
         for(const name in data) {
             console.log("name : ", name, data[name])
@@ -193,8 +202,11 @@ class UploadContent extends Component {
   }
 
   setUploadAreaEvent=()=>{
-    this.state.flow.assignBrowse(this.myRef.current);
-    this.state.flow.assignDrop(this.myRef.current);
+    console.log("call!, isPathSet : ", this.state.isPathSet);
+    if(this.state.isPathSet){
+      this.state.flow.assignBrowse(this.myRef.current);
+      this.state.flow.assignDrop(this.myRef.current);
+    }
   }
 
   stop=(file)=>{
@@ -253,22 +265,41 @@ class UploadContent extends Component {
     }
   }
 
+  toggleIsPathSet=()=>{
+    console.log("giowejoiw");
+    this.props.setModalHeadText("업로드");
+    this.setState({
+      isPathSet: true
+    }, ()=>this.setUploadAreaEvent());
+    
+  }
+
   render() {
-    console.log("upload render start, myRef : ", this.myRef);
+    console.log("upload render start, myRef : ", this.myRef, this.state.isPathSet);
 
     return (
       <Fragment>
-            <ToastContainer />
-            <div>
-                <UploadForm
-                    myRef={this.myRef} //이 값을 등록한 버튼을 this.myRef.current를 통해 찾을 수 있다.
-                    isSubmitted={this.state.isSubmitted}
-                    fileList={this.state.fileList}
-                    stop={this.stop}
-                    resume={this.resume}
-                    remove={this.remove}
-                />
-            </div>
+                 {!this.state.isPathSet&&
+                  <div className='upload-file-browser'>
+                    <CustomFileBrowser 
+                      notify={this.props.notify}
+                      rootDirID={this.props.rootDirID}
+                      changeUploadPath={this.changeUploadPath}
+                    />
+                    <Button className="custom-button" onClick={this.toggleIsPathSet}>완료</Button>
+                  </div>
+                 }
+
+                 {this.state.isPathSet&&
+                  <UploadForm
+                      myRef={this.myRef} //이 값을 등록한 버튼을 this.myRef.current를 통해 찾을 수 있다.
+                      isSubmitted={this.state.isSubmitted}
+                      fileList={this.state.fileList}
+                      stop={this.stop}
+                      resume={this.resume}
+                      remove={this.remove}
+                  />
+                 }
       </Fragment>
     );
   }

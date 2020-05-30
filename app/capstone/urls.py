@@ -42,7 +42,7 @@ api = [
     #httponly cookie로 저장되어 있는 JWT 토큰 제거
     path('logout', account.LogoutAPI.as_view()),
 
-    #소셜 로그인 테스트용
+    #소셜 로그인용
     path('social-login', account.SocialLoginAPI.as_view()),
 
     #유저 삭제 테스트용

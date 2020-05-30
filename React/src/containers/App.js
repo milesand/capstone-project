@@ -33,7 +33,8 @@ class App extends Component {
       email: "",
       isLogin: null, //사용자가 로그인 상태인지 체크한 후에 bool 값이 할당됨.
       isMailAuthenticated: null,
-      isLoading: false
+      isLoading: false,
+      rootDirID: "",
     };
     console.log(this.state);
   }
@@ -47,17 +48,21 @@ class App extends Component {
 
   // user 정보 받아오기
   componentDidMount() { //컴포넌트가 만들어지고 render가 호출된 이후에 호출되는 메소드
+    this.getUserInfo();
+  }
+
+  getUserInfo=()=>{
     let errorCheck = response => {
-      console.log("err checwgjoiwjgiowejgoiewk.");
       console.log(response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
-        console.log("here. error exist, this : ", this);
+        console.log("initial response : ", response);
         this.setState({
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
           username: response.username,
           nickname: response.nickname,
           email: response.email,
+          rootDirID: response.root_info.root_dir
         });
       }
       else{
@@ -112,14 +117,16 @@ class App extends Component {
     }
   }
 
-  userStateChange = (authenticated, mailAuthenticated, username, nickname, email) => {
+  userStateChange = (authenticated, mailAuthenticated, username, nickname, email, root_dir) => {
     console.log("thisStateTest.", this.state);
     if(email=='google'||email=='facebook'){ //소셜 로그인
       this.setState({
         isLogin: authenticated,
+        isMailAuthenticated: true,
         username: username,
         nickname : nickname,
-        isMailAuthenticated: true
+        email: email,
+        rootDirID: root_dir
       });
     }
     else{
@@ -128,7 +135,8 @@ class App extends Component {
         isMailAuthenticated: mailAuthenticated,
         username: username,
         nickname: nickname,
-        email: email
+        email: email,
+        rootDirID: root_dir
       });
     }
   }
@@ -214,6 +222,7 @@ class App extends Component {
       username: this.state.username,
       nickname: this.state.nickname,
       useremail: this.state.email,
+      rootDirID: this.state.rootDirID,
       isLogin: this.state.isLogin,
       isMailAuthenticated:this.state.isMailAuthenticated,
       isLoading: this.state.isLoading,

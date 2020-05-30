@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 
+from django.db.models import Q
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -17,7 +18,7 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, DirectorySerializer, PartialSerializer
+from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ class FlowUploadStartView(APIView):
                     parent=directory
                 )
                 storage = UserStorage.objects.filter(user=user).select_for_update().get()
-                storage.add(file_size)
+                storage.add(file_size, file_count=1)
                 storage.save()
         except IntegrityError:
             transaction.rollback()
@@ -377,6 +378,7 @@ class CreateDirectoryView(APIView):
             )
 
         return Response(
+            {"Location": "/api/directory/" + str(directory_record.pk)}, #로컬 테스트용, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "/api/directory/" + str(directory_record.pk)
@@ -437,8 +439,23 @@ class DirectoryView(APIView):
             status=status.HTTP_200_OK
         )
 
+    def put(self, request, pk): #디렉토리 이름 변경
+        dir=get_object_or_404(Directory, pk=pk)
+        serializer=ChangeDirNameSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                dir.name=request.data['name']
+                dir.save()
+            except IntegrityError:
+                return Response("다른 디렉터리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요.", status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'message' : '디렉토리 이름 변경 완료.'}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'error': '요청 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request, pk):
-        count, _ = Directory.objects.filter(owner=request.user, pk=pk).delete()
+        count, _ = Directory.objects.filter(owner=request.user, pk=pk).filter(~Q(pk=str(request.user.root_info.root_dir.pk))).delete() # 루트 디렉토리는 검색 안되도록 수정
         if count == 0:
             return Response(
                 {"message": "Directory not found"},
@@ -528,7 +545,7 @@ class FileManagementAPI(generics.GenericAPIView):
         serializer = self.serializer_class(file_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, file_id):
+    def delete(self, request, file_id): # 파일 삭
         try:
             file = get_object_or_404(File, owner=request.user, pk=file_id)
         except(Http404):

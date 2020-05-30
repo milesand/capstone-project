@@ -276,7 +276,7 @@ class UserStorage(models.Model):
         )
         return self.capacity_left() >= additional
 
-    def add(self, file_size_sum, file_count=1, dir_count=0):
+    def add(self, file_size_sum, file_count=0, dir_count=0): #file_count 값에 dir_count 값이 포함되는 문제가 생겨 file_count 값을 1에서 0으로 수정했습니다.
         if self.addable(file_size_sum, file_count, dir_count):
             self.file_count += file_count
             self.dir_count += dir_count

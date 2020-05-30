@@ -22,10 +22,11 @@ import SubSideBar from "../sidebar/SubSideBar/SubSideBar";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-const HomeContent = ({props, notify}) => {
-  console.log('home, notify : ', notify);
+const HomeContent = (props) => {
+  console.log('home, props : ', props);
   const [uploadModal, setUploadModal] = useState(false);
   const [flow, setFlow] = useState(null);
+  const [modalHeadText, setModalHeadText] = useState("업로드 경로 선택");
   const toggle = () => setUploadModal(!uploadModal);
 
   return (  
@@ -40,12 +41,14 @@ const HomeContent = ({props, notify}) => {
             onClick={toggle}
           >업로드</button>
           {uploadModal&&<Modal isOpen={uploadModal} toggle={toggle} size='lg' unmountOnClose={false}>
-            <ModalHeader toggle={toggle}></ModalHeader>
+            <ModalHeader toggle={toggle}><div className='testtest'>{modalHeadText}</div></ModalHeader> {/*upload modal*/}
             <ModalBody>
               <UploadContent 
                 flow={flow} 
-                setFlow={setFlow} 
-                notify={notify}
+                setFlow={setFlow}
+                setModalHeadText={setModalHeadText}
+                notify={props.notify}
+                rootDirID={props.rootDirID}
               />
             </ModalBody>
             <ModalFooter>

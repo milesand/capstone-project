@@ -170,7 +170,7 @@ class ActivateUserAPI(APIView):
         if user is not None and account_activation_token.check_token(user, token) and not user.is_mail_authenticated:
             user.is_mail_authenticated = True
             user.save()
-            return Response({"username": user.username, 'nickname': user.nickname, "email": user.email},
+            return Response({"username": user.username, 'nickname': user.nickname, "email": user.email, 'rootDir' : str(user.root_info.root_dir.pk)},
                             status=status.HTTP_200_OK)
         else:
             return Response('만료된 링크입니다.', status=status.HTTP_400_BAD_REQUEST)
@@ -229,7 +229,7 @@ class LoginAPI(generics.GenericAPIView):
                 return response
             else:
                 # response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
-                response.data = {'username': user.username, 'nickname': user.nickname, 'email': user.email}
+                response.data = {'username': user.username, 'nickname': user.nickname, 'email': user.email, 'rootDir' : str(user.root_info.root_dir.pk)}
                 response.status = status.HTTP_200_OK
                 return response
         else:
@@ -353,7 +353,7 @@ class GoogleLoginAPI(SocialLoginAPI, generics.GenericAPIView):
 
 class FacebookLoginAPI(SocialLoginAPI, generics.GenericAPIView):
     def post(self, request):
-        print(request.data)
+        print('facebook request : ', request.data)
         input_token = request.data['access_token']
         access_token = SOCIAL_AUTH_FACEBOOK_KEY + '|' + SOCIAL_AUTH_FACEBOOK_SECRET
         url = 'https://graph.facebook.com/debug_token?input_token=' + input_token + '&access_token=' + access_token

@@ -1,0 +1,8 @@
+.upload-file-browser{
+    height: 700px;
+    overflow-y: auto;
+}
+
+.custom-button{
+  width : 100px;
+}

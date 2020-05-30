@@ -154,7 +154,14 @@ export default class Signup extends Component {
 
       console.log("user : ", content.user);
       if (content.user.username) {
-        this.props.userStateChange(true, false, content.user.username, content.user.nickname, content.user.email); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
+        console.log("registration here!!!");
+        this.props.userStateChange(true,
+                                   false, 
+                                   content.user.username, 
+                                   content.user.nickname, 
+                                   content.user.email, 
+                                   content.user.root_info.root_dir
+                                   ); //회원가입 하고 바로 로그인 상태로 바뀌게 하고 싶을 때 사용
     
         let loginData={
           username: this.state.username,
