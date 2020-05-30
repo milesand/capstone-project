@@ -24,7 +24,9 @@ const SideBar = ({ isOpen, toggle }) => {
         &times;
       </span>
       <div className="sidebar-logo">
-      <h3> <FontAwesomeIcon icon={faCloudUploadAlt} className="sidebar-logo-icon" /> Cloud</h3>
+        <NavLink tag={Link} to={"/"} className={classNames({"is-open": isOpen}, {"is-toggled" : !isOpen})}>
+          <FontAwesomeIcon icon={faCloudUploadAlt} className="sidebar-logo-icon" /><h3>Moonge</h3>  
+        </NavLink>
       </div>
       <Button color="blue" onClick={toggle} className="sidebar-toggle-button">
         <FontAwesomeIcon icon={faAlignLeft} color="white"/>

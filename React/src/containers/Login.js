@@ -46,9 +46,6 @@ export default class Login extends Component { //export default : 다른 모듈�
     let auth2=window.gapi.auth2.getAuthInstance();
     Promise.resolve(auth2.signIn())
     .then(googleUser => {
-      console.log("googleUser : ", googleUser);
-      console.log("near login : ", this.props);
-      console.log("google login called!!!!!", this.props.username);
       let token=googleUser.getAuthResponse(true).access_token;
       console.log("token : ", token);
 
@@ -63,7 +60,6 @@ export default class Login extends Component { //export default : 다른 모듈�
         }
         return response;
       }
-      console.log("here, props : ", this.props);
       if(token!=null){
         fetch("http://localhost/api/social-login", {
           method: "POST",
@@ -76,7 +72,13 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(res=>res.json())
         .then(errorCheck)
         .then(content => {
-          this.props.userStateChange(true, true, content.username, content.nickname, content.email);
+          this.props.userStateChange(true,
+                                     true,
+                                     content.username, 
+                                     content.nickname, 
+                                     content.email, 
+                                     content.rootDir
+                                     );
           this.props.history.push('/');
         }).catch(e=>this.props.notify(e))
       }
@@ -108,7 +110,13 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(errorCheck)
     .then(content => {
       console.log('facebook content : ', content);
-      this.props.userStateChange(true, true, content.username, content.nickname, content.email);
+      this.props.userStateChange(true,
+                                 true,
+                                 content.username, 
+                                 content.nickname, 
+                                 content.email, 
+                                 content.rootDir
+                                 );
       this.props.history.push('/');
     }).catch(e=>this.props.notify(e))
   }
@@ -145,7 +153,13 @@ export default class Login extends Component { //export default : 다른 모듈�
            throw Error(content['error']);
       }
 
-      this.props.userStateChange(true, isMailAuthenticated, this.state.username, content.nickname, content.email);
+      this.props.userStateChange(true,
+                                 isMailAuthenticated, 
+                                 this.state.username, 
+                                 content.nickname, 
+                                 content.email, 
+                                 content.rootDir
+                                 );
       this.setState({
         isLoading: true
       });

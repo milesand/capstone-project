@@ -18,6 +18,9 @@ class DirectorySerializer(serializers.ModelSerializer):
         model = Directory
         fields = ('pk', 'owner', 'name', 'parent')
 
+class ChangeDirNameSerializer(serializers.Serializer):
+    name=serializers.CharField(max_length=20)
+
 class PartialSerializer(serializers.ModelSerializer): #테스트용
     class Meta:
         model = PartialUpload

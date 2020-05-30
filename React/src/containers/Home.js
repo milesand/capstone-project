@@ -130,7 +130,9 @@ export default class Home extends Component {
        </MyNavbar>
        <Container fluid className="content-wrapper" >
        <Switch>
-       <AuthenticatedRoute exact path={this.props.match.path} component={HomeContent} props={this.props}></AuthenticatedRoute>
+       <AuthenticatedRoute exact path={this.props.match.path}
+                           component={HomeContent}
+                           props={this.props} />
        {/* <NormalRoute 
        path={`${this.props.match.path}team`}  
        component={TeamContent} 
