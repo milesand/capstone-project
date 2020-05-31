@@ -36,23 +36,23 @@ export default class Signup extends Component {
     const emailTest=/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/; //이메일 주소
     const phoneNumberTest = /^\d{3}-\d{3,4}-\d{4}$/; //전화번호, XXX-XXX-XXXX 또는 XXX-XXXX-XXXX 형태
     
-    if(id=='username'){
+    if(id==='username'){
       if(!this.state.username||!idPasswordTest.test(this.state.username)) val=false;
     }
-    else if(id=='nickname'){
+    else if(id==='nickname'){
       console.log('here.');
       if(!this.state.nickname||!nicknameTest.test(this.state.nickname)) val=false;
     }
-    else if(id=='password'){
+    else if(id==='password'){
       if(!this.state.password||!idPasswordTest.test(this.state.password)) val=false;
     }
-    else if(id=='password_val'){
-      if(!this.state.password_val||this.state.password!=this.state.password_val) val=false;
+    else if(id==='password_val'){
+      if(!this.state.password_val||this.state.password!==this.state.password_val) val=false;
     }
-    else if(id=='email'){
+    else if(id==='email'){
       if(!this.state.email||!emailTest.test(this.state.email)) val=false;
     }
-    else if(id=='phone'){
+    else if(id==='phone'){
       if(this.state.phone&&!phoneNumberTest.test(this.state.phone)) val=false;
     }
     return val;
@@ -67,7 +67,7 @@ export default class Signup extends Component {
     if(!username||!idPasswordTest.test(username)) val=false;
     if(!nickname||!nicknameTest.test(nickname)) val=false;
     if(!password||!idPasswordTest.test(password)) val=false;
-    if(!password_val||password!=password_val) val=false;
+    if(!password_val||password!==password_val) val=false;
     if(!email||!emailTest.test(email)) val=false;
     if(phone&&!phoneNumberTest.test(phone)) val=false;
     return val;
@@ -79,27 +79,27 @@ export default class Signup extends Component {
     let target_id=e.target.id;
     let target_val=e.target.value;
 
-    if(target_id=='username'){
+    if(target_id==='username'){
       target="username_err_message";
       target_err_message="8자 이상 15자 이하의 숫자, 영문자를 포함한 값으로 입력해주세요.";
     }
-    else if(target_id=='nickname'){
+    else if(target_id==='nickname'){
       target="nickname_err_message";
       target_err_message="2자 이상 15자 이하의 숫자 또는 영문자를 포함한 값으로 입력해주세요.";
     }
-    else if(target_id=='password'){
+    else if(target_id==='password'){
       target='password_err_message';
       target_err_message="8자 이상 15자 이하의 숫자, 영문자를 포함한 값으로 입력해주세요.";
     }
-    else if(target_id=='password_val'){
+    else if(target_id==='password_val'){
       target='password_val_err_message';
       target_err_message="비밀번호가 일치하지 않습니다.";
     }
-    else if(target_id=='email'){
+    else if(target_id==='email'){
       target='email_err_message';
       target_err_message="이메일 형식을 확인해주세요.";
     }
-    else if(target_id=='phone'){
+    else if(target_id==='phone'){
       target='phone_err_message';
       target_err_message="다음과 같은 형태로 입력해주세요. 010-XXXX-XXXX";
     }

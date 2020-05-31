@@ -2,7 +2,6 @@ import React from 'react';
 import "./LoginStyle.css";
 import {Col} from 'reactstrap';
 import logo from './mail.png';
-import {Link} from 'react-router-dom'
 const MailResendForm=({username, email, returnToLogin}) => {
 
     return(

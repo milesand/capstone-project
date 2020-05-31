@@ -79,6 +79,7 @@ api = [
     path('search-user/<str:team_pk>/<str:name>', teams.UserSearchAPI.as_view()), # 일부 문자열을 통해 사용자 검색
 
     path('partial', storage.PartialAPI.as_view()), #partial file 목록 출력 및 전체 제거, 테스트용
+    re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
 ]
 
 urlpatterns = [

@@ -8,10 +8,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./MyNavbar.css";
 import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Nav,
   Collapse,
   Navbar,
@@ -20,30 +16,23 @@ import {
   NavItem,
   NavLink,
   UncontrolledDropdown,
-  Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
   Popover,
-  PopoverHeader,
   PopoverBody,
   Button,
   Input,
   InputGroup,
   InputGroupAddon,
 } from "reactstrap";
-import classNames from "classnames";
 import axios from "axios";
 
 const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameList,
-                    leaderList, leaderNickList, checkInvite, notify}) => {
+                    leaderList, leaderNickList, checkUserState, notify, errorCheck}) => {
   console.log("렌더링 시작! invitationList : ", invitationList, invitationNameList);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [update, setUpdate] = useState();
-
-  useEffect(() => {
-    // checkInvite();
-  });
 
 
   const popoverToggle = () => setPopoverOpen(!popoverOpen);
@@ -68,13 +57,15 @@ const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameLi
         null,
         option
       )
-      .then((content) => {
-        notify("참가 성공!");
-        console.log("here.");
-        checkInvite();
+      .catch(error=>{
+        errorCheck(error.response);
+      }) 
+      .then(() => {
+        notify("참가 성공!"); 
+        checkUserState();
       })
-      .catch((error) => {
-        notify(error.response.data["detail"]);
+      .catch((e) => {
+        notify(e);
       });
   };
 
@@ -84,12 +75,15 @@ const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameLi
 
     axios
       .delete(`http://localhost/api/team/${currentTeamId}/acceptance`, option)
-      .then((content) => {
+      .catch(error=>{
+        errorCheck(error.response);
+      }) 
+      .then(() => {
         notify("초대를 거절했습니다.");
-        checkInvite();
+        checkUserState();
       })
-      .catch((error) => {
-        notify(error.response.data["detail"]);
+      .catch((e) => {
+        notify(e);
       });
     setUpdate(Math.random());
   };
@@ -153,7 +147,7 @@ const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameLi
                 trigger="legacy"
                 hideArrow={true}>
                 <PopoverBody className="invitation-pop-body">
-                  {invitationList.length == 0 ? 
+                  {invitationList.length === 0 ? 
                     <div className="invitation-pop-item noinvitation">
                       <span>현재 받은 초대가 없습니다.</span>
                     </div>

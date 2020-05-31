@@ -28,7 +28,6 @@ class MailValidation extends Component{
             }
             return response;
         }
-        console.log('fetch start.');
         fetch(url, {
             method: "GET",
             headers: {

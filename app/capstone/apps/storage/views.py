@@ -571,7 +571,7 @@ class FileListAPI(generics.GenericAPIView):
         self.queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PartialAPI(generics.GenericAPIView): # 테스트용, 삭제 안된 partial file 목록 출력  삭제.
+class PartialAPI(generics.GenericAPIView): # 테스트용, 삭제 안된 partial file 목록 출력.
     serializer_class = PartialSerializer
     permission_classes = (IsAuthenticated, )
 
@@ -585,4 +585,15 @@ class PartialAPI(generics.GenericAPIView): # 테스트용, 삭제 안된 partial
     def delete(self, request):
         self.queryset = PartialUpload.objects.filter(owner=request.user)
         self.queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PartialDeleteAPI(APIView): # 특정 partial file 제거, 업로드 중단시에 사용
+
+    def delete(self, request, pk):
+        partial=get_object_or_404(PartialUpload, pk=pk)
+        print("owner : ", partial.owner, ' user : ', request.user)
+        if partial.owner!=request.user:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        partial.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

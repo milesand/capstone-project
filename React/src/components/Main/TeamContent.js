@@ -130,11 +130,10 @@ const CustomTable = styled.div`
 `;
 
 const TeamContent = ({props}) => {
-  console.log('username : ', props);
+  console.log('team props : ', props);
 
   const nickname=props.nickname; //닉네임, 웹페이지 표시용
   const username=props.username; //로그인 아이디, 서버 요청용
-  console.log("after username : ", props.username);
 // Modal On/Off
   const [teamAddModal, setTeamAddModal] = useState(false);
   const [teamInviteModal, setTeamInviteModal] = useState(false);
@@ -179,16 +178,23 @@ const TeamContent = ({props}) => {
 
   //팀 목록 불러오기
   const loadTeamList = async () => {
+    console.log("load team!");
     const tempList1 = [];
     const tempList2 = [];
     axios
       .get("http://localhost/api/team", option)
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
       .then((content) => {
         content["data"].map((team, index) => {
 
           tempList1.push(team);
         });
         axios.get("http://localhost/api/join-team", option)
+          .catch(error=>{
+            props.errorCheck(error.response);
+          }) 
           .then((content) => {
             content["data"].map((team, index) => {
 
@@ -197,13 +203,13 @@ const TeamContent = ({props}) => {
             const tempList3 = tempList1.concat(tempList2);
             setTeamList(tempList3);
           })
-          .catch((error) => props.notify(error));
       })
       .catch((error) => props.notify(error));
   };
 
   //전체유저 불러오기
   const loadFriendList = async () => {
+    console.log("load team.");
     const tempList = [];
     const option = {
       headers: {
@@ -213,6 +219,9 @@ const TeamContent = ({props}) => {
     };
 
     axios.get("http://localhost/api/users", option)
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
       .then((content) => {
         content["data"].map((user) => {
           console.log("유저리스트 : " + JSON.stringify(user["username"]));
@@ -228,7 +237,7 @@ const TeamContent = ({props}) => {
         setFriendList(tempList);
         //  console.log(JSON.stringify(tempList));
       })
-      .catch((error) => console.log(error.response.data));
+      .catch(e=>props.notify(e))
   };
 
 
@@ -262,6 +271,9 @@ const TeamContent = ({props}) => {
       setmyTeamName("");
     } else {
       axios.post("http://localhost/api/team", body, option)
+        .catch(error=>{
+          props.errorCheck(error.response);
+        }) 
         .then((content) => {
           console.log(content);
           console.log(JSON.stringify(TeamNameData));
@@ -273,7 +285,7 @@ const TeamContent = ({props}) => {
             loadTeamList();
           }
         })
-        .catch((error) => props.notify(JSON.stringify(error.response.data["error"])));
+        .catch(e=>props.notify(e))
       setmyTeamName("");
       setTeamAddModal(!teamAddModal);
     }
@@ -307,6 +319,9 @@ const TeamContent = ({props}) => {
           body,
           option
         )
+        .catch(error=>{
+          props.errorCheck(error.response);
+        }) 
         .then((content) => {
           console.log("invitation : " + JSON.stringify(content));
           if (content.hasOwnProperty("error")) {
@@ -315,9 +330,8 @@ const TeamContent = ({props}) => {
             props.notify("초대 완료!");
           }
         })
-        .catch((error) => {
-          console.log(JSON.stringify(error.response.data));
-          props.notify(error.response.data["error"]);
+        .catch((e) => {
+          props.notify(e);
         });
     }
 
@@ -348,6 +362,9 @@ const TeamContent = ({props}) => {
     console.log("팀 이름 : " + e.target.name);
 
     axios.get(`http://localhost/api/team-management/${e.target.value}`, option)
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
       .then((content) => {
         let nameArr=[], nickArr=[], idArr=[];
         console.log(content['data'])
@@ -372,7 +389,8 @@ const TeamContent = ({props}) => {
         setTeamModifyModal(!teamModifyModal);
         setRenameTeamCheck(false);
         setmyTeamName("");
-      });
+      })
+      .catch(e=>props.notify(e));
   };
 
   //팀 탈퇴 modal on/off
@@ -391,13 +409,14 @@ const TeamContent = ({props}) => {
     };
     console.log("현재 팀 id : " + currentTeamId);
     axios.put(`http://localhost/api/team/${currentTeamId}/secession`, null, option)
-      .then((content) => {
-        props.notify("탈퇴완료");
-        window.location.reload();
-      })
-      .catch((error) => {
-        props.notify(JSON.stringify(error.response.data));
-      });
+    .catch(error=>{
+      props.errorCheck(error.response);
+    }) 
+    .then(() => {
+      props.notify("탈퇴완료");
+      window.location.reload();
+    })
+    .catch(e=>props.notify(e))
     setTeamLeaveModal(!teamLeaveModal);
   };
 
@@ -415,12 +434,15 @@ const TeamContent = ({props}) => {
       credentials: "include",
     };
     axios.delete(`http://localhost/api/team-management/${currentTeamId}`, option)
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
       .then((content) => {
         console.log("팀 삭제 : " + content);
         props.notify("삭제완료.");
         loadTeamList();
       })
-      .catch((error) => props.notify(JSON.stringify(error.response.data)));
+      .catch(e=>props.notify(e))
     setTeamDeleteModal(!teamDeleteModal);
     setTeamModifyModal(!teamModifyModal);
   };
@@ -442,11 +464,14 @@ const TeamContent = ({props}) => {
         data,
         option
       )
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
       .then((content) => {
         props.notify("이름 변경 완료");
         window.location.reload();
       })
-      .catch((error) => props.notify("올바르지 않은 이름입니다."));
+      .catch(() => props.notify("올바르지 않은 이름입니다."));
     setRenameTeamCheck(!renameTeamCheck);
   };
 

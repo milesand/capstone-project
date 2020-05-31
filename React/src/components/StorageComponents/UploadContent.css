@@ -6,3 +6,8 @@
 .custom-button{
   width : 100px;
 }
+
+.delete-button{
+    width: 70px;
+    height: 35px;
+}

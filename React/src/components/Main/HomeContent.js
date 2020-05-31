@@ -41,7 +41,7 @@ const HomeContent = (props) => {
             onClick={toggle}
           >업로드</button>
           {uploadModal&&<Modal isOpen={uploadModal} toggle={toggle} size='lg' unmountOnClose={false}>
-            <ModalHeader toggle={toggle}><div className='testtest'>{modalHeadText}</div></ModalHeader> {/*upload modal*/}
+            <ModalHeader toggle={toggle}><div className='modal-head'>{modalHeadText}</div></ModalHeader> {/*upload modal*/}
             <ModalBody>
               <UploadContent 
                 flow={flow} 
@@ -49,10 +49,12 @@ const HomeContent = (props) => {
                 setModalHeadText={setModalHeadText}
                 notify={props.notify}
                 rootDirID={props.rootDirID}
+                errorCheck={props.errorCheck}
+                checkUserState={props.checkUserState}
               />
             </ModalBody>
             <ModalFooter>
-              <Button color="primary" onClick={toggle} className="close-button">닫기</Button>{' '}
+              <Button outline color="primary" onClick={toggle} className="close-button">닫기</Button>
             </ModalFooter>
           </Modal>}
         </div>

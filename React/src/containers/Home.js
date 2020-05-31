@@ -31,6 +31,8 @@ export default class Home extends Component {
     invitationNameList:[],
     leaderList:[],
     leaderNickList:[],
+    spaceLeft: -1,
+    spacePercentage:-1,
     option: {
       headers: {
           "Content-Type": "application/json",
@@ -39,6 +41,7 @@ export default class Home extends Component {
     }
 
   };
+  this.maxSpace=5; //기가바이트 단위
   console.log("in home, props : ", this.props);
   this.toggleSidebar=this.toggleSidebar.bind(this);
   this.toggle=this.toggle.bind(this);
@@ -59,16 +62,32 @@ export default class Home extends Component {
     //   });
     // })
     // .catch(error => alert(error));
-    this.checkInvite();
+    this.checkUserState();
 }
 
 
-  checkInvite=()=> {
+  checkUserState=()=> {
+  
+  let getSpace=(size)=>{
+    return Math.round(100*(this.maxSpace-size/Math.pow(1000, 3)))/100; 
+    //사용자별로 남은 공간 구하기
+  }
+
+  let getPercent=(size)=>{
+    return Math.round(((this.maxSpace-getSpace(size))/this.maxSpace) * 100);
+  }
   
   axios.get("http://localhost/api/user", this.state.option)
+  .catch(error=>{
+    this.props.errorCheck(error.response);
+  }) 
   .then(content => {
-    // console.log(content);
-    this.setState({invitationList: content['data']['invitationList']});
+    this.setState(state=>{
+      state.invitationList=content['data']['invitationList'];
+      state.spaceLeft= getSpace(content['data']['root_info']['file_size_total']);
+      state.percent=getPercent(content['data']['root_info']['file_size_total']);
+      return state;
+    });
 
    console.log(JSON.stringify(this.state.invitationList));
    console.log("invitationList: "+JSON.stringify(this.state.invitationList));
@@ -79,6 +98,9 @@ export default class Home extends Component {
       let teamID=this.state.invitationList[team]
       console.log("in loop, team : ", teamID);
       axios.get("http://localhost/api/team-management/" + teamID, this.state.option)
+      .catch(error=>{
+        this.props.errorCheck(error.response);
+      }) 
       .then(content => {
         console.log('Name team, content : ', content);
         nameArr.push(content['data']['teamName']);
@@ -94,6 +116,7 @@ export default class Home extends Component {
     console.log("result : ", JSON.stringify(this.state.invitationNameList));
     console.log("invitationList: "+JSON.stringify(this.state.invitationList));
   })
+  .catch(e=>this.props.notify(e))
   
 }
 
@@ -114,7 +137,11 @@ export default class Home extends Component {
     return (
       <div className="Home">
 
-       <SideBar toggle={this.toggleSidebar} isOpen={this.state.sidebarIsOpen} />
+       <SideBar toggle={this.toggleSidebar}
+                isOpen={this.state.sidebarIsOpen} 
+                spaceLeft={this.state.spaceLeft} 
+                percent={this.state.percent}
+       />
        <Container fluid>
        <MyNavbar logout={this.props.logout}
                  username={this.state.username}
@@ -123,8 +150,9 @@ export default class Home extends Component {
                  invitationNameList={this.state.invitationNameList}
                  leaderList={this.state.leaderList}
                  leaderNickList={this.state.leaderNickList}
-                 checkInvite={this.checkInvite}
+                 checkUserState={this.checkUserState}
                  notify={this.props.notify}
+                 errorcheck={this.props.errorCheck}
                  >
 
        </MyNavbar>
@@ -132,6 +160,7 @@ export default class Home extends Component {
        <Switch>
        <AuthenticatedRoute exact path={this.props.match.path}
                            component={HomeContent}
+                           checkUserState={this.checkUserState}
                            props={this.props} />
        {/* <NormalRoute 
        path={`${this.props.match.path}team`}  

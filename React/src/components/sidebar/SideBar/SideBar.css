@@ -103,6 +103,7 @@
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
     margin-left: 15px;
+    transition: background-color 0.5s;
   }
   .sidebar-item:hover {
     background-color:gray;
@@ -153,9 +154,6 @@
   margin-left:30px;
    width:170px;
    height: 10px !important;
- }
- .sidebar-volume-bar > div {
-   background-color: #4e69d1 !important;
  }
 
 

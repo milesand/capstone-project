@@ -53,9 +53,7 @@ class App extends Component {
 
   getUserInfo=()=>{
     let errorCheck = response => {
-      console.log(response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
-        console.log("initial response : ", response);
         this.setState({
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
@@ -66,13 +64,11 @@ class App extends Component {
         });
       }
       else{
-        console.log("here. success.");
         this.setState({
           isLogin: false,
         });
         this.deleteJWTToken();
       }
-      console.log('wwwwwstate : ', this.state);
       return response;
     } 
 
@@ -217,6 +213,20 @@ class App extends Component {
     Toast.info(message);
   };
 
+  errorCheck=(response)=>{
+    console.log("err chk response : ", response);
+    if(response.status==401){
+      this.userStateChange(false, false, "", "", "", "");
+      this.props.history.push('/login');
+      throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
+    }
+    if((response.hasOwnProperty('ok')&&!response.ok)){
+      throw Error("서버 에러 발생!");
+    }
+    console.log("after err check response : ", response);
+    return response;
+  }
+
   render() {
     const baseProps = {
       username: this.state.username,
@@ -228,6 +238,7 @@ class App extends Component {
       isLoading: this.state.isLoading,
       userStateChange: this.userStateChange,
       toggleLoadingState: this.toggleLoadingState,
+      errorCheck: this.errorCheck,
       logout: this.logout,
       notify: this.notify
     };
