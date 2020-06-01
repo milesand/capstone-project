@@ -48,7 +48,7 @@ export default class Home extends Component {
 }
 
   componentDidMount() {
-
+    console.log("home.js start, props : ", this. props);
     // fetch('http://localhost/api/user', {
     //   method: "GET",
     //   credentials: 'include',
@@ -67,7 +67,7 @@ export default class Home extends Component {
 
 
   checkUserState=()=> {
-  
+  console.log("check User staet !!!!");
   let getSpace=(size)=>{
     return Math.round(100*(this.maxSpace-size/Math.pow(1000, 3)))/100; 
     //사용자별로 남은 공간 구하기

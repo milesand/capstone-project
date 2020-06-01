@@ -202,7 +202,7 @@ export default class FileTest extends Component { //export default : 다른 모�
       credentials: 'include'
     })
     .then(content=>{
-      console.log("start.");
+      console.log("download, content : ", content);
       if(idSplit.length>1){ // 파일 여러 개, 압축 파일 이름 downloadFiles.zip으로 통일
         fileStream=streamSaver.createWriteStream('downloadFiles.zip');
       }

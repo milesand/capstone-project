@@ -33,6 +33,60 @@ def valid_dir_entry_name(name):
     )
 
 
+def perm_check_entry_with_teams(user, entry):
+    '''
+    Check whether given user has access to given entry, accounting for teams the
+    user is in.
+    The user has access if:
+    1. the user owns the entry, or
+    2. the user has access to the parent directory of this entry.
+
+    Use this to check directory permission if you're treating the directory as an
+    entry in some other shared directory.
+    '''
+    if entry.owner == user:
+        return True
+    return perm_check_dir_with_teams(user, entry.parent)
+
+
+def perm_check_dir_with_teams(user, directory):
+    '''
+    Check whether given user has access to given directory, accounting for teams
+    the user is in.
+    Currently, manually traverses the directory upwards and checks for team stuff
+    manually until a directory shared for this user is found or no parent exists.
+    This means:
+    1. for nested shared directories, the access permission is inherited:
+       subdirectories can be made more open, but not more restrictive.
+    2. THIS DESIGN IS NOT OPTIMIZED AT ALL: It does the job but it's potentially
+       really slow. We access the DB at least once per parent directory traversed,
+       and in case of really deep directory structure, this could be slow.
+       TODO: benchmark this thing.
+    3. If the user has access, they have COMPLETE access; they can upload to the
+       directory, download files, delete anything in it, etc. No fine-grained
+       access control.
+
+    Use this to check directory permission if you're treating the directory itself
+    as a shared directory.
+    '''
+    # Reverse relations to Team model defined in teams app used here.
+    #user_teams = user.teamList.all().union(user.leader.all()).distinct().only("pk") # 추후에 이걸로 사용
+    user_teams = user.teamList.all().union(user.leader.all()).distinct()
+    while directory is not None:
+        # Owner of a directory has access to ALL subdirectories, even to ones
+        # owned by someone else. Suppose you own a directory and share it, and
+        # someone else creates subdirectories in it. Later you stop sharing it,
+        # but then you're stuck with someone else's files in your directory.
+        # It'd be frustrating if you couldn't just remove it, no?
+        if directory.owner == user:
+            return True
+        dir_teams = directory.team_set.all().only("pk")
+        if user_teams.intersection(dir_teams).exists():
+            return True
+        directory = directory.parent
+    return False
+
+
 class FlowUploadStartView(APIView):
     parser_classes = (MultiPartParser, JSONParser)
     permission_classes = (IsAuthenticated,)
@@ -82,7 +136,9 @@ class FlowUploadStartView(APIView):
                             raise Directory.DoesNotExist
                     else:
                         # Assume 'directory' is a primary key.
-                        directory = Directory.objects.get(pk=directory, owner=user)
+                        directory = Directory.objects.get(pk=directory)
+                        if not perm_check_dir_with_teams(user, directory):
+                            raise Directory.DoesNotExist
 
                 except Directory.DoesNotExist:
                     return Response(
@@ -163,42 +219,39 @@ def _check_flow_upload_request(request, pk, attr, check_chunk, lock):
             status=status.HTTP_400_BAD_REQUEST
         ))
 
-    with transaction.atomic():
-        try:
-            if lock:
-                partial_upload = PartialUpload.objects.filter(pk=pk).select_for_update().get()
-            else:
-                partial_upload = PartialUpload.objects.get(pk=pk)
-        except PartialUpload.DoesNotExist:
-            return (True, Response(
-                {"message": "Upload not found"},
-                status=status.HTTP_404_NOT_FOUND
-            ))
+    # Get a PartialUpload by pk AND user. We don't want to leak the existence of
+    # partial upload to someone who doesn't own it, so while 403 seems more appropriate
+    # meaning-wise, We return 404 on both partial-upload-not-found and
+    # owner-doesn't-match.
+    # Note that we're not checking team permission here, since two different users
+    # uploading to a same file simultaneously seems... weird.
+    try:
+        if lock:
+            partial_upload = (
+                PartialUpload.objects.filter(pk=pk, owner=request.user)
+                .select_for_update().get()
+            )
+        else:
+            partial_upload = PartialUpload.objects.get(pk=pk, owner=request.user)
+    except PartialUpload.DoesNotExist:
+        return (True, Response(
+            {"message": "Upload not found"},
+            status=status.HTTP_404_NOT_FOUND
+        ))
 
-        if partial_upload.owner != request.user:
-            # Technically it's not NOT FOUND; We found it, after all. So 403 may seem more
-            # appropriate. But then we're leaking information to some potentially evil 3rd party
-            # that partial upload with this pk exists. That seems bad for security.
-            # So interpret this 404 not as NOT FOUND, but as MAYBE OR MAYBE NOT FOUND
-            # BUT I AM NOT GOING TO TELL YOU AND I AM NOT LETTING YOU USE IT ANYWAYS.
-            return (True, Response(
-                {"message": "Upload not found"},
-                status=status.HTTP_404_NOT_FOUND
-            ))
+    # We've established that the partial_upload's uploader and current user
+    # matches, so it might be better to provide the user with more useful
+    # responses other than 404.
 
-        # We've established that the partial_upload's uploader and current user
-        # matches, so it might be better to provide the user with more useful
-        # responses other than 404.
-
-        if partial_upload.is_expired():
-            partial_upload.delete()
-            # 410 GONE would be more appropriate, but flow doesn't understand it,
-            # and Flow attempting to storage after expiration because bad internet
-            # seems like a legit case. In this case we need to tell Flow to stop.
-            return (True, Response(
-                {"message": "Upload expired"},
-                status=status.HTTP_404_NOT_FOUND
-            ))
+    if partial_upload.is_expired():
+        partial_upload.delete()
+        # 410 GONE would be more appropriate, but flow doesn't understand it,
+        # and Flow attempting to storage after expiration because bad internet
+        # seems like a legit case. In this case we need to tell Flow to stop.
+        return (True, Response(
+            {"message": "Upload expired"},
+            status=status.HTTP_404_NOT_FOUND
+        ))
 
     if check_chunk:
         chunk_end = partial_upload.received_bytes + chunk.size
@@ -342,8 +395,10 @@ class CreateDirectoryView(APIView):
                 {"message": "Invalid field: name"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        n, parent = Directory.get_by_path_or_id(request.user, fields['parent'])
-        if n != 0:
+        n, parent = Directory.get_by_path_or_id(
+            request.user, fields['parent'], match_user_on_id = False
+        )
+        if n != 0 or not perm_check_dir_with_teams(request.user, parent):
             return Response(
                 {"message": "Parent directory does not exist"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -395,10 +450,12 @@ class DirectoryView(APIView):
         try:
             directory = (
                 Directory.objects
-                .filter(owner=request.user, pk=pk)
+                .filter(pk=pk)
                 .prefetch_related('children')
                 .get()
             )
+            if not perm_check_dir_with_teams(request.user, directory):
+                raise Directory.DoesNotExist
         except Directory.DoesNotExist:
             return Response(
                 {"message": "Directory not found"},
@@ -441,6 +498,8 @@ class DirectoryView(APIView):
 
     def put(self, request, pk): #디렉토리 이름 변경
         dir=get_object_or_404(Directory, pk=pk)
+        if not perm_check_entry_with_teams(request.user, dir):
+            return Response(status=status.HTTP_404_NOT_FOUND)
         serializer=ChangeDirNameSerializer(data=request.data)
         if serializer.is_valid():
             try:
@@ -455,12 +514,22 @@ class DirectoryView(APIView):
             return Response({'error': '요청 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        count, _ = Directory.objects.filter(owner=request.user, pk=pk).filter(~Q(pk=str(request.user.root_info.root_dir.pk))).delete() # 루트 디렉토리는 검색 안되도록 수정
-        if count == 0:
+        try:
+            directory = Directory.objects.get(pk=pk)
+            if not perm_check_entry_with_teams(request.user, directory):
+                raise Directory.DoesNotExist
+        except Directory.DoesNotExist:
             return Response(
                 {"message": "Directory not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        if directory.parent is None:
+            return Response(
+                {"message": "Cannot delete root directory"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        directory.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT,
         )
@@ -472,13 +541,15 @@ class ThumbnailAPI(APIView):
     def get(self, request, file_id):  # 특정 사용자의 고유 ID와 함께 파일 이름 전달
         user = request.user
         try:
-            file = get_object_or_404(File, owner=user, pk=file_id)
+            file_record = get_object_or_404(File, pk=file_id)
+            if not perm_check_entry_with_teams(request.user, file_record):
+                raise Http404
         except Http404:
             return Response(
                 {"error": "파일을 찾지 못했습니다."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        if not file.has_thumbnail:
+        if not file_record.has_thumbnail:
             return Response(
                 {"error": "썸네일을 찾지 못했습니다."},
                 status=status.HTTP_404_NOT_FOUND
@@ -488,49 +559,66 @@ class ThumbnailAPI(APIView):
             status=status.HTTP_200_OK,
             headers={
                 'Content-Disposition': 'inline',
-                'X-Accel-Redirect': '/media/thumbnail/{0}/{1}'.format(str(user.pk), str(file.pk))
+                 # Let nginx handle this
+                'X-Accel-Redirect': '/media/thumbnail/{0}/{1}'.format(
+                    str(user.pk), str(file_record.pk)
+                )
             },
             content_type='image/jpeg',
         )
 
+def file_download(data, user):
+    print("file download method.")
+    if len(data) == 1:  # 파일 1개
+        try:
+            file_record = get_object_or_404(File, pk=data[0])
+            if not perm_check_entry_with_teams(user, file_record):
+                raise Http404
+        except Http404:
+            return Response(
+                {"error": "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        response = Response()
+        # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
+        print("download url : ", '/media/files/{0}/{1}'.format(
+            str(user.pk), str(file_record.pk)))
 
-class FileDownloadAPI(APIView):
+        response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(
+            str(user.pk), str(file_record.pk)
+        )
+        return response
+    else:  # 파일 여러개
+        print("multi files.")
+        files = []
+        for file_id in data:
+            try:
+                file_record = get_object_or_404(File, pk=file_id)
+                if not perm_check_entry_with_teams(user, file_record):
+                    raise Http404
+            except Http404:
+                return Response(
+                    {"error": "file {0} does not exist.".format(file_id)},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            files.append((
+                file_record.name,
+                '/media/files/{0}/{1}'.format(str(user.pk), str(file_record.pk)),
+                file_record.size
+            ))
+
+        print('files : ', files)
+        return TransferZipResponse(filename='downloadFiles.zip', files=files)
+
+class FileDownloadAPI(APIView): #파일 다운로드용 API
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        user = request.user
-        if len(request.data) == 1: # 파일 1개
-            try:
-                file = get_object_or_404(File, owner=user, pk=request.data['file1'])
-            except Http404:
-                return Response(
-                    {"error" : "해당 파일 ID로 저장된 파일이 존재하지 않습니다."},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            response = Response()
-            # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
-            response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(
-                str(user.pk), str(file.pk)
-            )
-            return response
-        else: #파일 여러개
-            print("multi files.")
-            files = []
-            for file_id in request.data.values():
-                try:
-                    file_record = get_object_or_404(File, owner=user, pk=file_id)
-                except Http404:
-                    return Response(
-                        {"error": "file {0} does not exist.".format(file_id)},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-                files.append((
-                    file_record.name,
-                    '/media/files/{0}/{1}'.format(str(user.pk), str(file_record.pk))
-                ))
+        return file_download(list(request.data.values()), request.user)
 
-            print('files : ', files)
-            return TransferZipResponse(filename='downloadFiles.zip', files=files)
+class StreamingAPI(APIView): # 동영상 스트리밍용 API
+    def get(self, request, pk):
+        return file_download([pk], request.user)
 
 #파일 ID를 통해 파일 정보를 얻는다.
 class FileManagementAPI(generics.GenericAPIView):
@@ -538,7 +626,9 @@ class FileManagementAPI(generics.GenericAPIView):
 
     def get(self, request, file_id):
         try:
-            file_record = get_object_or_404(File, owner=request.user, pk=file_id)
+            file_record = get_object_or_404(File, pk=file_id)
+            if not perm_check_entry_with_teams(request.user, file_record):
+                raise Http404
         except Http404:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -547,11 +637,13 @@ class FileManagementAPI(generics.GenericAPIView):
 
     def delete(self, request, file_id): # 파일 삭
         try:
-            file = get_object_or_404(File, owner=request.user, pk=file_id)
+            file_record = get_object_or_404(File, pk=file_id)
+            if not perm_check_entry_with_teams(request.user, file_record):
+                raise Http404
         except(Http404):
             return Response({'error' : '파일이 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        file.delete()
+        file_record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # 특정 사용자가 가지고 있는 파일들의 정보를 전부 출력한다.
@@ -597,3 +689,5 @@ class PartialDeleteAPI(APIView): # 특정 partial file 제거, 업로드 중단�
 
         partial.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+

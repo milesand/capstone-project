@@ -11,11 +11,11 @@ export default class Login extends Component { //export default : 다른 모듈�
       password: "",
       isLoading: false
     };
-    console.log("로그인 시작, notify : ", this.props.notify);
   }
 
   //유저 로그인 상태 체크
   componentDidMount() {
+    console.log("login check.");
     if (this.props.isLogin) {
       this.props.history.push("/");
     }

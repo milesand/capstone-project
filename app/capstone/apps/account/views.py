@@ -4,7 +4,7 @@ from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer, \
-    SocialAccessTokenSerializer, UserLoginSerializer, TeamListSerializer
+    SocialAccessTokenSerializer, UserLoginSerializer, TeamListSerializer, WithdrawalSerializer, ChangeProfileSerializer
 from .models import User
 from django.contrib.auth import login
 from rest_framework.views import APIView
@@ -210,6 +210,7 @@ class LoginAPI(generics.GenericAPIView):
             print(request.data)
             # 존재하는 아이디인지 확인
             user = authenticate(username=request.data['username'], password=request.data['password'])
+            print("user : ", user)
             response = Response()
             if user is None:
                 response.data = {"error": "아이디와 비밀번호를 확인해주세요."}
@@ -252,7 +253,6 @@ class AllUserAPI(generics.ListAPIView):
 
 # 특정 접속 유저의 프로필을 출력하거나, 회원에서 제거하는 API
 class UserAPI(generics.GenericAPIView):
-    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
     #permission_classes = [AllowAny, ]  # 임시 설정
 
@@ -261,17 +261,51 @@ class UserAPI(generics.GenericAPIView):
         print('here.')
         user = request.user
         print('user : ', user)
-        if not user.is_authenticated:
-            return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(self.get_serializer_class()(user).data, status=status.HTTP_200_OK)
+
+    def put(self, request):  # request body : curPassword, newPassword, email, 안바꿀 값은 빈칸으로
+        print("request : ", request.data)
+        serializer = self.get_serializer_class()(data=request.data)
+        if serializer.is_valid():
+            if request.user.social_auth == "":  # 소셜 계정 아닌경우
+                user = authenticate(username=request.user.username, password=request.data['curPassword'])
+                if user is None:  # 현재 비밀번호가 틀린 경우
+                    return Response({"message": "비밀번호가 일치하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            else:  # 소셜 계정
+                user = request.user
+
+            if request.data['nickname'] != "":
+                user.nickname = request.data['nickname']
+
+            if request.data['newPassword'] != "":
+                user.password = make_password(request.data['newPassword'])
+
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        else:
+            return Response({'message': '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        # user = find_user(request)
-        user = request.user
-        if not user.is_authenticated:
-            return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer_class()(data=request.data)
+        if serializer.is_valid():
+            user = authenticate(username=request.user, password=request.data['password'])
+            if user is None:
+                return Response({'message : ', "비밀번호가 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            user.delete()
+            return LogoutAPI.post(self, request)
+
+        else:
+            return Response({'message': '비밀번호는 15자 이하여야 합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            return UserSerializer
+        elif self.request.method=='DELETE':
+            return WithdrawalSerializer
+        else:
+            return ChangeProfileSerializer
 
 
 # 소셜로그인을 수행할 때 여기서 구글인지 페이스북인지 체크한 다음, 적절한 곳으로 POST 명령을 보내준다.
@@ -437,5 +471,6 @@ class DeleteAPI(APIView):
     def delete(self, request):
         user = User.objects.all()
         user.delete()
-        return Response(status=status.HTTP_200_OK)
+        return LogoutAPI.post(self, request)
+
 

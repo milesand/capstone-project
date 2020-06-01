@@ -56,6 +56,7 @@ class MailResend extends Component{
                 email={this.state.email}
                 resendAuthEmail={this.resendAuthEmail}
                 isLoading={this.props.isLoading}
+                logout={this.props.logout}
             />
             }
             </div>

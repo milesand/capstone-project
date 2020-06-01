@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col} from "reactstrap";
+import { Row, Col, Spinner} from "reactstrap";
 import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
@@ -42,9 +42,10 @@ const ForgotPasswordForm = ({email, username, isLoading, changeEmail, changeUser
               
               <button
                  type="button"
-                 className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
+                 className={'fadeIn'}
                  onClick={sendPassword}
-              >{isLoading ? '':'확인'}</button>
+                 disabled={isLoading}
+              >{isLoading ? <Spinner size="sm" color='light'/>:'확인'}</button>
              
             </form>
 

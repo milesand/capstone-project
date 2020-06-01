@@ -22,6 +22,7 @@ import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
 import ThumbTest from "./ThumbTest";
 import FileTest from "./FileTest";
+import StreamingTest from "./StreamingTest";
 
 class App extends Component {
   constructor(props) {
@@ -53,6 +54,7 @@ class App extends Component {
 
   getUserInfo=()=>{
     let errorCheck = response => {
+      console.log("user check, here!!!!, response : ", response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
         this.setState({
           isLogin: true,
@@ -64,9 +66,7 @@ class App extends Component {
         });
       }
       else{
-        this.setState({
-          isLogin: false,
-        });
+        this.userStateChange(false, false);
         this.deleteJWTToken();
       }
       return response;
@@ -113,7 +113,7 @@ class App extends Component {
     }
   }
 
-  userStateChange = (authenticated, mailAuthenticated, username, nickname, email, root_dir) => {
+  userStateChange = (authenticated, mailAuthenticated, username="", nickname="", email="", root_dir="") => {
     console.log("thisStateTest.", this.state);
     if(email=='google'||email=='facebook'){ //소셜 로그인
       this.setState({
@@ -142,12 +142,11 @@ class App extends Component {
     let isTokenStored=true;
     let tokenCheck = response => {
       if(!response.ok){
-        isTokenStored=false;
+        throw Error();
       }
       return response;
     }
 
-    try {
       fetch('http://localhost/api/logout', {
         method: "POST",
         headers: {
@@ -156,38 +155,20 @@ class App extends Component {
         credentials: 'include',
       })
       .then(tokenCheck)
-      .then(res=>{
-        if(isTokenStored){
-          console.log(res);
-          this.setState(state => {
-            return{
-              isLogin: false,
-              isMailAuthenticated: false,
-              username: '',
-              nickname: '',
-              email: '',
-            }
-          });
-          
-        }
-      })
       .then(data => {
         console.log('True Log out.', this.state);
-      });
-    
-    }catch{
-      console.log("error!");
-      this.setState({
-        isLogin: false,
-        userid: ''
-      });
-      console.log('Log out.');
-    }
+      })
+      .catch(()=>{
+        console.log("error!");
+        this.userStateChange(false, false);
+        console.log('Log out.');
+      })
   }
 
   // 로그아웃시 서버로 요청 보내서 JWT 토큰이 저장된 httponly 쿠키 제거
   logout = () => {
     console.log("logout called!");
+    this.userStateChange(false, false);
     window.FB.logout();
     let auth2 = window.gapi && window.gapi.auth2.getAuthInstance();
     auth2.signOut()
@@ -200,9 +181,6 @@ class App extends Component {
     .then(() => {
       this.props.history.push("/login");
       console.log('Log out to login page.', this.state);
-      this.setState({
-        isLogout: false
-      });
     });  
   }
 
@@ -216,7 +194,7 @@ class App extends Component {
   errorCheck=(response)=>{
     console.log("err chk response : ", response);
     if(response.status==401){
-      this.userStateChange(false, false, "", "", "", "");
+      this.userStateChange(false, false);
       this.props.history.push('/login');
       throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
     }
@@ -259,6 +237,7 @@ class App extends Component {
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
               <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />
+              <AuthenticatedRoute path="/streaming-test" fileID="25d9ddeb-bddf-4f8d-a179-b36697b9a65f" component={StreamingTest} props={baseProps} />
               <AuthenticatedRoute path="/" component={Home} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>

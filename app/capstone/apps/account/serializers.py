@@ -45,7 +45,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
         if 'social_auth' in validated_data and validated_data['social_auth'] != '':
             social = validated_data['social_auth']
             mail_auth = True
-
+        print("val data : ", validated_data)
         user = User.objects.create_user(
             # User.objects.create_user(username, email=None, password=None, **extra_fields) :
             # 새로운 사용자를 만들어서 저장한 뒤 만든 사용자(User object)를 리턴한다. 이 User 객체는
@@ -104,3 +104,13 @@ class UserIDNickSerializer(serializers.ModelSerializer): # teams 앱에서 사�
     class Meta:
         model=User
         fields=('_id', 'username', 'nickname', )
+
+class WithdrawalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields=('password', )
+
+class ChangeProfileSerializer(serializers.Serializer):
+    curPassword = serializers.RegexField(regex=r"^.*(?=^.{8,15}$)(?=.*[0-9a-zA-Z]).*$", allow_blank=True)
+    newPassword = serializers.RegexField(regex=r"^.*(?=^.{8,15}$)(?=.*[0-9a-zA-Z]).*$", allow_blank=True)
+    nickname = serializers.RegexField(regex=r"^.*(?=^.{2,15}$)(?=.*[0-9a-zA-Z가-힣]).*$", allow_blank=True)

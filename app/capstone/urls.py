@@ -28,7 +28,7 @@ import capstone.teams.views as teams
 api = [
     path('users', account.AllUserAPI.as_view()),
     path("registration", account.RegistrationAPI.as_view()),
-    path("user", account.UserAPI.as_view()),
+    path("user", account.UserAPI.as_view()), #프로필 확인 및 변경, 회원탈퇴
     path("activate/<str:uidb64>/<str:token>", account.ActivateUserAPI.as_view(), name='activate'),
     path("send-auth-email", account.ResendMailAPI.as_view()),
     path('forgot', account.FindIDPasswordAPI.as_view()),
@@ -39,11 +39,11 @@ api = [
     path('jwt-refresh', refresh_jwt_token), # JWT 토큰 재발급
     path('jwt-verify', verify_jwt_token), # JWT 토큰이 유효한지 확인
 
-    #httponly cookie로 저장되어 있는 JWT 토큰 제거
-    path('logout', account.LogoutAPI.as_view()),
-
     #소셜 로그인용
     path('social-login', account.SocialLoginAPI.as_view()),
+
+    # httponly cookie로 저장되어 있는 JWT 토큰 제거
+    path('logout', account.LogoutAPI.as_view()),
 
     #유저 삭제 테스트용
     path('deleteAll', account.DeleteAPI.as_view()),
@@ -80,6 +80,8 @@ api = [
 
     path('partial', storage.PartialAPI.as_view()), #partial file 목록 출력 및 전체 제거, 테스트용
     re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
+    re_path('streaming/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
+
 ]
 
 urlpatterns = [
