@@ -19,6 +19,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                            isValueConfirmed, isSocialAccount, checkConfirmValue, changeNickname, changePhoneNum,
                            changePassword, returnToHome, withdrawalModal, withdrawalText, processWithdrawal, toggle})=>{
     console.log("social : ", social, typeof(social)); 
+
     //value의 값은 일반 계정의 경우 password, 소셜 계정의 경우 email
     let target=isSocialAccount ? 'email' : 'password';
     /*console.log("value : ", value, ' valChange : ', valChange, 'isValueConfirmed : ', isValueConfirmed,
@@ -84,7 +85,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                                     className="profile-button"
                                                     onClick={changeNickname}
                                                     >
-                                                    수정
+                                                    변경
                                                 </Button>
                                             </InputGroupAddon>
                                     </InputGroup>
@@ -99,18 +100,18 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                                     className="profile-button"
                                                     onClick={changePhoneNum}
                                                     >
-                                                    수정
+                                                    변경
                                                 </Button>
                                             </InputGroupAddon>
                                     </InputGroup>
                                 </FormGroup>
                                 <FormGroup>
-                                    <Label for="exampleEmail">소설 연동 여부</Label>
-                                    <Input type='text' name="social" disabled={true} placeholder={social=="" ? 'no' : {social}} />
+                                    <Label for="exampleEmail">소셜 연동</Label>
+                                    <Input type='text' name="social" disabled={true} placeholder={social=="" ? 'no' : social} />
                                 </FormGroup>
                                 {!isSocialAccount && 
                                     <FormGroup>
-                                        <Label for="exampleEmail">새 비밀번호</Label>
+                                        <Label for="exampleEmail">비밀번호 변경</Label>
                                         <InputGroup>
                                         <Input 
                                             type='password' 
@@ -124,7 +125,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                                     className="profile-button"
                                                     onClick={changePassword}
                                                     >
-                                                    수정
+                                                    변경
                                                 </Button>
                                             </InputGroupAddon>
                                     </InputGroup>
