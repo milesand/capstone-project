@@ -105,12 +105,11 @@ class UserIDNickSerializer(serializers.ModelSerializer): # teams 앱에서 사�
         model=User
         fields=('_id', 'username', 'nickname', )
 
-class WithdrawalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=User
-        fields=('password', )
+class WithdrawalSerializer(serializers.Serializer):
+    password = serializers.RegexField(regex=r"^.*(?=^.{8,15}$)(?=.*[0-9a-zA-Z]).*$", allow_blank=True)
 
 class ChangeProfileSerializer(serializers.Serializer):
     curPassword = serializers.RegexField(regex=r"^.*(?=^.{8,15}$)(?=.*[0-9a-zA-Z]).*$", allow_blank=True)
     newPassword = serializers.RegexField(regex=r"^.*(?=^.{8,15}$)(?=.*[0-9a-zA-Z]).*$", allow_blank=True)
     nickname = serializers.RegexField(regex=r"^.*(?=^.{2,15}$)(?=.*[0-9a-zA-Z가-힣]).*$", allow_blank=True)
+    phone_num=serializers.RegexField(regex=r"^\d{3}-\d{3,4}-\d{4}$", allow_blank=True)

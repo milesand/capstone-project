@@ -40,7 +40,6 @@ export default class Signup extends Component {
       if(!this.state.username||!idPasswordTest.test(this.state.username)) val=false;
     }
     else if(id==='nickname'){
-      console.log('here.');
       if(!this.state.nickname||!nicknameTest.test(this.state.nickname)) val=false;
     }
     else if(id==='password'){

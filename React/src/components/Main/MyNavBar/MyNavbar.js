@@ -28,9 +28,9 @@ import {
 } from "reactstrap";
 import axios from "axios";
 
-const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameList,
+const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitationNameList,
                     leaderList, leaderNickList, checkUserState, notify, errorCheck}) => {
-  console.log("렌더링 시작! invitationList : ", invitationList, invitationNameList);
+  console.log("렌더링 시작! 닉네임 : ", nickname, ", invitationList : ", invitationList, invitationNameList);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [update, setUpdate] = useState();
 
@@ -100,7 +100,6 @@ const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameLi
           <InputGroupAddon addonType="append" className="searchbar">
             <Input className="search-input" />
             <Button className="search-icon-button">
-              {" "}
               <FontAwesomeIcon icon={faSearch} className="search-icon" />
             </Button>
           </InputGroupAddon>
@@ -117,20 +116,20 @@ const MyNavbar = ({ logout, username, nickname, invitationList, invitationNameLi
               <DropdownItem className="login-dropdown-item login-dropdown-profile">
                 <FontAwesomeIcon
                   className="profile-img"
-                  size="3x"
+                  size="2x"
                   icon={faUser}/>
                 <div>{nickname}님<br/>({username})</div>
+              </DropdownItem>
+              <DropdownItem divider/>
+              <DropdownItem className="login-dropdown-item" onClick={profile}>
+                프로필 확인
               </DropdownItem>
               <DropdownItem className="login-dropdown-item" onClick={logout}>
                 로그아웃
               </DropdownItem>
             </DropdownMenu>
           </UncontrolledDropdown>
-          <NavItem className="setting-icon myNav-item">
-            <NavLink>
-              <FontAwesomeIcon icon={faCog} />
-            </NavLink>
-          </NavItem>
+          
           <NavItem>
             <NavLink>
               <FontAwesomeIcon

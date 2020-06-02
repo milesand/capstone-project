@@ -45,8 +45,11 @@ api = [
     # httponly cookie로 저장되어 있는 JWT 토큰 제거
     path('logout', account.LogoutAPI.as_view()),
 
-    #유저 삭제 테스트용
+    #유저 전제 삭제용 (테스트용)
     path('deleteAll', account.DeleteAPI.as_view()),
+
+    path('check-password', account.ConfirmPasswordAPI.as_view()),
+    path('check-email', account.ConfirmEmailAPI.as_view()),
 
     # Flow.js를 이용한 업로드
     re_path('upload/flow$', storage.FlowUploadStartView.as_view()),

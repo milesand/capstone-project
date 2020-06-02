@@ -80,8 +80,7 @@ class App extends Component {
        return response;
     }
     
-    if(this.state.username==''){
-      fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+    return fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -106,11 +105,10 @@ class App extends Component {
               console.log("토큰이 재발급되었습니다.");
               console.log(content);
               console.log(this.state);
-              //react-router-dom에서 알아서 이메일 인증 안받은사람 인증 페이지로 리다이렉션시키므로, 여기선 안해도됨.
           }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
         }
+        return content;
       }).catch(error=>console.log('로그인 체크 에러!'));
-    }
   }
 
   userStateChange = (authenticated, mailAuthenticated, username="", nickname="", email="", root_dir="") => {
@@ -191,17 +189,17 @@ class App extends Component {
     Toast.info(message);
   };
 
-  errorCheck=(response)=>{
-    console.log("err chk response : ", response);
+  errorCheck=(response, message="서버 에러 발생!")=>{
+    console.log("error check, state : ", this.state);
     if(response.status==401){
       this.userStateChange(false, false);
       this.props.history.push('/login');
       throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
     }
-    if((response.hasOwnProperty('ok')&&!response.ok)){
-      throw Error("서버 에러 발생!");
+    if(('ok' in response&&!response.ok)){
+      console.log("errchk here!!");
+      throw Error(message);
     }
-    console.log("after err check response : ", response);
     return response;
   }
 
@@ -214,6 +212,7 @@ class App extends Component {
       isLogin: this.state.isLogin,
       isMailAuthenticated:this.state.isMailAuthenticated,
       isLoading: this.state.isLoading,
+      getUserInfo: this.getUserInfo,
       userStateChange: this.userStateChange,
       toggleLoadingState: this.toggleLoadingState,
       errorCheck: this.errorCheck,

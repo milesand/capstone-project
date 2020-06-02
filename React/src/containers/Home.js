@@ -4,7 +4,7 @@ import React, { Component } from "react";
 import SideBar from "../components/sidebar/SideBar/SideBar";
 import HomeContent from "../components/Main/HomeContent";
 import TeamContent from "../components/Main/TeamContent";
-import SubSideBar from "../components/sidebar/SubSideBar/SubSideBar";
+import ProfileContent from "../components/Main/ProfileContent";
 import MyNavbar from "../components/Main/MyNavBar/MyNavbar";
 import ErrorPage from "../components/LoginComponents/ErrorPage";
 import 'bootstrap/dist/css/bootstrap.css';
@@ -14,8 +14,7 @@ import {
 } from "reactstrap";
 
 import axios from "axios";
-import { Route, Switch, Router } from "react-router-dom";
-import NormalRoute from "../components/RoutingComponents/NormalRoute";
+import { Route, Switch } from "react-router-dom";
 import AuthenticatedRoute from "../components/RoutingComponents/AuthenticatedRoute";
 
 export default class Home extends Component { 
@@ -83,6 +82,7 @@ export default class Home extends Component {
   }) 
   .then(content => {
     this.setState(state=>{
+      state.nickname=content['data']['nickname'];
       state.invitationList=content['data']['invitationList'];
       state.spaceLeft= getSpace(content['data']['root_info']['file_size_total']);
       state.percent=getPercent(content['data']['root_info']['file_size_total']);
@@ -131,6 +131,9 @@ export default class Home extends Component {
     });
   }
 
+  toProfile=()=>{
+    this.props.history.push('/profile');
+  }
   render() {
 
     console.log(`${this.props.match.path}team`)
@@ -144,6 +147,7 @@ export default class Home extends Component {
        />
        <Container fluid>
        <MyNavbar logout={this.props.logout}
+                 profile={this.toProfile}
                  username={this.state.username}
                  nickname={this.state.nickname}
                  invitationList={this.state.invitationList}
@@ -162,13 +166,13 @@ export default class Home extends Component {
                            component={HomeContent}
                            checkUserState={this.checkUserState}
                            props={this.props} />
-       {/* <NormalRoute 
-       path={`${this.props.match.path}team`}  
-       component={TeamContent} 
-       props= {this.props}>      </NormalRoute>  */}
+
+       <AuthenticatedRoute exact path='/profile'
+                           component={ProfileContent}
+                           checkUserState={this.checkUserState}
+                           props={this.props} />
        <Route
-        path={`${this.props.match.path}team`}  
-        //render={() => <TeamContent username={this.state.username} />}/>      
+        path={`${this.props.match.path}team`}    
         render={() => <TeamContent props={this.props} />}/>      
        <Route component={ErrorPage}></Route>
        </Switch>

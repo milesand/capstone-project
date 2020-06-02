@@ -278,7 +278,7 @@ class UploadContent extends Component {
                       errorCheck={this.props.errorCheck}
                       checkUserState={this.props.checkUserState}
                     />
-                    <Button outline className="custom-button" onClick={this.toggleIsPathSet}>완료</Button>
+                    <Button outline className="custom-button" onClick={this.toggleIsPathSet}>결정</Button>
                   </div>
                  }
 
