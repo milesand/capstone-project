@@ -70,7 +70,9 @@ def perm_check_dir_with_teams(user, directory):
     as a shared directory.
     '''
     # Reverse relations to Team model defined in teams app used here.
-    user_teams = user.teamList.all().union(user.leader.all()).distinct().only("pk")
+    user_teams = user.teamList.all().only("pk").union(
+        user.leader.all().only("pk")
+    )
     while directory is not None:
         # Owner of a directory has access to ALL subdirectories, even to ones
         # owned by someone else. Suppose you own a directory and share it, and
