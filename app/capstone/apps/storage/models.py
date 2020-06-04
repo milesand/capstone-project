@@ -111,7 +111,7 @@ class File(DirectoryEntry):
     size = models.BigIntegerField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
     has_thumbnail = models.BooleanField(default=False)
-
+    is_video = models.BooleanField(default=False)
 
     '''
     class Meta:

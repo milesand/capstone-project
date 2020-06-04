@@ -2,8 +2,8 @@ import React, { Component, Fragment, forwardRef } from "react";
 import streamSaver from 'streamsaver';
 
 //업로드, 다운로드 테스트
-const CustomDownload=(fileID)=>{
-    let url="http://localhost/api/file/" + fileID;
+const CustomDownload=(fileName, fileID)=>{
+    console.log("download, fileName : ", fileName, ', id : ', fileID);
     let fileStream=null;
 
     let errorCheck = response =>{
@@ -43,7 +43,7 @@ const CustomDownload=(fileID)=>{
       else{
         console.log("here.");
         console.log("content : ", content);
-        fileStream=streamSaver.createWriteStream('filename_here'); // filename_here에 파일의 실제 이름을 넣는다. 
+        fileStream=streamSaver.createWriteStream(fileName); // filename_here에 파일의 실제 이름을 넣는다. 
                                                                    // 특정 디렉토리에 들어갈 때 파일의 이름 및 썸네일 정보를 가져오므로
                                                                    // 거기에서 이름을 가져오면 됨.
       }

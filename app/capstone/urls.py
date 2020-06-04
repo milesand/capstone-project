@@ -70,6 +70,9 @@ api = [
     # 파일 정보 출력
     path('file/<str:file_id>', storage.FileManagementAPI.as_view()),
     path('file-list', storage.FileListAPI.as_view()),
+    path('partial', storage.PartialAPI.as_view()),  # partial file 목록 출력 및 전체 제거, 테스트용
+    re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
+    re_path('preview/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 이미지 및 동영상 미리보기에 사용하는 URL
 
     #팀 관련 기능
     path('team', teams.CreateTeamAPI.as_view()),
@@ -80,11 +83,6 @@ api = [
     path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
     path('join-team', teams.JoinTeamAPI.as_view()), # 현재 가입중인 팀 목록 출력
     path('search-user/<str:team_pk>/<str:name>', teams.UserSearchAPI.as_view()), # 일부 문자열을 통해 사용자 검색
-
-    path('partial', storage.PartialAPI.as_view()), #partial file 목록 출력 및 전체 제거, 테스트용
-    re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
-    re_path('streaming/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 스트리밍 테스트
-
 ]
 
 urlpatterns = [

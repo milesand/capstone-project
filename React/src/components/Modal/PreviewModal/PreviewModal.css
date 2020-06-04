@@ -1,0 +1,39 @@
+.modal-xl{
+    width : 1200px;
+    max-height: 800px;
+    text-align: center;
+}
+
+.preview-modal-head{
+    font-size: 25px;
+    width:1000px;
+    text-align: left;
+}
+
+.preview-modal-button{
+    width: 170px;
+
+}
+
+.preview-video{
+    margin-left: -13%;
+    margin-top : 5%;
+    height: 400px;
+}
+.preview-image{
+    margin: auto;
+    width: auto;
+    height: auto;
+    max-width: 1000px;
+    max-height: 650px;
+}
+
+.preview-others{
+    font-size: 30px;
+    margin-top : 30%;
+    height : 400px;
+}
+
+.test{
+    text-align : center;
+}

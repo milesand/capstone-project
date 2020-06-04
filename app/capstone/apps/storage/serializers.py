@@ -10,7 +10,7 @@ class UserStorageSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ('pk', 'size', 'uploaded_at', 'has_thumbnail')
+        fields = ('pk', 'size', 'uploaded_at', 'has_thumbnail', 'is_video')
 
 
 class DirectorySerializer(serializers.ModelSerializer):

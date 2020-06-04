@@ -114,6 +114,7 @@ export default class CustonFileBrowser extends Component{
       this.setState({
         currentPath: newPath
       })
+      this.props.loadFilesNFolders(this.props.curFolderID);
     })
     .catch(e=>this.state.notify(e));
   }
@@ -178,7 +179,7 @@ export default class CustonFileBrowser extends Component{
           }])
           return state
         })
-        
+        this.props.loadFilesNFolders(this.props.curFolderID);
     })
     .catch(e=>this.state.notify(e));
   }
@@ -186,6 +187,10 @@ export default class CustonFileBrowser extends Component{
   handleRenameFolder = (oldKey, newKey) => { //폴더 이름 변경
     if(this.isDuplicated(newKey)){
       this.state.notify("현재 폴더 안에 동일한 이름을 가진 폴더가 존재합니다.");
+      return;
+    }
+    if(oldKey=='root/'){
+      this.state.notify("root 폴더의 이름은 변경할 수 없습니다.");
       return;
     }
     let url="", names=newKey.split('/');

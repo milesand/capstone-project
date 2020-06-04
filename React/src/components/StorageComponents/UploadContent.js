@@ -24,7 +24,7 @@ class UploadContent extends Component {
 
 
   componentWillUnmount() {
-    this.props.setFlow(this.state.flow);
+    this.props.check(this.state.flow);
   }
 
   showProcess=(array)=>{
@@ -43,6 +43,7 @@ class UploadContent extends Component {
 
   componentDidMount=()=>{
     let target='http://localhost/api/upload/flow';
+    if(this.state.flow) console.log("isUploading ? : ", this.state.flow.isUploading());
     if(!this.state.flow||!this.state.flow.isUploading()){
       this.state.flow=new Flow({
           target: function(file, url){
@@ -57,7 +58,7 @@ class UploadContent extends Component {
 
           simultaneousUploads : 1,
           withCredentials : true,
-          chunkSize : 100*1024*1024
+          chunkSize : 5*1024*1024
       });
     }
     else{
@@ -83,7 +84,6 @@ class UploadContent extends Component {
 
         console.log('formData : ', formData);
         let errorCheck = response => {
-            this.props.errorCheck(response);
             if(response.status==400){
                 console.log("this : ", this);
                 this.remove(file);
@@ -92,6 +92,7 @@ class UploadContent extends Component {
             else if(response.status==403){
                 throw Error('저장 공간이 부족합니다.');
             }
+            this.props.errorCheck(response);
             console.log("promise 1, response : ", response);
             return response;
         };
@@ -193,6 +194,7 @@ class UploadContent extends Component {
 
     this.state.flow.on('complete', function(){
       console.log("업로드 끝!, this : ", this);
+      this.props.loadFilesNFolders(this.props.curFolderID);
       this.props.checkUserState();
     }.bind(this))
   }
@@ -275,6 +277,8 @@ class UploadContent extends Component {
                       changeUploadPath={this.changeUploadPath}
                       errorCheck={this.props.errorCheck}
                       checkUserState={this.props.checkUserState}
+                      curFolderID={this.props.curFolderID}
+                      loadFilesNFolders={this.props.loadFilesNFolders}
                     />
                     <Button outline className="custom-button" onClick={this.toggleIsPathSet}>결정</Button>
                   </div>

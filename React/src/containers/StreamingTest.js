@@ -6,7 +6,7 @@ export default class StreamingTest extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        url:"http://localhost/api/streaming/" + this.props.fileID,
+        url:"http://localhost/api/preview/" + this.props.fileID,
         isShow: false,
         percent: 0,
     };
@@ -29,8 +29,6 @@ export default class StreamingTest extends Component {
       <Fragment>
         <h1>스트리밍 테스트</h1>
         <ReactPlayer url={this.state.url}
-                     onProgress={this.handleOnProgress}
-                     progressInterval={200}
                      controls={true}
                      playing={this.state.isShow} />
       </Fragment>

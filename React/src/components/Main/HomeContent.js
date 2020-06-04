@@ -34,6 +34,7 @@ const HomeContent = (props) => {
   const [fileList, setFileList] = useState([]);
   const [folderList,setFolderList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [curFolderID, setcurFolderID] = useState(props.rootDirID);
   //import GroupItem from "./GroupItem";
 
   const option = {
@@ -45,10 +46,9 @@ const HomeContent = (props) => {
 
   const [currentItemInfo, setCurrentItemInfo] = useState({ //오른쪽 사이드바에 표시할 데이터
   });
-  const [rootPk, setRootPk] = useState('');
+  const [multiItemInfo, setMultiItemInfo] = useState({});
   console.log('home, props : ', props, currentItemInfo);
   useEffect(() => {
-    setRootPk(props.rootDirID);
     loadFilesNFolders(props.rootDirID);
   },[]);
 
@@ -62,11 +62,12 @@ const HomeContent = (props) => {
     //   });
     // });
 
-    //깊이 1(root폴더) 파일들 불러오기
+    //주어진 dirID를 가진 디렉토리에 들어있는 파일들 불러오기
     axios.get("http://localhost/api/user",option)
      .then((content) => {
         axios.get(`http://localhost/api/directory/${dirID}`,option)
         .then(content2 => { 
+            console.log("content2 : ", content2);
             const newFileList=[], newFolderList=[];
             const fileNameList= Object.keys(content2.data.files)
             for(let i=0;i<fileNameList.length;i++) {
@@ -77,6 +78,7 @@ const HomeContent = (props) => {
                 size: content2.data.files[fileNameList[i]]['size'],
                 uploaded_at: Moment(date).format('LLL'),
                 has_thumbnail: content2.data.files[fileNameList[i]]['has_thumbnail'],
+                is_video : content2.data.files[fileNameList[i]]['is_video'],
                 type:"file"
               }
               newFileList.push(fileInfo);
@@ -122,12 +124,42 @@ const HomeContent = (props) => {
   };
 
   const handleDownload=()=>{ // 오른쪽 클릭 -> 다운로드
-    console.log(currentItemInfo);
-    CustomDownload(currentItemInfo.pk);
+    console.log(currentItemInfo, multiItemInfo);
+    let chk=false;
+    if(multiItemInfo.length>1){
+      let params='';
+      for(let i in multiItemInfo){
+        params+=multiItemInfo[i].pk + (i==multiItemInfo.length-1 ? '' : ' ');
+        if(currentItemInfo.pk==multiItemInfo[i].pk){
+          console.log("multi, info : ", multiItemInfo);
+          if(!chk) chk=true;
+        }
+      }
+      console.log("params : ", params);
+      if(chk) CustomDownload('', params)
+    }
+    CustomDownload(currentItemInfo.name, currentItemInfo.pk); //단일 파일 다운로드, 또는 파일 여러개 선택했지만 선택 안한 다른 파일에
+                                        //다운로드 누른 경우
   }
 
   const test=(e)=>{
     console.log("multi test, e : ", e);
+    let arr=[];
+    for(let i in e){
+      arr.push(e[i].props);
+    }
+    console.log('multi arr : ', arr);
+    setMultiItemInfo(arr);
+  }
+
+  const check=(flow)=>{
+    console.log("check!");
+    setFlow(flow);
+    if(flow) console.log('isLoading ? ', flow.files, flow.isUploading());
+    if(flow&&flow.isUploading()){
+      console.log("here, check called!!!");
+      props.showRemainingTime(flow);
+    }
   }
   return (  
       <Fragment>
@@ -143,6 +175,7 @@ const HomeContent = (props) => {
             >
               업로드
             </button>
+            {/*업로드 modal*/}
             {uploadModal && (
               <Modal
                 isOpen={uploadModal}
@@ -151,9 +184,8 @@ const HomeContent = (props) => {
                 unmountOnClose={false}
               >
                 <ModalHeader toggle={toggle}>
-                  <div className="testtest">{modalHeadText}</div>
+                  <div className="modal-head">{modalHeadText}</div>
                 </ModalHeader>{" "}
-                {/*upload modal*/}
                 <ModalBody>
                   <UploadContent
                     flow={flow} 
@@ -163,6 +195,9 @@ const HomeContent = (props) => {
                     rootDirID={props.rootDirID}
                     errorCheck={props.errorCheck}
                     checkUserState={props.checkUserState}
+                    curFolderID={curFolderID}
+                    loadFilesNFolders={loadFilesNFolders}
+                    check={check}
                   />
                 </ModalBody>
                 <ModalFooter>
@@ -204,10 +239,12 @@ const HomeContent = (props) => {
                   name={item.name}
                   showFileInfo={showFileInfo}
                   uploadDate={item.uploaded_at}
+                  isVideo={item.is_video}
                   size={item.size}
                   pk={item.pk}
                   itemType="file"
                   index={index}
+                  handleDownload={handleDownload}
                   thumbnailUrl={
                     item.has_thumbnail &&
                     `http://localhost/api/thumbnail/${item.pk}`

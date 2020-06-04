@@ -362,6 +362,7 @@ class FlowUploadChunkView(APIView):
                     img = Image.fromarray(frame)
                     img.thumbnail(settings.THUMBNAIL_SIZE)
                     img.save(thumbnail_path, format="JPEG")
+                    file_record.is_video = True
                     thumbnail_generated = True
 
             if thumbnail_generated:

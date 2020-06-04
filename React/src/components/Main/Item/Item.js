@@ -1,4 +1,4 @@
-import React, { Component, useEffect } from "react";
+import React, { Component, useState, useEffect } from "react";
 import {
   SelectableGroup,
   SelectAll,
@@ -22,30 +22,44 @@ import {
 } from "reactstrap";
 import "./Item.css";
 import classNames from "classnames";
-
+import PreviewModal from '../../Modal/PreviewModal/PreviewModal'
 const Item = (props) => {
-  const { showFileInfo, uploadDate, size, pk, thumbnailUrl, itemType, name, index} = props;
-  let newThumbnailUrl='/images/79e7268b-d314-44ba-b319-10008cff1793.png';
-  console.log("newThumbnail : ", newThumbnailUrl);
+  const { showFileInfo, uploadDate, size, userPk, pk, thumbnailUrl, isVideo, itemType, name, index, handleDownload} = props;
   const { selectableRef, isSelected, isSelecting } = props;
+  const [toggle, setToggle]=useState(false);
   useEffect(
     () => {
       if (isSelected) showFileInfo(index);
     },
     [isSelected]
   );
+
+  const togglePreviewModal=()=>{
+      setToggle(!toggle);
+  };
+
   return (
     <div ref={selectableRef} className="tick">
+      {isSelected && <PreviewModal 
+          isOpen={toggle} 
+          toggle={togglePreviewModal} 
+          fileName={name}
+          fileID={pk}
+          hasThumbnail={thumbnailUrl}
+          isVideo={isVideo}
+        />
+      }
       <ContextMenuTrigger id="contextMenuItemID">
         <Card
           body
           outline
           onContextMenu={()=>showFileInfo(index)}
           className={classNames("item", { "item-selected": isSelected },{"item-selecting":isSelecting})}
+          onDoubleClick={itemType=='file' && togglePreviewModal}
           tabIndex="0"
         >
           <div className="item-image">
-            {thumbnailUrl && itemType=="file" && <img src={newThumbnailUrl} className="item-images" />}
+            {thumbnailUrl && itemType=="file" && <img src={thumbnailUrl} className="item-images" />}
             {!thumbnailUrl && itemType=="file" && (
               <FontAwesomeIcon icon={faFile} className="item-image" size="4x" />
             )}
