@@ -64,7 +64,7 @@ const Item = (props) => {
           isVideo={isVideo}
         />
       }
-      <ContextMenuTrigger id="contextMenuItemID">
+      <ContextMenuTrigger id={itemType=='file' ? "contextMenuFileID" : "contextMenuDirID"}>
         <Card
           body
           outline

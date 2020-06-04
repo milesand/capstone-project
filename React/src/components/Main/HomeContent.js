@@ -271,7 +271,7 @@ const HomeContent = (props) => {
         </div>
         
         {/*파일 표시*/}
-        <MyContextMenu id="contextMenuItemID" handleDownload={handleDownload}/>
+        <MyContextMenu id="contextMenuFileID" handleDownload={handleDownload}/>
           <div>
             <SelectableGroup
               className="main"
@@ -362,6 +362,7 @@ const HomeContent = (props) => {
             </div>
 
             {/*폴더 표시*/}
+            <MyContextMenu id="contextMenuDirID"/>
             <SelectableGroup
               className="main"
               clickClassName="tick"
