@@ -85,6 +85,7 @@ api = [
     re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
     re_path('streaming/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
 
+    path('favorite', storage.FavoriteView.as_view()),
 ]
 
 urlpatterns = [
