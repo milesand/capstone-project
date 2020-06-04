@@ -23,10 +23,14 @@ import {
 import "./Item.css";
 import classNames from "classnames";
 import PreviewModal from '../../Modal/PreviewModal/PreviewModal'
+
 const Item = (props) => {
-  const { showFileInfo, uploadDate, size, userPk, pk, thumbnailUrl, isVideo, itemType, name, index, handleDownload} = props;
+  const { showFileInfo, pk, thumbnailUrl, isVideo, itemType, name, index, rootPk, loadFilesNFolders} = props;
+
   const { selectableRef, isSelected, isSelecting } = props;
+
   const [toggle, setToggle]=useState(false);
+  console.log("item, pk : ", pk, ', root pk : ', rootPk);
   useEffect(
     () => {
       if (isSelected) showFileInfo(index);
@@ -37,6 +41,17 @@ const Item = (props) => {
   const togglePreviewModal=()=>{
       setToggle(!toggle);
   };
+
+  const handleDirDoubleClick=()=> {
+    // console.log("current pk :"+pk);
+    // console.log("root pk :"+rootPk);
+    loadFilesNFolders(name, pk);
+    /*if(rootPk==pk)
+      props.history.push('/');
+    else {
+      props.history.push(`/directory/${pk}`,{pk});   
+    }*/
+  }
 
   return (
     <div ref={selectableRef} className="tick">
@@ -55,7 +70,7 @@ const Item = (props) => {
           outline
           onContextMenu={()=>showFileInfo(index)}
           className={classNames("item", { "item-selected": isSelected },{"item-selecting":isSelecting})}
-          onDoubleClick={itemType=='file' && togglePreviewModal}
+          onDoubleClick={itemType=='file' ? togglePreviewModal : handleDirDoubleClick}
           tabIndex="0"
         >
           <div className="item-image">

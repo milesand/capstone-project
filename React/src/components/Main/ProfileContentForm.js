@@ -38,17 +38,18 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                             name="withdrawalText"
                             id='withdrawalText'
                             value={withdrawalText} 
-                            onChange={valChange}/>
-                            <InputGroupAddon addonType='append'>
-                                <Button 
-                                    outline 
-                                    className="profile-button"
-                                    onClick={processWithdrawal}
-                                >
-                                입력
-                                </Button>
-                            </InputGroupAddon>
-                        </InputGroup>
+                            onChange={valChange}
+                        />
+                        <InputGroupAddon addonType='append'>
+                            <Button 
+                                outline 
+                                className="profile-button"
+                                onClick={processWithdrawal}
+                            >
+                            입력
+                            </Button>
+                        </InputGroupAddon>
+                    </InputGroup>
                 </ModalBody>
                 <ModalFooter>
                 <Button outline color="primary" onClick={toggle} className="close-button">닫기</Button>

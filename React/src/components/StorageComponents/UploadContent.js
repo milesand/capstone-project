@@ -11,7 +11,7 @@ class UploadContent extends Component {
     this.state = {
         fileID: "",
         fileList: [],
-        uploadDir: '/',
+        uploadDir: this.props.curFolderPath,
         isSubmitted: false,
         isCompleted: true,
         flow: props.flow,
@@ -194,7 +194,7 @@ class UploadContent extends Component {
 
     this.state.flow.on('complete', function(){
       console.log("업로드 끝!, this : ", this);
-      this.props.loadFilesNFolders(this.props.curFolderID);
+      this.props.loadFilesNFolders('', this.props.curFolderID);
       this.props.checkUserState();
     }.bind(this))
   }
@@ -278,6 +278,7 @@ class UploadContent extends Component {
                       errorCheck={this.props.errorCheck}
                       checkUserState={this.props.checkUserState}
                       curFolderID={this.props.curFolderID}
+                      curFolderPath={this.props.curFolderPath}
                       loadFilesNFolders={this.props.loadFilesNFolders}
                     />
                     <Button outline className="custom-button" onClick={this.toggleIsPathSet}>결정</Button>
