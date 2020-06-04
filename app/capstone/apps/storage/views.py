@@ -18,10 +18,27 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer
+from .serializers import FileSerializer, DirectorySerializer, PartialSerializer
 
 
 logger = logging.getLogger(__name__)
+
+
+# Boolean-y values. Copied from django rest framework's BooleanField.
+TRUE_VALUES = {
+    't', 'T',
+    'y', 'Y', 'yes', 'YES',
+    'true', 'True', 'TRUE',
+    'on', 'On', 'ON',
+    '1', 1, True,
+}
+FALSE_VALUES = {
+    'f', 'F',
+    'n', 'N', 'no', 'NO',
+    'false', 'False', 'FALSE',
+    'off', 'Off', 'OFF',
+    '0', 0, 0.0, False,
+}
 
 
 def valid_dir_entry_name(name):
@@ -497,22 +514,67 @@ class DirectoryView(APIView):
             status=status.HTTP_200_OK
         )
 
-    def put(self, request, pk): #디렉토리 이름 변경
-        dir=get_object_or_404(Directory, pk=pk)
-        if not perm_check_entry_with_teams(request.user, dir):
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer=ChangeDirNameSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                dir.name=request.data['name']
-                dir.save()
-            except IntegrityError:
-                return Response("다른 디렉터리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요.", status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message' : '디렉토리 이름 변경 완료.'}, status=status.HTTP_200_OK)
+    def put(self, request, pk):
+        data = request.data
+        name = None
+        favorite = None
 
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
         else:
-            return Response({'error': '요청 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not valid_dir_entry_name(name):
+                return Response(
+                    {"message": "유효하지 않은 name 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        try:
+            favorite = data["favorite"]
+        except KeyError:
+            pass
+        else:
+            if favorite in TRUE_VALUES:
+                favorite = True
+            elif favorite in FALSE_VALUES:
+                favorite = False
+            else:
+                return Response(
+                    {"message": "유효하지 않은 favorite 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        if name is None and favorite is None:
+            return Response(
+                {"message": "유효한 필드가 감지되지 않았습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        directory = get_object_or_404(Directory, pk=pk)
+        if not perm_check_entry_with_teams(request.user, directory):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            with transaction.atomic():
+                if name is not None:
+                    directory.name = name
+                if favorite is not None:
+                    if favorite:
+                        request.user.favorites.add(directory)
+                    else:
+                        request.user.favorites.remove(directory)
+                directory.save()
+        except IntegrityError:
+            transaction.rollback()
+            return Response(
+                {"message": "다른 디렉토리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+            
 
     def delete(self, request, pk):
         try:
@@ -534,6 +596,36 @@ class DirectoryView(APIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class FavoriteView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request): 
+        data = {"directories": {}, "files": {}}
+        favorites = request.user.favorites.all()
+        for fav in favorites:
+            if not perm_check_entry_with_teams(request.user, fav):
+                # It's possible for someone to favorite a shared file,
+                # which then becomes inaccessible due to un-sharing.
+                # To keep GET a safe method, we don't delete anything,
+                # just continue. TODO: unfavorite stuff when they are unshared.
+                continue
+            try:
+                directory = fav.Directory
+                data["directories"][directory.name] = str(directory.pk)
+                continue
+            except Directory.DoesNotExist:
+                pass
+            try:
+                file_record = fav.File
+                data["files"][file_record.name] = FileSerializer(file_record).data
+                continue
+            except File.DoesNotExist:
+                pass
+        
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class ThumbnailAPI(APIView):
@@ -636,6 +728,68 @@ class FileManagementAPI(generics.GenericAPIView):
         serializer = self.serializer_class(file_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    def put(self, request, file_id):
+        data = request.data
+        name = None
+        favorite = None
+
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
+        else:
+            if not valid_dir_entry_name(name):
+                return Response(
+                    {"message": "유효하지 않은 name 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        try:
+            favorite = data["favorite"]
+        except KeyError:
+            pass
+        else:
+            if favorite in TRUE_VALUES:
+                favorite = True
+            elif favorite in FALSE_VALUES:
+                favorite = False
+            else:
+                return Response(
+                    {"message": "유효하지 않은 favorite 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        if name is None and favorite is None:
+            return Response(
+                {"message": "유효한 필드가 감지되지 않았습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        file_record = get_object_or_404(File, pk=file_id)
+        if not perm_check_entry_with_teams(request.user, file_record):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            with transaction.atomic():
+                if name is not None:
+                    file_record.name = name
+                if favorite is not None:
+                    if favorite:
+                        request.user.favorites.add(file_record)
+                    else:
+                        request.user.favorites.remove(file_record)
+                file_record.save()
+        except IntegrityError:
+            transaction.rollback()
+            return Response(
+                {"message": "다른 디렉토리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(status=status.HTTP_200_OK)
+
+
     def delete(self, request, file_id): # 파일 삭
         try:
             file_record = get_object_or_404(File, pk=file_id)
@@ -690,5 +844,3 @@ class PartialDeleteAPI(APIView): # 특정 partial file 제거, 업로드 중단�
 
         partial.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
