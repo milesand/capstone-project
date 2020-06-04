@@ -103,9 +103,9 @@ export default class Home extends Component {
       }) 
       .then(content => {
         console.log('Name team, content : ', content);
-        nameArr.push(content['data']['teamName']);
-        leaderArr.push(content['data']['teamLeader']);
-        leaderNickArr.push(content['data']['teamLeaderNick']);
+        nameArr.push(content['data']['team_name']);
+        leaderArr.push(content['data']['team_leader']);
+        leaderNickArr.push(content['data']['team_leader_nickname']);
       })
     }
     this.setState({

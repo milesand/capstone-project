@@ -8,47 +8,42 @@ import {
   faShare,
   faArrowRight,
   faPen,
-  faTrash
+  faTrash,
+  faDownload
 } from "@fortawesome/free-solid-svg-icons";
 
-const MyContextMenu = () => {
-
+const MyContextMenu = (props) => {
+    console.log("props : ", props);
     const handleClick = () => {
       return ("");
     }
     return (
-        <ContextMenu id="contextMenuItemID" className="contextMenu">
-        <a href="/">
+        <ContextMenu onShow={props.onShow} id="contextMenuItemID" className="contextMenu">
         <MenuItem className="contextMenuItem" onClick={handleClick()}>
           <FontAwesomeIcon icon={faEye} className="contextMenuIcon" /> 
            <span className="contextMenuText">미리보기</span>
         </MenuItem>
-        </a>
-        <a href="/">
-        <MenuItem className="contextMenuItem" onClick={handleClick()}>
-        <FontAwesomeIcon icon={faShare} className="contextMenuIcon" /> 
-           <span className="contextMenuText">공유</span>
+        <MenuItem className="contextMenuItem" onClick={props.handleDownload}>
+          <FontAwesomeIcon icon={faDownload} className="contextMenuIcon" /> 
+            <span className="contextMenuText">다운로드</span>
         </MenuItem>
-        </a>
+        <MenuItem className="contextMenuItem" onClick={handleClick()}>
+          <FontAwesomeIcon icon={faShare} className="contextMenuIcon" /> 
+            <span className="contextMenuText">공유</span>
+        </MenuItem>
         <MenuItem divider className="contextMenuDivider"/>
-        <a href="/">
         <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
           <FontAwesomeIcon icon={faArrowRight} className="contextMenuIcon" /> 
            <span className="contextMenuText">이동</span>
         </MenuItem>
-        </a>
-        <a href="/">
         <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
-        <FontAwesomeIcon icon={faPen} className="contextMenuIcon" /> 
-           <span className="contextMenuText">이름바꾸기</span>
+          <FontAwesomeIcon icon={faPen} className="contextMenuIcon" /> 
+            <span className="contextMenuText">이름바꾸기</span>
         </MenuItem>
-        </a>
-        <a href="/">
         <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
-        <FontAwesomeIcon icon={faTrash} className="contextMenuIcon" /> 
-           <span className="contextMenuText">삭제</span>
+          <FontAwesomeIcon icon={faTrash} className="contextMenuIcon" /> 
+            <span className="contextMenuText">삭제</span>
         </MenuItem>
-        </a>
       </ContextMenu>
 
     );

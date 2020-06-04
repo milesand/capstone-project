@@ -15,12 +15,11 @@ class User(AbstractUser):
     #email = models.EmailField(_('이메일 주소')) #테스트용
 
     username = models.CharField(
-        max_length=100,
+        max_length=30,
         unique=True)
 
     is_mail_authenticated = models.BooleanField(
-        default=False,
-        blank=True) # 메일 인증 수행 시 True로 변환됨. 기본값 False
+        default=False) # 메일 인증 수행 시 True로 변환됨. 기본값 False
 
     phone_num = models.CharField(
         max_length=20,

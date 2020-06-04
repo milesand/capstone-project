@@ -144,7 +144,7 @@ const TeamContent = ({props}) => {
 
   const [teamList, setTeamList] = useState([]); //내가만든 팀
  
-  const [myteamName, setmyTeamName] = useState(""); //만들거나 수정할 팀 이름 
+  const [myteamName, setMyTeamName] = useState(""); //만들거나 수정할 팀 이름 
   const [friendList, setFriendList] = useState([]); //현재는 전체유저리스트
 
 
@@ -244,18 +244,18 @@ const TeamContent = ({props}) => {
   //팀 생성 modal 열기 
   const teamAddToggle = () => {
     setTeamAddModal(!teamAddModal);
-    setmyTeamName("");
+    setMyTeamName("");
   };
   //팀명 change
   const onChangeTeamName = (e) => {
-    setmyTeamName(e.target.value);
+    setMyTeamName(e.target.value);
   };
 
   //팀명 변경
   const teamAdd = () => {
     const TeamNameData = {
-      teamName: myteamName,
-      teamLeader: username,
+      team_name: myteamName,
+      team_leader: username,
     };
     console.log("team name data : ", TeamNameData);
     const body = JSON.stringify(TeamNameData);
@@ -268,7 +268,7 @@ const TeamContent = ({props}) => {
 
     if (myteamName == "") {
       props.notify("이름을 입력하세요.");
-      setmyTeamName("");
+      setMyTeamName("");
     } else {
       axios.post("http://localhost/api/team", body, option)
         .catch(error=>{
@@ -286,7 +286,7 @@ const TeamContent = ({props}) => {
           }
         })
         .catch(e=>props.notify(e))
-      setmyTeamName("");
+      setMyTeamName("");
       setTeamAddModal(!teamAddModal);
     }
   };
@@ -351,7 +351,7 @@ const TeamContent = ({props}) => {
   const teamModifyToggle = () => {
     setTeamModifyModal(!teamModifyModal);
     setRenameTeamCheck(false);
-    setmyTeamName("");
+    setMyTeamName("");
   };
 
   //팀 수정 modal on
@@ -368,18 +368,18 @@ const TeamContent = ({props}) => {
       .then((content) => {
         let nameArr=[], nickArr=[], idArr=[];
         console.log(content['data'])
-        setTeamLeader(content["data"]["teamLeader"]);
-        setTeamLeaderNick(content['data']['teamLeaderNick']);
-        for(let idx in content['data']['memberList']){
-          nameArr.push(content['data']['memberList'][idx]['username']);
-          nickArr.push(content['data']['memberList'][idx]['nickname']);
-          idArr.push(content['data']['memberList'][idx]['_id']);
+        setTeamLeader(content["data"]["team_leader"]);
+        setTeamLeaderNick(content['data']['team_leader_nickname']);
+        for(let idx in content['data']['member_list']){
+          nameArr.push(content['data']['member_list'][idx]['username']);
+          nickArr.push(content['data']['member_list'][idx]['nickname']);
+          idArr.push(content['data']['member_list'][idx]['_id']);
         }
         setMemberList(nameArr);
         setMemberListNick(nickArr);
         setMemberListId(idArr);
         console.log("멤버 : " + JSON.stringify(memberList));
-        if (content["data"]["teamLeader"] == username) {
+        if (content["data"]["team_leader"] == username) {
           // console.log("isLeader : true");
           setIsLeader(true);
         } else {
@@ -388,7 +388,7 @@ const TeamContent = ({props}) => {
         }
         setTeamModifyModal(!teamModifyModal);
         setRenameTeamCheck(false);
-        setmyTeamName("");
+        setMyTeamName("");
       })
       .catch(e=>props.notify(e));
   };
@@ -455,8 +455,8 @@ const TeamContent = ({props}) => {
   const renameTeam = () => {
     const data = {
       _id: currentTeamId,
-      teamName: myteamName,
-      teamLeader: username,
+      team_name: myteamName,
+      team_leader: username,
     };
 
     axios.put(
@@ -753,17 +753,17 @@ const TeamContent = ({props}) => {
                 return (
                   <tr className="team-item" key={index}>
                     <th scope="row">{index + 1}</th>
-                    <td>{team["teamName"]}</td>
-                    <td>{team["memberList"].length + 1}</td>
-                    <td>{team["teamLeaderNick"]}<br/>({team["teamLeader"]})</td> 
-                    <td className="thd-share">{team["shareFolders"].length}</td>
+                    <td>{team["team_name"]}</td>
+                    <td>{team["member_list"].length + 1}</td>
+                    <td>{team["team_leader_nickname"]}<br/>({team["team_leader"]})</td> 
+                    <td className="thd-share">{team["share_folders"].length}</td>
                     <td className="team-table-button thd-buttons">
-                      {team["teamLeader"] == username && (
+                      {team["team_leader"] == username && (
                         <Button
                           onClick={(e) => teamInviteToggle(e)}
                           className="team-invite-button"
                           value={team["_id"]}
-                          name={team["teamName"]}>
+                          name={team["team_name"]}>
                           초대
                         </Button>
                       )}
@@ -772,7 +772,7 @@ const TeamContent = ({props}) => {
                         onClick={teamModify}
                         className="team-modify-button"
                         value={team["_id"]}
-                        name={team["teamName"]}>
+                        name={team["team_name"]}>
                         수정
                       </Button>
                     </td>

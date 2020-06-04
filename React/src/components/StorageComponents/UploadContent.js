@@ -47,9 +47,7 @@ class UploadContent extends Component {
       this.state.flow=new Flow({
           target: function(file, url){
               if(file.targetUrl==null){
-                console.log("에러!!!!!!!!!!!!!!!!!!!!!!! target 설정 안됨!!!, file : ", file, " url : ", file.targetUrl);
                 file.cancel();
-                console.log('캔슬!');
                 return "test.";
               }
               else

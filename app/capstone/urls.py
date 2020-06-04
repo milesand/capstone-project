@@ -83,12 +83,11 @@ api = [
 
     path('partial', storage.PartialAPI.as_view()), #partial file 목록 출력 및 전체 제거, 테스트용
     re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
-    re_path('streaming/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
+    re_path('streaming/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 스트리밍 테스트
 
 ]
 
 urlpatterns = [
     path('admin', admin.site.urls),
     path('api/', include(api)),
-    path('accounts/', include('allauth.urls')),
 ]

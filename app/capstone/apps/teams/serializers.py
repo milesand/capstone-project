@@ -8,20 +8,20 @@ from capstone.account.serializers import UserIDNickSerializer
 class CreateTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model=Team
-        fields=('teamName', 'teamLeader')
+        fields=('team_name', 'team_leader')
         #fields = '__all__'
 
     def create(self, validated_data):
         team=Team.objects.create(
-            teamName=validated_data['teamName'],
-            teamLeader=validated_data['teamLeader'],
-            teamLeaderNick=validated_data['teamLeader'].nickname,
+            team_name=validated_data['team_name'],
+            team_leader=validated_data['team_leader'],
+            team_leader_nickname=validated_data['team_leader'].nickname,
         )
         team.save()
         return team
 
 class TeamSerializer(serializers.ModelSerializer):
-    memberList=UserIDNickSerializer(many=True)
+    member_list=UserIDNickSerializer(many=True)
     class Meta:
         model=Team
         fields = '__all__'
@@ -29,7 +29,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class ChangeTeamNameSerializer(serializers.ModelSerializer):
     class Meta:
         model=Team
-        fields=('teamName', )
+        fields=('team_name', )
 
 class InvitationSerializer(serializers.Serializer):
     username=serializers.CharField(max_length=100)

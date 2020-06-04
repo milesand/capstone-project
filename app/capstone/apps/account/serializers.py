@@ -45,7 +45,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
         if 'social_auth' in validated_data and validated_data['social_auth'] != '':
             social = validated_data['social_auth']
             mail_auth = True
-        print("val data : ", validated_data)
+        print("val data : ", validated_data, 'len : ', len('pbkdf2_sha256$150000$OVAxbE5vzJ6C$EDcA924GSZJpviSyglaKQKM7cLbY+qFEqTmCoX6Gosw='));
         user = User.objects.create_user(
             # User.objects.create_user(username, email=None, password=None, **extra_fields) :
             # 새로운 사용자를 만들어서 저장한 뒤 만든 사용자(User object)를 리턴한다. 이 User 객체는
@@ -59,7 +59,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             phone_num=phone,
             is_mail_authenticated=mail_auth,
-            # password_val=make_password(validated_data["password_val"]), # 패스워드 확인 필드도 암호화시켜준다. 프론트엔드쪽에서 처리.
             social_auth=social,
         )
         # user.is_active=False

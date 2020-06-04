@@ -57,7 +57,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
 
             {/*profile*/}
             {isValueConfirmed ? 
-                    username && nickname &&
+                    username &&
                         <div className='wrapper fadeInDown profile-board info'>
                             <div className='profile-headText'>프로필</div>
                             <hr className='profile-board-hr'></hr>

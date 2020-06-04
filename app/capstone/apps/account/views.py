@@ -227,7 +227,7 @@ class LoginAPI(generics.GenericAPIView):
                 return response
             else:
                 # response=Response({'id': user._id, 'token': token.data['token']}, status=status.HTTP_200_OK)
-                response.data = {'username': user.username, 'nickname': user.nickname, 'email': user.email, 'rootDir' : str(user.root_info.root_dir.pk)}
+                response.data = UserSerializer(user).data
                 response.status = status.HTTP_200_OK
                 return response
         else:
@@ -280,6 +280,9 @@ class UserAPI(generics.GenericAPIView):
             if request.data['phone_num']!="":
                 user.phone_num=request.data['phone_num']
 
+            if request.data['newPassword']=="" and request.data['nickname']=='' and request.data['phone_num']=='':
+                return Response({'error' : '변경값을 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -291,7 +294,7 @@ class UserAPI(generics.GenericAPIView):
         serializer = self.get_serializer_class()(data=request.data)
         if serializer.is_valid():
             if request.user.social_auth=="":
-                user = authenticate(username=request.user, password=request.data['password'])
+                user = authenticate(username=request.user.username, password=request.data['password'])
                 if user is None:
                     return Response({'message : ', "비밀번호가 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
             else: #소셜 계정

@@ -127,6 +127,7 @@ export default class CustonFileBrowser extends Component{
     }
     return false;
   }
+
   handleCreateFolder = (key) => { //디렉토리 만들기 기능
     if(key.substr(0, 4)!=='root'){ //최상위 폴더가 루트 디렉터리가 아닌 경우
       this.state.notify('root 폴더 아래에만 폴더 생성이 가능합니다.');
@@ -257,7 +258,6 @@ export default class CustonFileBrowser extends Component{
     for(let i in folderKey){
       this.setState(state => {
         state.files = state.files.filter(file=>file.key.substr(0, folderKey[i].length) !== folderKey[i]);
-        console.log("into directory setState, files : ", state.files);
         return state
       });
     }

@@ -23,11 +23,11 @@
   .item:hover {
     border-color:#4c84ec;
   }
-  .item:focus {
+  /* .item:focus {
     border-color:#4c84ec;
     border-width: 4px;
     box-shadow: 0.1px 0.1px 2px #acacac !important;
-  }
+  } */
   .item:focus  .item-divider {
     width:193px;
   }
@@ -38,6 +38,14 @@
     margin:auto;
     color:#4c84ec;
   }
+
+  .item-images {
+    border-radius: 10px;
+    background-color: rgba(0,0,0,0.1);
+    margin:auto;
+    max-height: 100px;
+  }
+
   .item-divider {
     width:199px;
     height: 1px;
@@ -56,7 +64,7 @@
     font-size:15px !important;
     font-weight: 500 !important;
     line-height: 18px !important;
-    margin:auto !important;
+    margin-top:6% !important;
     color:#66615b !important;
   }
   .item-info {
@@ -68,3 +76,11 @@
     text-decoration: underline;
   }
   
+  .item-selected {
+    border-color: #6276e9 !important;
+    border-width: 4px !important;
+    box-shadow: 0.1px 0.1px 2px #acacac !important;
+  }
+  .item-selecting {
+    border-color: #6276e9 !important;
+  }
