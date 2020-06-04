@@ -4,7 +4,7 @@ from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import UserAccountSerializer, UserSerializer, FindIDPasswordSerializer, SocialLoginSerializer, \
-    SocialAccessTokenSerializer, UserLoginSerializer, TeamListSerializer
+    SocialAccessTokenSerializer, UserLoginSerializer, TeamListSerializer, WithdrawalSerializer, ChangeProfileSerializer
 from .models import User
 from django.contrib.auth import login
 from rest_framework.views import APIView
@@ -112,16 +112,13 @@ class RegistrationAPI(generics.GenericAPIView):
                 print('here.')
                 try:
                     User.objects.get(email=request.data['email'])  # 기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
-                    print('here2.')
                     return Response(status=status.HTTP_202_ACCEPTED)
                 except:
-                    print('here3.')
                     request.data['is_mail_authenticated'] = True
 
         serializer = UserAccountSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # 여기서 UserAccountSerializer의 create 메소드가 실행된다.
-            print("registration here.")
             # 소셜 로그인이 아닐 경우, 이메일 인증을 수행한다.
             if UserSerializer(user)['is_mail_authenticated'].value == False:
                 message = render_to_string('account/user_active_email.html', {
@@ -210,6 +207,7 @@ class LoginAPI(generics.GenericAPIView):
             print(request.data)
             # 존재하는 아이디인지 확인
             user = authenticate(username=request.data['username'], password=request.data['password'])
+            print("user : ", user)
             response = Response()
             if user is None:
                 response.data = {"error": "아이디와 비밀번호를 확인해주세요."}
@@ -252,7 +250,6 @@ class AllUserAPI(generics.ListAPIView):
 
 # 특정 접속 유저의 프로필을 출력하거나, 회원에서 제거하는 API
 class UserAPI(generics.GenericAPIView):
-    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
     #permission_classes = [AllowAny, ]  # 임시 설정
 
@@ -261,17 +258,58 @@ class UserAPI(generics.GenericAPIView):
         print('here.')
         user = request.user
         print('user : ', user)
-        if not user.is_authenticated:
-            return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(self.get_serializer_class()(user).data, status=status.HTTP_200_OK)
+
+    def put(self, request):  # request body : curPassword, newPassword, nickname, phone_num, 안바꿀 값은 빈칸으로
+        print("request : ", request.data)
+        serializer = self.get_serializer_class()(data=request.data)
+        if serializer.is_valid():
+            if request.user.social_auth == "":  # 소셜 계정 아닌경우
+                user = authenticate(username=request.user.username, password=request.data['curPassword'])
+                if user is None:  # 현재 비밀번호가 틀린 경우
+                    return Response({"message": "비밀번호가 일치하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            else:  # 소셜 계정
+                user = request.user
+
+            if request.data['newPassword']!="":
+                user.password=make_password(request.data['newPassword'])
+
+            if request.data['nickname']!="":
+                user.nickname=request.data['nickname']
+
+            if request.data['phone_num']!="":
+                user.phone_num=request.data['phone_num']
+
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        else:
+            return Response({'message': '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        # user = find_user(request)
-        user = request.user
-        if not user.is_authenticated:
-            return Response({"error": "로그인 중이 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        print("delete call!, request : ", request.data)
+        serializer = self.get_serializer_class()(data=request.data)
+        if serializer.is_valid():
+            if request.user.social_auth=="":
+                user = authenticate(username=request.user, password=request.data['password'])
+                if user is None:
+                    return Response({'message : ', "비밀번호가 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+            else: #소셜 계정
+                user=request.user
+
+            user.delete()
+            return LogoutAPI.post(self, request)
+
+        else:
+            return Response({'message': '비밀번호는 15자 이하여야 합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            return UserSerializer
+        elif self.request.method=='DELETE':
+            return WithdrawalSerializer
+        else:
+            return ChangeProfileSerializer
 
 
 # 소셜로그인을 수행할 때 여기서 구글인지 페이스북인지 체크한 다음, 적절한 곳으로 POST 명령을 보내준다.
@@ -280,7 +318,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
     response = None
 
     def login_n_registration(self, request, data, social):
-        userData = {'username': data['id'],
+        userData = {'username': social + '_' + data['id'],
                     'nickname': data['name'],
                     'password': 'social',
                     'email': data['email'],
@@ -308,7 +346,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
             g = GetJWTToken()
             token = g.getToken_without_password(user)
             print('token : ', token)
-            response = Response({'message': '로그인 완료.'}, status=status.HTTP_200_OK)
+            response = Response(UserSerializer(user).data, status=status.HTTP_200_OK)
             response.set_cookie('jwt', token, domain=None,
                                 expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
                                 httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
@@ -317,7 +355,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
             return response
 
         else:
-            userLoginData = {'username': data['id'],
+            userLoginData = {'username': social + '_' + data['id'],
                              'password': "social"}
 
             request._full_data = userLoginData
@@ -339,7 +377,7 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
 
 class GoogleLoginAPI(SocialLoginAPI, generics.GenericAPIView):
     def post(self, request):
-        print(request.data)
+        print('google login API : ', request.data)
         params = {'access_token': request.data.get("access_token")}  # 구글로 request를 보내기 위한 파라미터 설정
         try:
             r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', params=params)
@@ -437,5 +475,22 @@ class DeleteAPI(APIView):
     def delete(self, request):
         user = User.objects.all()
         user.delete()
-        return Response(status=status.HTTP_200_OK)
+        return LogoutAPI.post(self, request)
+
+class ConfirmPasswordAPI(APIView):
+    def post(self, request):
+        user=authenticate(username=request.user.username, password=request.data['password'])
+        if user is not None:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class ConfirmEmailAPI(APIView):
+    def post(self, request):
+        user=User.objects.get(username=request.user.username, email=request.data['email'])
+        if user == request.user:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 

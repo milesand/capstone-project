@@ -1,4 +1,5 @@
 import React, {fragment} from 'react';
+import {Spinner} from 'reactstrap';
 import "../style2.css"
 
 // presentational component, only a stateless function
@@ -11,9 +12,10 @@ const DownloadTestForm = ({downloadTest, fileID, isLoading, changeFileID}) => {
         <button
           id='downloadButton'
           type="button"
-          className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
+          className={'fadeIn'}
           onClick={downloadTest}
-        >{isLoading ? '':'다운로드'}</button>
+          disabled={isLoading}
+        >{isLoading ? <Spinner size="sm" color='light'/>:'다운로드'}</button>
       </div>
 
       <div>

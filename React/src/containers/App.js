@@ -22,6 +22,7 @@ import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
 import ThumbTest from "./ThumbTest";
 import FileTest from "./FileTest";
+import StreamingTest from "./StreamingTest";
 
 class App extends Component {
   constructor(props) {
@@ -53,9 +54,8 @@ class App extends Component {
 
   getUserInfo=()=>{
     let errorCheck = response => {
-      console.log(response);
+      console.log("user check, here!!!!, response : ", response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
-        console.log("initial response : ", response);
         this.setState({
           isLogin: true,
           isMailAuthenticated: response.is_mail_authenticated,
@@ -66,13 +66,9 @@ class App extends Component {
         });
       }
       else{
-        console.log("here. success.");
-        this.setState({
-          isLogin: false,
-        });
+        this.userStateChange(false, false);
         this.deleteJWTToken();
       }
-      console.log('wwwwwstate : ', this.state);
       return response;
     } 
 
@@ -84,8 +80,7 @@ class App extends Component {
        return response;
     }
     
-    if(this.state.username==''){
-      fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+    return fetch('http://localhost/api/user', { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -110,14 +105,13 @@ class App extends Component {
               console.log("토큰이 재발급되었습니다.");
               console.log(content);
               console.log(this.state);
-              //react-router-dom에서 알아서 이메일 인증 안받은사람 인증 페이지로 리다이렉션시키므로, 여기선 안해도됨.
           }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
         }
+        return content;
       }).catch(error=>console.log('로그인 체크 에러!'));
-    }
   }
 
-  userStateChange = (authenticated, mailAuthenticated, username, nickname, email, root_dir) => {
+  userStateChange = (authenticated, mailAuthenticated, username="", nickname="", email="", root_dir="") => {
     console.log("thisStateTest.", this.state);
     if(email=='google'||email=='facebook'){ //소셜 로그인
       this.setState({
@@ -146,12 +140,11 @@ class App extends Component {
     let isTokenStored=true;
     let tokenCheck = response => {
       if(!response.ok){
-        isTokenStored=false;
+        throw Error();
       }
       return response;
     }
 
-    try {
       fetch('http://localhost/api/logout', {
         method: "POST",
         headers: {
@@ -160,38 +153,20 @@ class App extends Component {
         credentials: 'include',
       })
       .then(tokenCheck)
-      .then(res=>{
-        if(isTokenStored){
-          console.log(res);
-          this.setState(state => {
-            return{
-              isLogin: false,
-              isMailAuthenticated: false,
-              username: '',
-              nickname: '',
-              email: '',
-            }
-          });
-          
-        }
-      })
       .then(data => {
         console.log('True Log out.', this.state);
-      });
-    
-    }catch{
-      console.log("error!");
-      this.setState({
-        isLogin: false,
-        userid: ''
-      });
-      console.log('Log out.');
-    }
+      })
+      .catch(()=>{
+        console.log("error!");
+        this.userStateChange(false, false);
+        console.log('Log out.');
+      })
   }
 
   // 로그아웃시 서버로 요청 보내서 JWT 토큰이 저장된 httponly 쿠키 제거
   logout = () => {
     console.log("logout called!");
+    this.userStateChange(false, false);
     window.FB.logout();
     let auth2 = window.gapi && window.gapi.auth2.getAuthInstance();
     auth2.signOut()
@@ -204,9 +179,6 @@ class App extends Component {
     .then(() => {
       this.props.history.push("/login");
       console.log('Log out to login page.', this.state);
-      this.setState({
-        isLogout: false
-      });
     });  
   }
 
@@ -217,6 +189,20 @@ class App extends Component {
     Toast.info(message);
   };
 
+  errorCheck=(response, message="서버 에러 발생!")=>{
+    console.log("error check, state : ", this.state);
+    if(response.status==401){
+      this.userStateChange(false, false);
+      this.props.history.push('/login');
+      throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
+    }
+    if(('ok' in response&&!response.ok)){
+      console.log("errchk here!!");
+      throw Error(message);
+    }
+    return response;
+  }
+
   render() {
     const baseProps = {
       username: this.state.username,
@@ -226,8 +212,10 @@ class App extends Component {
       isLogin: this.state.isLogin,
       isMailAuthenticated:this.state.isMailAuthenticated,
       isLoading: this.state.isLoading,
+      getUserInfo: this.getUserInfo,
       userStateChange: this.userStateChange,
       toggleLoadingState: this.toggleLoadingState,
+      errorCheck: this.errorCheck,
       logout: this.logout,
       notify: this.notify
     };
@@ -248,6 +236,7 @@ class App extends Component {
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
               <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />
+              <AuthenticatedRoute path="/streaming-test" fileID="25d9ddeb-bddf-4f8d-a179-b36697b9a65f" component={StreamingTest} props={baseProps} />
               <AuthenticatedRoute path="/" component={Home} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>

@@ -23,12 +23,6 @@ class MailResend extends Component{
         console.log('클릭!');
         console.log(this.state);
         this.props.toggleLoadingState();
-        let errorCheck = response =>{
-            if(response.message){
-                throw Error(response.message);
-            }
-            return response;
-        }
 
         this.setState((prevState)=>({
             isLoading: true
@@ -41,7 +35,7 @@ class MailResend extends Component{
               },
             credentials: 'include',
         })
-        .then(errorCheck)
+        .then(this.props.errorCheck)
         .then(res=>res.json())
         .then(content=>{
             console.log(content);
@@ -62,6 +56,7 @@ class MailResend extends Component{
                 email={this.state.email}
                 resendAuthEmail={this.resendAuthEmail}
                 isLoading={this.props.isLoading}
+                logout={this.props.logout}
             />
             }
             </div>

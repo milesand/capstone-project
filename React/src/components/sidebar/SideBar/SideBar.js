@@ -15,8 +15,8 @@ import { Link } from "react-router-dom";
 import "./SideBar.css";
 import SubMenu from "./SubMenu";
 
-const SideBar = ({ isOpen, toggle }) => {
- 
+const SideBar = ({ isOpen, toggle, spaceLeft, percent}) => {
+  console.log("sidebar : ", isOpen, toggle, spaceLeft);
   return (
   <div className={classNames("sidebar", {"is-open": isOpen}, {"is-toggled": !isOpen })}>
     <div className="sidebar-header">
@@ -68,11 +68,15 @@ const SideBar = ({ isOpen, toggle }) => {
       <div className="sidebar-volume">
         <div className="sidebar-volume-text">
           <FontAwesomeIcon icon={faHdd} className="mr-2" />
-          남은 용량 : 7.5G
+          남은 용량 : {spaceLeft}G
         </div>
-      <Progress value="25" className="sidebar-volume-bar"></Progress>
+      <Progress color={percent > 40 
+                       ? percent > 70
+                         ? 'danger'
+                         : 'warning' 
+                      :''} value={percent} className="sidebar-volume-bar"></Progress>
       <div className="sidebar-volume-text">
-      <span>25% 사용중 </span>
+      <span>{percent}% 사용중 </span>
       </div>
 
     </div>

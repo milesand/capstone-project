@@ -28,8 +28,7 @@ class User(AbstractUser):
         blank=True) #선택사항
 
     password = models.CharField(
-        max_length=100,
-        blank=True)
+        max_length=100)
 
     social_auth=models.CharField(
         max_length=20,

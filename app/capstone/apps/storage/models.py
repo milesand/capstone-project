@@ -35,7 +35,7 @@ class DirectoryEntry(models.Model):
 
 class Directory(DirectoryEntry):
     @staticmethod
-    def get_by_path_or_id(user, path_or_id):
+    def get_by_path_or_id(user, path_or_id, match_user_on_id=True):
         '''
         Get directory either by path or id, depending on what input looks like.
         The return value is a pair (n, directory) which is mostly compatible with
@@ -48,9 +48,14 @@ class Directory(DirectoryEntry):
             return Directory.get_by_path(user, path_or_id)
         # Id.
         try:
-            return (0, Directory.objects.get(owner=user, pk=path_or_id))
+            query = Directory.objects.filter(pk=path_or_id)
+            if match_user_on_id:
+                directory = query.get(owner=user)
+            else:
+                directory = query.get()
         except Directory.DoesNotExist:
             return (None, None)
+        return (0, directory)
 
     @staticmethod
     def get_by_path(user, path):

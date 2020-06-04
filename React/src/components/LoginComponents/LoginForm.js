@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col} from "reactstrap";
+import { Row, Col, Spinner } from "reactstrap";
 import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
@@ -24,9 +24,9 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                 fields="name,email,picture"
                 callback={facebookLogin} 
                 icon="fa-facebook-square"  
-                cssClass="fadeIn register form-control "
+                cssClass="fadeIn register form-control"
                 size = "medium"
-                textButton = " 페이스북으로 로그인"    // 사용할 스타일
+                textButton = " 페이스북으로 로그인"
                 />
               </Col>     
               <Col xs={6}>
@@ -65,8 +65,9 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
               />
               <button
                  type="submit"
-                 className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
-              >{isLoading ? '':'로그인'}</button>
+                 className={'fadeIn'}
+                 disabled={isLoading}
+              >{isLoading ? <Spinner size="sm" color='light'/>:'로그인'}</button>
 
 
             <div id="formFooter">

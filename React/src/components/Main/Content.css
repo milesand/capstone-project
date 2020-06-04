@@ -84,11 +84,10 @@
   }
 
   .close-button{
-    background-color: #4f6ad4;
     width : 200px;
    }
 
-  .testtest{
+  .modal-head{
      margin-left: 0%;
      font-size: 25px;
      min-width: 1000px;

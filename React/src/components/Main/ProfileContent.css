@@ -1,0 +1,70 @@
+.profile-headText {
+    margin-top: 3%;
+    margin-left: 3%;
+    font-size: 25px;
+    line-height: 2rem;
+    color:#66615b;
+}
+
+.profile-board {
+    background-color: white;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15) !important;
+    font-size: 15px;
+    word-break:break-all;
+}
+
+.profile-board-hr{
+    width:93%;
+    margin-left:2%;
+}
+
+.confirm-password{
+    margin-left: 25%;
+    margin-top: 20%;
+    height: 200px;
+    max-height: 650px !important;
+    border-radius: 10px  !important;
+    width: 50%;
+}
+
+.info {
+    margin-left: 0%;
+    margin-top: 5%;
+    height: 700px;
+    max-height: 700px !important;
+    border-radius: 10px  !important;
+    width: 50%;
+    width: 100%;
+}
+
+.profile-confirm-password{
+    margin-left: 25%;
+    margin-top: 30px;
+    width: 50%;
+}
+
+.profile-confirm-headText{
+    margin-top: 5%;
+    text-align: center;
+    color:#66615b;
+    font-size: 17px;
+}
+
+.profile-button{
+    width: 70px;
+}
+
+.info-list{
+    margin-top: 0%;
+    margin-left: 5%;
+    width: 90%;
+}
+
+.profile-return-button{
+    width: 100px;
+    margin-left: 25%;
+}
+
+.profile-bottom-button{
+    margin-top: 5%;
+}

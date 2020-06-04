@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from "react";
 import Moment from 'moment';
-import ko from 'moment/locale/ko'
+import { Button } from 'reactstrap';
 import FileBrowser, { Icons } from 'react-keyed-file-browser';
 import '../../../node_modules/react-keyed-file-browser/dist/react-keyed-file-browser.css';
+import './UploadContent.css';
 
 //react-keyed-file-browser 공식 example 코드 참조
 export default class CustonFileBrowser extends Component{
@@ -29,6 +30,10 @@ export default class CustonFileBrowser extends Component{
       let url="http://localhost/api/directory/" + folderID;
 
       let errorCheck=(response)=>{
+        console.log("response : ", response);
+        if(response.status==401){
+          throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
+        }
         if(!response.ok){
           throw Error("서버 에러 발생!");
         }
@@ -42,20 +47,28 @@ export default class CustonFileBrowser extends Component{
               },
               credentials: 'include',
       })
-      .then(errorCheck)
+      .then(this.props.errorCheck)
       .then(res=>res.json())
       .then(content=>{
         console.log("initial data load complete! data : ", content, content.files, typeof(content.files));
         let files=content.files; //루트 디렉토리에 들어있는 파일 목록
         let subdirectories=content.subdirectories;
-        let path="";
+
         for(let file in files){
-          console.log("file upload time : ", files[file]['uploaded_at']);
+          let size=files[file]['size'];
+          console.log('file : ', file, ' size : ', size);
+          //표시된 파일 크기를 실제 크기와 맞추기 위해 사용 
+          size=size>1024
+                ? size>Math.pow(1024, 2)
+                  ? size=(size/1000/1000) * Math.pow(1024, 2)
+                  : size=(size/1000) * 1024
+                : size;
+
           this.setState(state => {
             state.files = state.files.concat([{
               key: key + file,
               modified: Moment(files[file]['uploaded_at']),
-              size: files[file]['size'],
+              size: size,
               id: files[file].pk
             }])
             return state
@@ -72,7 +85,6 @@ export default class CustonFileBrowser extends Component{
             return state
           })
         }
-        console.log("for end.");
         this.setState(state=>{
           state.isCheck=state.isCheck.concat([folderID]);
           return state;
@@ -83,12 +95,6 @@ export default class CustonFileBrowser extends Component{
   }
 
   deleteFileOrDirectory=(url, type)=>{
-    let errorCheck=response=>{
-      if(!response.ok){
-        throw Error('서버 에러 발생!');
-      }
-      return response;
-    }
 
     fetch(url, {
       method: "DELETE",
@@ -97,9 +103,10 @@ export default class CustonFileBrowser extends Component{
       },
       credentials: 'include',
     })
-    .then(errorCheck)
+    .then(this.props.errorCheck)
     .then(()=>{
       this.state.notify("삭제 완료!");
+      this.props.checkUserState();
       let names=this.state.currentPath.split('/'), newPath="";
       for(let i=0; i<names.length-2; i++){
         newPath+=names[i]+'/';
@@ -114,14 +121,14 @@ export default class CustonFileBrowser extends Component{
   isDuplicated=(name)=>{
     for(let i in this.state.files){
       let key=this.state.files[i].key;
-      if(name==key){ //디렉토리 이름이 같을 경우
+      if(name===key){ //디렉토리 이름이 같을 경우
           return true;
       }
     }
     return false;
   }
   handleCreateFolder = (key) => { //디렉토리 만들기 기능
-    if(key.substr(0, 4)!='root'){ //최상위 폴더가 루트 디렉터리가 아닌 경우
+    if(key.substr(0, 4)!=='root'){ //최상위 폴더가 루트 디렉터리가 아닌 경우
       this.state.notify('root 폴더 아래에만 폴더 생성이 가능합니다.');
       return;
     }
@@ -145,12 +152,6 @@ export default class CustonFileBrowser extends Component{
       'name' : name
     }
 
-    let errorCheck=(response)=>{
-      if(!response.ok){
-        throw Error("서버 에러 발생!");
-      }
-      return response;
-    }
     fetch(url, {
       method: "POST",
       headers: {
@@ -159,7 +160,7 @@ export default class CustonFileBrowser extends Component{
       credentials: 'include',
       body: JSON.stringify(data)
     })
-    .then(errorCheck)
+    .then(this.props.errorCheck)
     .then(res=>res.json())
     .then(content=>{
         this.setState({
@@ -191,16 +192,9 @@ export default class CustonFileBrowser extends Component{
       name: names[names.length-2]
     }
 
-    let errorCheck=response=>{
-      if(!response.ok){
-        throw Error('서버 에러 발생!');
-      }
-      return response;
-    }
-
     console.log('oldkey : ', oldKey, "newKey : ",names[names.length-2]);  
     for(let i in this.state.files){
-      if(this.state.files[i].key==oldKey){
+      if(this.state.files[i].key===oldKey){
         url="http://localhost/api/directory/" + this.state.files[i].id;
         break;
       }
@@ -214,7 +208,7 @@ export default class CustonFileBrowser extends Component{
       credentials: 'include',
       body: JSON.stringify(data)
     })
-    .then(errorCheck)
+    .then(this.props.errorCheck)
     .catch(e=>this.state.notify(e))
 
     this.setState(state => {
@@ -236,55 +230,79 @@ export default class CustonFileBrowser extends Component{
   }
 
   handleDeleteFolder = (folderKey) => { //폴더 삭제
-    if(folderKey=='root/'){
-      this.state.notify('루트 디렉터리는 삭제할 수 없습니다.');
+    console.log("folderKey : ", folderKey);
+    if(folderKey.length==0){
       return;
     }
-    folderKey=folderKey[0]; //folderKey가 배열 형태이므로, 원소 꺼내서 다시 변수 설정
-    console.log("folderKey : ", folderKey, folderKey.length);
-    let url="http://localhost/api/directory/";
 
-    const newFiles = []
-    this.state.files.map((file) => {
-      if(file.key==folderKey){
-        url+=file.id;
+    let newFiles = []
+    for(let i in folderKey){
+      if(folderKey==='root/'){
+        this.state.notify('루트 디렉터리는 삭제할 수 없습니다.');
+        return;
       }
-      if (file.key.substr(0, folderKey.length) != folderKey) {
-        newFiles.push(file);
-      }
-    })
+      console.log("folderKey : ", folderKey, folderKey.length);
+      let url="http://localhost/api/directory/";
+      this.state.files.map((file) => {
+        if(file.key === folderKey[i]){
+          console.log("matching here, key : ", file.key);
+          url+=file.id;
+        }
+      })
 
-    this.setState(state => { // 브라우저 상에서 삭제
-      state.files = newFiles
-      return state
-    })
+      this.deleteFileOrDirectory(url, 'directory');
+    }
 
-    this.deleteFileOrDirectory(url, 'directory');
+    //console.log("final new files : ", newFiles);
+    for(let i in folderKey){
+      this.setState(state => {
+        state.files = state.files.filter(file=>file.key.substr(0, folderKey[i].length) !== folderKey[i]);
+        console.log("into directory setState, files : ", state.files);
+        return state
+      });
+    }
   }
 
   handleDeleteFile = (fileKey) => { //파일 삭제
-    let url="http://localhost/api/file/";
-    const newFiles = []
+    console.log("delete file!, key : ", fileKey, 'state key : ', this.state.files);
+    if(fileKey.length==0){
+      return;
+    }
+    let newFiles = []
+    for(let i in fileKey){
+      let url="http://localhost/api/file/";
+      this.state.files.map((file) => {
+        if(file.key === fileKey[i]){
+          console.log("matching here, key : ", file.key);
+          url+=file.id;
+        }
+      })
 
-    this.state.files.map((file) => {
-      if(file.key == fileKey){
-        url+=file.id;
-      }
+      this.deleteFileOrDirectory(url, 'file');
+    }
 
-      if (file.key != fileKey) {
+    /*this.state.files.map((file) => {
+      if (!fileKey.includes(file.key)) {
         newFiles.push(file);
       }
     })
+
     this.setState(state => {
       state.files = newFiles
       return state
-    })
+    });*/
 
-    this.deleteFileOrDirectory(url, 'file');
+    for(let i in fileKey){
+      this.setState(state => {
+        state.files = state.files.filter(file=>file.key !== fileKey[i]);
+        console.log("into file setState, files : ", state.files);
+        return state
+      });
+    }
   }
 
   handleOnSelect=(e)=>{ //폴더 클릭, 업로드 경로 설정
-    if(e==undefined) return; //폴더 새로 만드는 도중에 클릭한 경우
+    if(e===undefined) return; //폴더 새로 만드는 도중에 클릭한 경우
 
     console.log("click here!!!!, e : ", e, e['key'].substr(4));
     console.log("files : ", this.state.files);
@@ -305,12 +323,32 @@ export default class CustonFileBrowser extends Component{
     return(<div/>);
   }
 
+  myDeletionRenderer=(e)=>{
+    console.log("on delete, e : ", e);
+    return(
+      <Fragment>
+        <h6>{e.children[1]}</h6>
+        <Button outline color='danger ' onClick={e.handleDeleteSubmit} className='delete-button'>삭제</Button>
+      </Fragment>
+    );
+  }
+  
+  myMultipleDeletionRenderer=(e)=>{
+    console.log("on delete, e : ", e);
+    return(
+      <Fragment>
+        <Button outline color='danger ' onClick={e.handleDeleteSubmit} className='delete-button'>삭제</Button>
+      </Fragment>
+    );
+  }
+
   render(){
       return(
           <Fragment>
             <div>
             <FileBrowser
                         files={this.state.files}
+                        icons={Icons.FontAwesome(4)}
                         onCreateFolder={this.handleCreateFolder}
                         onMoveFolder={this.handleRenameFolder}
                         onRenameFolder={this.handleRenameFolder}
@@ -319,6 +357,8 @@ export default class CustonFileBrowser extends Component{
                         onSelectFolder={this.handleOnSelect}
                         onFolderOpen={this.handleOnFolderOpen}
                         detailRenderer={this.myDetailRenderer}
+                        confirmDeletionRenderer={this.myDeletionRenderer}
+                        confirmMultipleDeletionRenderer={this.myMultipleDeletionRenderer}
             />
             <h5>업로드 경로 : {this.state.currentPath}</h5>
             </div>

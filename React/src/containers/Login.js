@@ -11,11 +11,11 @@ export default class Login extends Component { //export default : 다른 모듈�
       password: "",
       isLoading: false
     };
-    console.log("로그인 시작, notify : ", this.props.notify);
   }
 
   //유저 로그인 상태 체크
   componentDidMount() {
+    console.log("login check.");
     if (this.props.isLogin) {
       this.props.history.push("/");
     }
@@ -72,6 +72,7 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(res=>res.json())
         .then(errorCheck)
         .then(content => {
+          console.log("google content : ", content);
           this.props.userStateChange(true,
                                      true,
                                      content.username, 
@@ -152,7 +153,7 @@ export default class Login extends Component { //export default : 다른 모듈�
         else
            throw Error(content['error']);
       }
-
+      console.log("login content : ", content);
       this.props.userStateChange(true,
                                  isMailAuthenticated, 
                                  this.state.username, 

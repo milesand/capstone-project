@@ -59,7 +59,7 @@ class UploadContent extends Component {
 
           simultaneousUploads : 1,
           withCredentials : true,
-          chunkSize : 1*1024*1024
+          chunkSize : 100*1024*1024
       });
     }
     else{
@@ -70,6 +70,7 @@ class UploadContent extends Component {
     if(!this.state.flow.support) console.log("flow.js 지원 안함.");
 
     this.state.flow.on('fileAdded', function(file){
+        console.log('file size : ', file.size);
         let data= {
             fileSize: file.size,
             fileName: file.name,
@@ -84,14 +85,11 @@ class UploadContent extends Component {
 
         console.log('formData : ', formData);
         let errorCheck = response => {
+            this.props.errorCheck(response);
             if(response.status==400){
                 console.log("this : ", this);
                 this.remove(file);
                 throw Error("디렉토리 내에 동일한 파일 이름이 존재합니다.");
-            }
-            else if(response.status==401){
-              throw Error("자동 로그아웃되었습니다. 다시 로그인해주세요.");
-              this.props.history.push('/');
             }
             else if(response.status==403){
                 throw Error('저장 공간이 부족합니다.');
@@ -166,7 +164,6 @@ class UploadContent extends Component {
     }.bind(this));
 
     this.state.flow.on('fileSuccess', function(file, message, chunk){ //파일 업로드가 성공헀을 때 호출되는 이벤트
-        console.log(file, message, '업로드 성공!');
         let string=file.name + ' 업로드 완료!';
         if(file.name.length>30){
           string=<div>{file.name.substr(0, 30) + '...'}<br />업로드 완료!</div>;
@@ -198,6 +195,7 @@ class UploadContent extends Component {
 
     this.state.flow.on('complete', function(){
       console.log("업로드 끝!, this : ", this);
+      this.props.checkUserState();
     }.bind(this))
   }
 
@@ -236,13 +234,6 @@ class UploadContent extends Component {
       let url='http://localhost/api/partial/' + id;
       console.log("id : ", id);
 
-      let errorCheck=(response)=>{
-        console.log("reponse : ", response);
-        if(!response.ok){
-          throw Error("서버 에러 발생!");
-        }
-        return response;
-      }
       fetch(url, {
         method: "DELETE",
         headers: {
@@ -250,10 +241,9 @@ class UploadContent extends Component {
         },
         credentials: 'include',
       })
-      .then(errorCheck)
+      .then(this.props.errorCheck)
       .then(()=>{
-        console.log('partial file 제거 완료!', this.myRef);
-        console.log('here!, ref : ', this.myRef);
+        this.props.notify(file.name+' 업로드를 중단했습니다.');
         this.setUploadAreaEvent();
       })
       .catch(e=>this.props.notify(e))
@@ -285,8 +275,10 @@ class UploadContent extends Component {
                       notify={this.props.notify}
                       rootDirID={this.props.rootDirID}
                       changeUploadPath={this.changeUploadPath}
+                      errorCheck={this.props.errorCheck}
+                      checkUserState={this.props.checkUserState}
                     />
-                    <Button className="custom-button" onClick={this.toggleIsPathSet}>완료</Button>
+                    <Button outline className="custom-button" onClick={this.toggleIsPathSet}>결정</Button>
                   </div>
                  }
 

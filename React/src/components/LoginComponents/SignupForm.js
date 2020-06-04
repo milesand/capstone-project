@@ -1,5 +1,5 @@
 import React from 'react';
-import {Col, Row} from "reactstrap";
+import {Col, Row, Spinner} from "reactstrap";
 import "./LoginStyle.css"
 import logo from './login4.png'; 
 import { Link } from "react-router-dom";
@@ -71,9 +71,9 @@ const SignupForm = ({username, nickname, password, password_val, email, phone, i
         </div>
         <button
               type="submit"
-              className={'fadeIn' + (isLoading ? ' button is-loading is-medium':'')}
-              disabled={!validate(username, nickname, password, password_val, email, phone)}
-        >{isLoading ? '':'회원가입'}</button>
+              className={'fadeIn'}
+              disabled={isLoading||!validate(username, nickname, password, password_val, email, phone)}
+        >{isLoading ? <Spinner size="sm" color='light'/>:'회원가입'}</button>
         </form>
         <div id="formFooter">
               <Row>
