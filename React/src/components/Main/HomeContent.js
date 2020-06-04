@@ -165,8 +165,9 @@ const HomeContent = (props) => {
       console.log("params : ", params);
       if(chk) CustomDownload('', params)
     }
-    CustomDownload(currentItemInfo.name, currentItemInfo.pk); //단일 파일 다운로드, 또는 파일 여러개 선택했지만 선택 안한 다른 파일에
-                                        //다운로드 누른 경우
+    else{
+      CustomDownload(currentItemInfo.name, currentItemInfo.pk); //단일 파일 다운로드, 또는 파일 여러개 선택했지만 선택 안한 다른 파일에
+    }                                    //다운로드 누른 경우
   }
 
   const multiFileCheck=(e)=>{
