@@ -33,6 +33,7 @@ services:
      - ./app:/app/
      - socket:/socket/
      - ./file:/file
+     - ./log:/log
     secrets:
       - django_secret
     expose:

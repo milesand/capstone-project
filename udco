@@ -10,12 +10,15 @@ if [ ! -d 'file/complete' ]; then
     mkdir file/complete
 fi
 if [ ! -d 'file/thumbnail' ]; then
-    mkdir file/complete
+    mkdir file/thumbnail
 fi
 if [ ! -d 'db/data' ]; then
     mkdir -p db/data
 elif [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
     sudo chown -R $USER_ID:$GROUP_ID db/data
 fi;
+if [ ! -d 'log' ]; then
+    mkdir log
+fi
 
 docker-compose $@

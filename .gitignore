@@ -17,6 +17,8 @@ db/data
 # 업로드된 파일
 file
 
+log
+
 # SSL 테스트용
 app/stunnel/*
 stunnel.*
