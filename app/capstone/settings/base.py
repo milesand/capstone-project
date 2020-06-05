@@ -172,13 +172,19 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+        'logfile': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': '/log/django_capstone.log',
+            'maxBytes': 1024*1024*15, # 15MB
+            'backupCount': 10,
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
+    'loggers': {
+        'capstone': {
+            'handlers': ['logfile'],
+            'level': 'DEBUG',
+        }
     },
 }
 
