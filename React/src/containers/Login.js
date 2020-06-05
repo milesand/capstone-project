@@ -144,23 +144,33 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(res=>res.json())
     .then(content => {
       // 아이디와 비밀번호가 올바른지 확인하고, 맞으면 이메일 인증 여부 확인
+      console.log("content ? : ", content);
       if(content.hasOwnProperty('error')){
         if(content.hasOwnProperty('email')){
            isMailAuthenticated=false;
         }
-        else if(!this.validateAllField(this.state.username, this.state.password))
+
+        if(!this.validateAllField(this.state.username, this.state.password))
             throw Error('아이디와 비밀번호는 영문자, 숫자를 포함한 8자 이상 15자 이하로 입력해주세요.');
-        else
-           throw Error(content['error']);
       }
       console.log("login content : ", content);
-      this.props.userStateChange(true,
-                                 isMailAuthenticated, 
-                                 this.state.username, 
-                                 content.nickname, 
-                                 content.email, 
-                                 content.root_info.root_dir
-                                 );
+      if(isMailAuthenticated)
+        this.props.userStateChange(true,
+                                  isMailAuthenticated, 
+                                  this.state.username, 
+                                  content.nickname, 
+                                  content.email, 
+                                  content.root_info.root_dir
+                                  );
+      else{
+        this.props.userStateChange(true,
+            isMailAuthenticated, 
+            this.state.username, 
+            content.nickname, 
+            content.email, 
+            ''
+          );
+      }
       this.setState({
         isLoading: true
       });
