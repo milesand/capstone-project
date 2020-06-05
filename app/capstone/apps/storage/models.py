@@ -22,6 +22,14 @@ class DirectoryEntry(models.Model):
         null=True  # Root directories have no parent
     )
 
+    # List of users who have favorited this entry.
+    # Due to sharing, it's entirely possible to favorite what
+    # one doesn't own; Thus this can't be a simple boolean flag.
+    favorite_of = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="favorites",
+    )
+
 
     class Meta:
         constraints = [
