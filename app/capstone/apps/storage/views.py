@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 
 from .models import Directory, File, UserStorage, PartialUpload
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer
+from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer, FileRenameSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -170,10 +170,13 @@ class FlowUploadStartView(APIView):
             )
 
         return Response(
-            {"Location": "http://localhost/api/upload/flow/" + str(upload.pk)}, # 테스트용, 꼭 지우기
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/upload/flow/" + str(upload.pk)
+                "Location": "{}://{}/api/upload/flow/{}".format(
+                    request.scheme,
+                    request.get_host(),
+                    str(upload.pk),
+                )
             }
         )
 
@@ -504,6 +507,8 @@ class DirectoryView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer=ChangeDirNameSerializer(data=request.data)
         if serializer.is_valid():
+            if not valid_dir_entry_name(request.data['name']):
+                return Response({'error' : '디렉토리 이름은 ".", ".." 일 수 없고 256자 이하여야 하며, / 가 들어갈 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
             try:
                 dir.name=request.data['name']
                 dir.save()
@@ -637,7 +642,27 @@ class FileManagementAPI(generics.GenericAPIView):
         serializer = self.serializer_class(file_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, file_id): # 파일 삭
+    def put(self, request, file_id): # 파일명 변경
+        print("file name change, user : ", request.user)
+        file_record = get_object_or_404(File, pk=file_id)
+        if not perm_check_entry_with_teams(request.user, file_record):
+            raise Http404
+
+        serializer=FileRenameSerializer(data=request.data)
+        print("req data : ", request.data);
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    file_record.name=request.data['name']
+                    file_record.save()
+                return Response({'message' : '변경 완료.'}, status=status.HTTP_200_OK)
+            except IntegrityError:
+                return Response("다른 디렉터리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요.", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            print("serhere.")
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, file_id): # 파일 삭제
         try:
             file_record = get_object_or_404(File, pk=file_id)
             if not perm_check_entry_with_teams(request.user, file_record):
@@ -647,6 +672,27 @@ class FileManagementAPI(generics.GenericAPIView):
 
         file_record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+def multi_delete(entryList, user):
+    print("multi delete!")
+    for entryID in entryList:
+        try:
+            with transaction.atomic():
+                file=get_object_or_404(File, pk=entryID)
+                if perm_check_entry_with_teams(user, file): #권한 체크. 파일 주인이거나, 공유 파일
+                    file.delete()
+
+        except(Http404):
+            with transaction.atomic():
+                directory = get_object_or_404(Directory, pk=entryID)
+                if perm_check_entry_with_teams(user, directory): #권한 체크. 파일 주인이거나, 공유 파일
+                    directory.delete()
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+class MultipleEntryAPI(generics.GenericAPIView): #여러개의 파일 혹은 디렉토리를 동시에 옮기거나, 삭제할 때 사용
+    def delete(self, request):
+        return multi_delete(list(request.data.values()), request.user)
 
 # 특정 사용자가 가지고 있는 파일들의 정보를 전부 출력한다.
 class FileListAPI(generics.GenericAPIView):
@@ -691,5 +737,3 @@ class PartialDeleteAPI(APIView): # 특정 partial file 제거, 업로드 중단�
 
         partial.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
