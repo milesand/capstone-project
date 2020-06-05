@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import threading
 
 from django.db.models import Q
 from django.conf import settings
@@ -16,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Directory, File, UserStorage, PartialUpload
+from .models import Directory, File, UserStorage, PartialUpload, RecycleEntry
 from .exceptions import NotEnoughCapacityException
 from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer
 
@@ -44,6 +45,8 @@ def perm_check_entry_with_teams(user, entry):
     Use this to check directory permission if you're treating the directory as an
     entry in some other shared directory.
     '''
+    if entry.in_recycle:
+        return False
     if entry.owner == user:
         return True
     return perm_check_dir_with_teams(user, entry.parent)
@@ -74,6 +77,8 @@ def perm_check_dir_with_teams(user, directory):
         user.leader.all().only("pk")
     )
     while directory is not None:
+        if directory.in_recycle:
+            return False
         # Owner of a directory has access to ALL subdirectories, even to ones
         # owned by someone else. Suppose you own a directory and share it, and
         # someone else creates subdirectories in it. Later you stop sharing it,
@@ -524,15 +529,178 @@ class DirectoryView(APIView):
                 {"message": "Directory not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if directory.parent is None:
+        if directory.owner.root_info.root_dir == directory:
             return Response(
                 {"message": "Cannot delete root directory"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        directory.delete()
+        if directory.in_recycle:
+            if RecycleEntry.objects.filter(entry=directory).exists():
+                directory.delete()
+            else:
+                return Response(
+                    {"message": "Directory not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        else:
+            def send_to_recycle(directory):
+                RecycleEntry.objects.create(entry=directory, former_parent=directory.parent)
+                directory.parent = None
+                def send_to_recycle_recur(directory):
+                    directory.in_recycle = True
+                    directory.save()
+                    for child in directory.children.all().select_for_update():
+                        try:
+                            child_dir = child.Directory
+                        except Directory.DoesNotExist:
+                            pass
+                        else:
+                            send_to_recycle_recur(child_dir)
+                            continue
+                        try:
+                            child_pu = child.PartialUpload
+                        except PartialUpload.DoesNotExist:
+                            pass
+                        else:
+                            child_pu.delete()
+                            continue
+                        child.in_recycle = True
+                        child.save()
+                with transaction.atomic():
+                    send_to_recycle_recur(directory)
+            
+            # Spawn a background job that marks all children as in_recycle.
+            # NOTE: Maybe pull in something like Celery and use that instead of bare threading.
+            background_job = threading.Thread(target=send_to_recycle, args=[directory])
+            background_job.setDaemon(True)
+            background_job.start()
 
         return Response(
             status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class RecycleBinView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        data = {"directories": {}, "files": {}}
+        queryset = RecycleEntry.objects.filter(entry__owner=request.user)
+        for entry in queryset:
+            try:
+                directory = entry.Directory
+            except Directory.DoesNotExist:
+                pass
+            else:
+                if directory.name not in data["directories"]:
+                    data["directories"][directory.name] = []
+                data["directories"][directory.name].append(str(directory.pk))
+                continue
+            try:
+                file_record = entry.File
+            except File.DoesNotExist:
+                pass
+            else:
+                if file_record.name not in data["files"]:
+                    data["files"][file_record.name] = []
+                data["files"][file_record.name].append(str(file_record.pk))
+                continue
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+    
+    def delete(self, request):
+        # Empty bin.
+        RecycleEntry.objects.filter(entry__owner=request.user).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class RecoverView(APIView):
+    parser_classes = (JSONParser,)
+    permission_classes = (IsAuthenticated,)
+    
+    def post(self, request):
+        if not isinstance(request.data, list) or len(request.data) == 0:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        partial_success = False
+        errors = []
+
+        for req in request.data:
+            if isinstance(req, str):
+                pk = req
+                parent = None
+            if isinstance(req, list) and len(req) == 2:
+                pk = req[0]
+                parent = req[1]
+            else:
+                errors.append({"request": req, "message": "Invalid request"})
+                continue
+                
+            try:
+                recycle_entry = RecycleEntry.objects.get(pk=pk, owner=request.user)
+            except RecycleEntry.DoesNotExist:
+                errors.append(req)
+                continue
+
+            if parent is None:
+                parent = recycle_entry.former_parent
+                if parent is None or not perm_check_dir_with_teams(request.user, parent):
+                    errors.append({"request": req, "message": "Parent directory is inaccessible"})
+                    continue
+            else:
+                try:
+                    parent = Directory.objects.get(pk=parent)
+                    if not perm_check_dir_with_teams(request.user, parent):
+                        raise Directory.DoesNotExist
+                except Directory.DoesNotExist:
+                    errors.append({"request": req, "message": "Parent directory is inaccessible"})
+                    continue
+            entry = recycle_entry.entry
+            entry.parent = parent
+            recycle_entry.delete()
+
+            try:
+                directory = entry.Directory
+            except Directory.DoesNotExist:
+                entry.in_recycle = False
+                entry.save()
+            else:
+                # Again. Celery may be better.
+                def recover_from_recycle(directory):
+                    def recover_from_recycle_recur(directory):
+                        directory.in_recycle = False
+                        directory.save()
+                        for child in directory.children.all().select_for_update():
+                            try:
+                                child_dir = child.Directory
+                            except Directory.DoesNotExist:
+                                pass
+                            else:
+                                recover_from_recycle_recur(child_dir)
+                                continue
+                            child.in_recycle = False
+                            child.save()
+                        recover_from_recycle_recur(directory)
+
+                    with transaction.atomic():
+                        recover_from_recycle_recur(directory)
+                
+                background_job = threading.Thread(target=recover_from_recycle, args=[directory])
+                background_job.setDaemon(True)
+                background_job.start()
+            
+            partial_success = True
+        
+        response_status = status.HTTP_200_OK if partial_success else status.HTTP_400_BAD_REQUEST
+        
+        return Response(
+            {"errors": errors,},
+            status=response_status
         )
 
 
@@ -643,8 +811,14 @@ class FileManagementAPI(generics.GenericAPIView):
                 raise Http404
         except(Http404):
             return Response({'error' : '파일이 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        if file_record.in_recycle:
+            file_record.delete()
+        else:
+            RecycleEntry.objects.create(entry=file_record, former_parent=file_record.parent)
+            file_record.in_recycle = True
+            file_record.parent = None
+            file_record.save()
 
-        file_record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # 특정 사용자가 가지고 있는 파일들의 정보를 전부 출력한다.

@@ -21,6 +21,7 @@ class DirectoryEntry(models.Model):
         related_name='children',
         null=True  # Root directories have no parent
     )
+    in_recycle = models.BooleanField(default=False)
 
 
     class Meta:
@@ -219,6 +220,21 @@ class PartialUpload(DirectoryEntry):
             ),
         ]
     '''
+
+
+class RecycleEntry(models.Model):
+    entry = models.OneToOneField(
+        DirectoryEntry,
+        related_name='+',
+        primary_key=True,
+        on_delete=models.CASCADE,
+    )
+    former_parent = models.ForeignKey(
+        Directory,
+        related_name='+',
+        null=True,
+        on_delete=models.SET_NULL,
+    )
 
 
 class UserStorage(models.Model):
