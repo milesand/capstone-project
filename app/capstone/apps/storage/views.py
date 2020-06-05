@@ -986,6 +986,27 @@ class FileManagementAPI(generics.GenericAPIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+def multi_delete(entryList, user):
+    print("multi delete!")
+    for entryID in entryList:
+        try:
+            with transaction.atomic():
+                file=get_object_or_404(File, pk=entryID)
+                if perm_check_entry_with_teams(user, file): #권한 체크. 파일 주인이거나, 공유 파일
+                    file.delete()
+
+        except(Http404):
+            with transaction.atomic():
+                directory = get_object_or_404(Directory, pk=entryID)
+                if perm_check_entry_with_teams(user, directory): #권한 체크. 파일 주인이거나, 공유 파일
+                    directory.delete()
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+class MultipleEntryAPI(generics.GenericAPIView): #여러개의 파일 혹은 디렉토리를 동시에 옮기거나, 삭제할 때 사용
+    def delete(self, request):
+        return multi_delete(list(request.data.values()), request.user)
+
 # 특정 사용자가 가지고 있는 파일들의 정보를 전부 출력한다.
 class FileListAPI(generics.GenericAPIView):
     serializer_class = FileSerializer

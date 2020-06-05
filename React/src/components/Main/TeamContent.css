@@ -306,7 +306,82 @@
      width:100%;
      margin-bottom:2px !important;
 }
+.search-friend {
+    display: flex !important;
+    margin-bottom: 15px !important;
+    width:99% !important;
 
+}
+.search-friend-input{
+    float:left;
+
+border-color:#ced4da;
+border-right:0px !important;
+border-bottom-left-radius: 10px !important;
+border-top-left-radius: 10px !important;
+border-top-right-radius: 0px !important;
+border-bottom-right-radius: 0px !important;
+color:#707070 !important;
+/* z-index: 2000 !important; */
+}
+
+.search-friend-input:focus{
+box-shadow:none !important;
+border-width: 2px !important;
+border-color:#929292 !important;
+color:#707070 !important;
+  }
+
+.search-friend-icon-button{
+width: 40px !important;
+/* float: right !important; */
+display: flex;
+border-color:#ced4da !important;
+border-left:0px !important;
+justify-content: center;
+align-items: center;
+border-top-right-radius: 10px !important;
+border-bottom-right-radius: 10px !important;
+border-bottom-left-radius: 0px !important;
+border-top-left-radius: 0px !important;
+margin-left:-4px !important;
+background-color: white !important;
+text-decoration:none !important;
+height: 38px !important;
+
+}
+
+.search-friend-input:focus ~ .search-friend-icon-button{
+    border-bottom-left-radius: 0px !important;
+    border-top-left-radius: 0px !important;
+  border-width: 2px !important;
+  padding:1px;
+  margin-left:-5px;
+ border-color:#929292 !important;
+}
+
+.search-friend-icon-button:hover,
+.search-friend-icon-button:focus {
+  background-color: #929292 !important;
+  border-color: #929292 !important;
+  color:white !important;
+}
+.search-friend-icon-button:hover,
+.search-friend-icon-button:focus {
+  box-shadow: none !important;
+}
+.search-friend-icon-button:active {
+  box-shadow: 0.1px 0.1px 3px gray !important;
+}
+
+
+.search-friend-icon {
+  color:gray !important;
+}
+.search-friend-icon-button:hover  .search-friend-icon,
+.search-friend-icon-button:focus  .search-friend-icon {
+  color:#ffffff !important;
+}
 
 
 
@@ -539,3 +614,7 @@
         font-weight: 500;
     }
     
+    .team-spinner{
+        margin-left:50%;
+        margin-top:17%;
+    }

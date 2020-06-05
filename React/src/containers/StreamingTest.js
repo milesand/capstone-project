@@ -6,7 +6,7 @@ export default class StreamingTest extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        url:"http://localhost/api/preview/" + this.props.fileID,
+        url:`${window.location.origin}/api/preview/${this.props.fileID}`,
         isShow: false,
         percent: 0,
     };

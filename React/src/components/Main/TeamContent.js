@@ -1,43 +1,31 @@
 import React, { useState, useEffect, Fragment } from "react";
 import classNames from "classnames";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import axios from "axios";
 import {
-  CardDeck,
+  Spinner,
   Container,
-  CardGroup,
   Input,
-  Progress,
   Button,
   Modal,
   ModalBody,
   ModalHeader,
   ModalFooter,
-  Label,
-  FormGroup,
-  Form,
   Table,
   InputGroup,
   InputGroupAddon,
 } from "reactstrap";
 import {
   BaseTable,
-  CheckBoxTd,
-  Thead,
   Tbody,
   Tr,
-  Th,
   Td,
 } from "react-row-select-table";
 import "./TeamContent.css";
-import Item from "./Item/Item";
-import MyContextMenu from "./ContextMenu/MyContextMenu";
-import SubSideBar from "../sidebar/SubSideBar/SubSideBar";
 import styled from "styled-components";
-import { Redirect } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPen,
+  faSearch
 } from "@fortawesome/free-solid-svg-icons";
 
 
@@ -129,9 +117,7 @@ const CustomTable = styled.div`
   }
 `;
 
-const TeamContent = ({props}) => {
-  console.log('team props : ', props);
-
+const TeamContent = (props) => {
   const nickname=props.nickname; //닉네임, 웹페이지 표시용
   const username=props.username; //로그인 아이디, 서버 요청용
 // Modal On/Off
@@ -146,7 +132,7 @@ const TeamContent = ({props}) => {
  
   const [myteamName, setMyTeamName] = useState(""); //만들거나 수정할 팀 이름 
   const [friendList, setFriendList] = useState([]); //현재는 전체유저리스트
-
+  const [friendName, setFriendName] = useState(""); //검색할 유저 이름 
 
   const friendChecked = []; //다수 초대할때 선택한 인덱스 
   const [currentTeamId, setCurrentTeamID] = useState(""); //초대하거나 수정할때 현재 팀id
@@ -158,14 +144,13 @@ const TeamContent = ({props}) => {
   const [memberListId, setMemberListId] = useState([]); //선택한 팀의 멤버id
   const [isLeader, setIsLeader] = useState(false); //선택한 팀이 자신이 만든팀인지 확인
   const [renameTeamCheck, setRenameTeamCheck] = useState(false); //팀 이름 변경  on/off
-
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
  
 
   useEffect(() => {
     loadTeamList();
-    loadFriendList();
   }, []);
 
   //axios config
@@ -177,21 +162,20 @@ const TeamContent = ({props}) => {
   };
 
   //팀 목록 불러오기
-  const loadTeamList = async () => {
+  const loadTeamList = () => {
     console.log("load team!");
     const tempList1 = [];
     const tempList2 = [];
     axios
-      .get("http://localhost/api/team", option)
+      .get(`${window.location.origin}/api/team`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
       .then((content) => {
         content["data"].map((team, index) => {
-
           tempList1.push(team);
         });
-        axios.get("http://localhost/api/join-team", option)
+        axios.get(`${window.location.origin}/api/join-team`, option)
           .catch(error=>{
             props.errorCheck(error.response);
           }) 
@@ -202,13 +186,14 @@ const TeamContent = ({props}) => {
             });
             const tempList3 = tempList1.concat(tempList2);
             setTeamList(tempList3);
+            setIsLoading(false);
           })
       })
       .catch((error) => props.notify(error));
   };
 
   //전체유저 불러오기
-  const loadFriendList = async () => {
+  const loadFriendList = () => {
     console.log("load team.");
     const tempList = [];
     const option = {
@@ -218,13 +203,12 @@ const TeamContent = ({props}) => {
       withCredentials: true,
     };
 
-    axios.get("http://localhost/api/users", option)
+    axios.get(`${window.location.origin}/api/users`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
       .then((content) => {
         content["data"].map((user) => {
-          console.log("유저리스트 : " + JSON.stringify(user["username"]));
           const userInfo = {
             pk: user["pk"],
             username: user["username"],
@@ -251,7 +235,7 @@ const TeamContent = ({props}) => {
     setMyTeamName(e.target.value);
   };
 
-  //팀명 변경
+  //팀 생성
   const teamAdd = () => {
     const TeamNameData = {
       team_name: myteamName,
@@ -270,9 +254,10 @@ const TeamContent = ({props}) => {
       props.notify("이름을 입력하세요.");
       setMyTeamName("");
     } else {
-      axios.post("http://localhost/api/team", body, option)
+      axios.post(`${window.location.origin}/api/team`, body, option)
         .catch(error=>{
           props.errorCheck(error.response);
+          if(error.response.status>=400) throw Error(error.response.data['error']);
         }) 
         .then((content) => {
           console.log(content);
@@ -298,9 +283,20 @@ const TeamContent = ({props}) => {
     setTeamInviteModal(!teamInviteModal);
   };
 
+  //사용자 키워드 검색
+  const friendSearch = (name) => {
+    if(name=='') return;
+    if(typeof(name)=='object') name=friendName;
+    console.log("search name : ", name);
+    axios.get(`${window.location.origin}/api/search-user/${currentTeamId}/${name}`,option) //검색버튼 안눌러도 즉각적으로 결과보여주기
+    .then(content => { 
+      setFriendList(content.data);
+    })
+  }
+
   //팀 초대
   const teamInvite = () => {
-
+    console.log("here!, frendChecked : ", friendChecked);
     for (let i = 0; i < friendChecked[0].length; i++) {
       const option = {
         headers: {
@@ -312,15 +308,17 @@ const TeamContent = ({props}) => {
       const userName = {
         username: friendList[friendChecked[0][i]]["username"],
       };
-      console.log(friendList[friendChecked[0][i]]["username"]);
+      console.log('invite check, ', friendList[friendChecked[0][i]]["username"]);
       const body = JSON.stringify(userName);
       axios.put(
-          `http://localhost/api/team/${currentTeamId}/invitation`,
+          `${window.location.origin}/api/team/${currentTeamId}/invitation`,
           body,
           option
         )
         .catch(error=>{
-          props.errorCheck(error.response);
+          console.log("error : ", error.response.status);
+          props.errorCheck(error.response, error.response.data['error']);
+          if(error.response.status>=400) throw Error(error.response.data['error']);
         }) 
         .then((content) => {
           console.log("invitation : " + JSON.stringify(content));
@@ -338,10 +336,14 @@ const TeamContent = ({props}) => {
     setTeamInviteModal(!teamInviteModal);
   };
 
+  const onChangeFriendName = (e) => { //검색용
+    setFriendName(e.target.value);
+    friendSearch(e.target.value);
+  };
 
   //선택한 유저 저장
   const friendOnCheck = (value) => {
-    console.log(value);
+    console.log('select val : ', value, ', friend check list : ', friendChecked);
     friendChecked.pop();
     friendChecked.push(value);
     console.log(friendChecked[0]);
@@ -361,7 +363,7 @@ const TeamContent = ({props}) => {
     console.log("팀 id : " + e.target.value);
     console.log("팀 이름 : " + e.target.name);
 
-    axios.get(`http://localhost/api/team-management/${e.target.value}`, option)
+    axios.get(`${window.location.origin}/api/team-management/${e.target.value}`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
@@ -408,7 +410,7 @@ const TeamContent = ({props}) => {
       credentials: "include",
     };
     console.log("현재 팀 id : " + currentTeamId);
-    axios.put(`http://localhost/api/team/${currentTeamId}/secession`, null, option)
+    axios.put(`${window.location.origin}/api/team/${currentTeamId}/secession`, null, option)
     .catch(error=>{
       props.errorCheck(error.response);
     }) 
@@ -433,7 +435,7 @@ const TeamContent = ({props}) => {
       withCredentials: true,
       credentials: "include",
     };
-    axios.delete(`http://localhost/api/team-management/${currentTeamId}`, option)
+    axios.delete(`${window.location.origin}/api/team-management/${currentTeamId}`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
@@ -460,7 +462,7 @@ const TeamContent = ({props}) => {
     };
 
     axios.put(
-        `http://localhost/api/team-management/${currentTeamId}`,
+        `${window.location.origin}/api/team-management/${currentTeamId}`,
         data,
         option
       )
@@ -475,10 +477,22 @@ const TeamContent = ({props}) => {
     setRenameTeamCheck(!renameTeamCheck);
   };
 
+  const onChangeSearchKeyword=(e)=>{
+    setSearchKeyword(e.target.value);
+  }
 
-
-
-
+  const submitKeyword=()=>{
+    console.log("submit keyword, team ID : ", currentTeamId, ', keyword : ', searchKeyword);
+    let url=`${window.location.origin}/api/${currentTeamId}/${searchKeyword}`;
+    axios.get(url, option)
+    .catch(error=>{
+      props.errorCheck(error.response);
+    }) 
+    .then((content) => {
+      console.log("content : ", content);
+    })
+    .catch((error) => props.notify(error));
+  }
 
   return (
     <Fragment>
@@ -494,7 +508,7 @@ const TeamContent = ({props}) => {
             isOpen={teamAddModal}
             toggle={teamAddToggle}
             className="team-add-modal"
-            backdrop="static">
+          >
             <ModalHeader className="team-add-header">팀 생성</ModalHeader>
             <ModalBody className="team-add-body">
               <span className="team-add-name">팀 이름 : </span>
@@ -520,19 +534,29 @@ const TeamContent = ({props}) => {
             </ModalFooter>
           </Modal>
 
-          {/* 팀초대 */}
-          <Modal
-            isOpen={teamInviteModal}
-            toggle={teamInviteToggle}
-            className="team-invite-modal"
-            backdrop="static">
-            <ModalHeader className="modal-header">친구 목록</ModalHeader>
+            <Modal
+              isOpen={teamInviteModal}
+              toggle={teamInviteToggle}
+              className="team-invite-modal"
+              backdrop="static">
+            <ModalHeader className="modal-header">사용자 검색</ModalHeader>
             <ModalBody>
-              {/* <Input
-                type="text"
-                placeholder=""
-                onChange={onChangeTeamName}
-                className="team-add-text"/> */}
+            <div className="search-friend">
+                  <InputGroup>
+                    <Input
+                      className="search-friend-input"
+                      onChange={onChangeFriendName}
+                      value={friendName}/>
+
+                    <InputGroupAddon>
+                      <Button
+                        className="search-friend-icon-button"
+                        onClick={friendSearch}>
+                        <FontAwesomeIcon icon={faSearch} className="search-friend-icon" />
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  </div>
               <CustomTable>
                 <BaseTable onCheck={friendOnCheck}>
                   <Tbody className="friend-list-body">
@@ -572,7 +596,7 @@ const TeamContent = ({props}) => {
             isOpen={teamModifyModal}
             toggle={teamModifyToggle}
             className="team-modify-modal"
-            backdrop="static">
+          >
             <ModalHeader>팀 정보 수정</ModalHeader>
             <ModalBody>
               <div className="team-rename ">
@@ -679,7 +703,7 @@ const TeamContent = ({props}) => {
             isOpen={teamLeaveModal}
             toggle={teamLeaveToggle}
             className="team-leave-modal"
-            backdrop={false}>
+          >
             <ModalBody className="team-leave-text">팀을 탈퇴합니다</ModalBody>
             <ModalFooter className="modal-footer">
               <Button
@@ -705,7 +729,7 @@ const TeamContent = ({props}) => {
             isOpen={teamDeleteModal}
             toggle={teamDeleteToggle}
             className="team-leave-modal"
-            backdrop={false}>
+          >
             <ModalBody className="team-leave-text">팀을 삭제합니다. </ModalBody>
             <ModalFooter className="modal-footer">
               <Button
@@ -737,51 +761,54 @@ const TeamContent = ({props}) => {
 
 
         {/* 팀 테이블 */}
-        <div className="team-table">
-          <Table hover className="team-list">
-            <tbody className="team-table-body">
-              <tr>
-                <th />
-                <th>이름</th>
-                <th>인원</th>
-                <th>팀장</th>
-                <th className="thd-share">공유폴더수</th>
-                <th className="thd-buttons" />
-              </tr>
+          <div className="team-table">
+            <Table hover className="team-list">
+              <tbody className="team-table-body">
+                <tr>
+                  <th />
+                  <th>이름</th>
+                  <th>인원</th>
+                  <th>팀장</th>
+                  <th className="thd-share">공유폴더수</th>
+                  <th className="thd-buttons" />
+                </tr>
+                {isLoading ?
+                  <Spinner size='lg' color='primary' className='team-spinner'/>
+                :
+                teamList.map((team, index) => {
+                  return (
+                    <tr className="team-item" key={index}>
+                      <th scope="row">{index + 1}</th>
+                      <td>{team["team_name"]}</td>
+                      <td>{team["member_list"].length + 1}</td>
+                      <td>{team["team_leader_nickname"]}<br/>({team["team_leader"]})</td> 
+                      <td className="thd-share">{team["share_folders"].length}</td>
+                      <td className="team-table-button thd-buttons">
+                        {team["team_leader"] == username && (
+                          <Button
+                            onClick={(e) => teamInviteToggle(e)}
+                            className="team-invite-button"
+                            value={team["_id"]}
+                            name={team["team_name"]}>
+                            초대
+                          </Button>
+                        )}
 
-              {teamList.map((team, index) => {
-                return (
-                  <tr className="team-item" key={index}>
-                    <th scope="row">{index + 1}</th>
-                    <td>{team["team_name"]}</td>
-                    <td>{team["member_list"].length + 1}</td>
-                    <td>{team["team_leader_nickname"]}<br/>({team["team_leader"]})</td> 
-                    <td className="thd-share">{team["share_folders"].length}</td>
-                    <td className="team-table-button thd-buttons">
-                      {team["team_leader"] == username && (
                         <Button
-                          onClick={(e) => teamInviteToggle(e)}
-                          className="team-invite-button"
+                          onClick={teamModify}
+                          className="team-modify-button"
                           value={team["_id"]}
                           name={team["team_name"]}>
-                          초대
+                          수정
                         </Button>
-                      )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
 
-                      <Button
-                        onClick={teamModify}
-                        className="team-modify-button"
-                        value={team["_id"]}
-                        name={team["team_name"]}>
-                        수정
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        </div>
       </Container>
     </Fragment>
   );

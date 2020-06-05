@@ -29,7 +29,7 @@ export default class ForgotID extends Component{
             email: this.state.email
         }
     
-        fetch("http://localhost/api/forgot", {
+        fetch(`${window.location.origin}/api/forgot`, {
           method: "POST",
           headers: {
             'Content-Type' : 'application/json',

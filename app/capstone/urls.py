@@ -61,15 +61,14 @@ api = [
     # 썸네일
     path("thumbnail/<str:file_id>", storage.ThumbnailAPI.as_view()),
 
-    # 디렉토리 생성
-    path('mkdir', storage.CreateDirectoryView.as_view()),
+    # 디렉토리 관련 기능
+    path('mkdir', storage.CreateDirectoryView.as_view()), # 디렉토리 생성
+    re_path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()), #리 특정 디렉토리 관
 
-    # 디렉토리 정보
-    re_path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()),
-
-    # 파일 정보 출력
-    path('file/<str:file_id>', storage.FileManagementAPI.as_view()),
-    path('file-list', storage.FileListAPI.as_view()),
+    # 파일 관련 기능
+    path('file/<str:file_id>', storage.FileManagementAPI.as_view()), # 파일 정보 출력
+    path('multi-entry', storage.MultipleEntryAPI.as_view()),
+    path('file-list', storage.FileListAPI.as_view()), # 사용자가 저장중인 전체 파일 출력, 테스트용
     path('partial', storage.PartialAPI.as_view()),  # partial file 목록 출력 및 전체 제거, 테스트용
     re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
     re_path('preview/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 이미지 및 동영상 미리보기에 사용하는 URL

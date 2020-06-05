@@ -33,14 +33,14 @@ export default class ProfileCotnent extends Component{
         let message="", url="", data={};
         if(this.state.isSocialAccount){
             message="이메일주소가 일치하지 않습니다.";
-            url="http://localhost/api/check-email";
+            url=`${window.location.origin}/api/check-email`;
             data={
                 email: this.state.email
             }
         }
         else{
             message="비밀번호가 일치하지 않습니다.";
-            url="http://localhost/api/check-password";
+            url=`${window.location.origin}/api/check-password`;
             data={
                 password: this.state.password
             }
@@ -78,7 +78,7 @@ export default class ProfileCotnent extends Component{
             phone_num: phone_num,
             nickname: nickname
         }
-        fetch("http://localhost/api/user", {
+        fetch(`${window.location.origin}/api/user`, {
             method: "PUT",
             headers: {
                 'Content-Type' : 'application/json',
@@ -132,7 +132,7 @@ export default class ProfileCotnent extends Component{
             'password' : this.state.password
         }
         if(this.state.withdrawalText=='지금탈퇴'){
-            fetch('http://localhost/api/user', {
+            fetch(`${window.location.origin}/api/user`, {
                 method: "DELETE",
                 headers:{
                     'Content-Type' : 'application/json'

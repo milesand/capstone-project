@@ -133,7 +133,7 @@ export default class Signup extends Component {
       is_mail_authenticated: false,
     };
     this.props.toggleLoadingState(); // App.js의 isLoading state를 true로 변경
-    fetch('http://localhost/api/registration', {
+    fetch(`${window.location.origin}/api/registration`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -167,7 +167,7 @@ export default class Signup extends Component {
           password: this.state.password
         }
         // 서버로부터 새로운 access token 발급받아 로그인 상태로 전환
-        fetch('http://localhost/api/jwt-login', {
+        fetch(`${window.location.origin}/api/jwt-login`, {
           //보통 fetch는 쿠키를 보내거나 받지 않는다. 쿠키를 전송하거나 받기 위해서는 credentials 옵션을 반드시 설정해야 한다.
           method: 'POST',
             headers: {

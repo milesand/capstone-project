@@ -7,10 +7,8 @@ import {faFile,faFolder} from "@fortawesome/free-solid-svg-icons";
 import "./SubSideBar.css";
 
 const SubSideBar = (props) => {
-  // console.log("subsidebar props :"+JSON.stringify(props))
   const {uploadDate,size,name,pk,thumbnailUrl,type,subfolderNum,fileNum} = props;
   const [update,setUpdate]=useState({});
-  console.log("subbar, size : ", props.size);
   let sizeText="";
 
   if(size>Math.pow(1024, 3)){ //GB
