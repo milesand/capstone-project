@@ -170,10 +170,13 @@ class FlowUploadStartView(APIView):
             )
 
         return Response(
-            {"Location": "http://localhost/api/upload/flow/" + str(upload.pk)}, # 테스트용, 꼭 지우기
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/upload/flow/" + str(upload.pk)
+                "Location": "{}://{}/api/upload/flow/{}".format(
+                    request.scheme,
+                    request.get_host(),
+                    str(upload.pk),
+                )
             }
         )
 
@@ -372,7 +375,11 @@ class FlowUploadChunkView(APIView):
                 {'id': str(file_record.pk)},
                 status=status.HTTP_201_CREATED,
                 headers={
-                    "Location": "/api/file/" + str(file_record.pk)
+                    "Location": "{}://{}/api/file/{}".format(
+                        request.scheme,
+                        request.get_host(),
+                        str(file_record.pk)
+                    )
                 },
             )
 
@@ -434,10 +441,13 @@ class CreateDirectoryView(APIView):
             )
 
         return Response(
-            {"Location": "/api/directory/" + str(directory_record.pk)}, #로컬 테스트용, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
-                "Location": "/api/directory/" + str(directory_record.pk)
+                "Location": "{}://{}/api/directory/{}".format(
+                    request.scheme,
+                    request.get_host(),
+                    str(directory_record.pk)
+                )
             }
         )
 
