@@ -44,10 +44,6 @@ from datetime import datetime
 from django.contrib.auth import authenticate
 import jwt, calendar
 
-# Create your views here.
-
-hostIP = 'localhost'
-
 
 # 클라이언트에서 보내준 JWT 토큰을 해독하여 사용자를 식별한다.
 def decodeJWTToken(token):
@@ -78,7 +74,7 @@ class ResendMailAPI(generics.GenericAPIView):
         user = request.user
         message = render_to_string('account/user_active_email.html', {
             'username': user.username,
-            'domain': hostIP,
+            'domain': request.get_host(),
             'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
             'token': account_activation_token.make_token(user)
         })
@@ -123,7 +119,7 @@ class RegistrationAPI(generics.GenericAPIView):
             if UserSerializer(user)['is_mail_authenticated'].value == False:
                 message = render_to_string('account/user_active_email.html', {
                     'username': user.username,
-                    'domain': hostIP,
+                    'domain': request.get_host(),
                     'uid': urlsafe_base64_encode(force_bytes(user.pk)).encode().decode(),
                     'token': account_activation_token.make_token(user)
                 })
