@@ -11,7 +11,7 @@ export default class CustonFileBrowser extends Component{
     super(props);
     this.state={
       rootDirID: this.props.rootDirID,
-      currentPath: '/',
+      currentPath: this.props.curFolderPath,
       notify: this.props.notify,
       files: [
         {
@@ -114,6 +114,7 @@ export default class CustonFileBrowser extends Component{
       this.setState({
         currentPath: newPath
       })
+      this.props.loadFilesNFolders('', this.props.curFolderID);
     })
     .catch(e=>this.state.notify(e));
   }
@@ -127,10 +128,11 @@ export default class CustonFileBrowser extends Component{
     }
     return false;
   }
+
   handleCreateFolder = (key) => { //디렉토리 만들기 기능
+    console.log("key : ", key);
     if(key.substr(0, 4)!=='root'){ //최상위 폴더가 루트 디렉터리가 아닌 경우
-      this.state.notify('root 폴더 아래에만 폴더 생성이 가능합니다.');
-      return;
+      key='root/' + key;
     }
     if(this.isDuplicated(key)){
       this.state.notify("현재 폴더 안에 동일한 이름을 가진 폴더가 존재합니다.");
@@ -139,7 +141,6 @@ export default class CustonFileBrowser extends Component{
 
     console.log("here!!!, key : ", key);
     let url="http://localhost/api/mkdir";
-    console.log("url : ", url);
     let folders=key.split('/'); //폴더명에 특문 못쓰게 해야함.
     let name=folders[folders.length-2], parent="/";
 
@@ -151,7 +152,7 @@ export default class CustonFileBrowser extends Component{
       "parent" : parent,
       'name' : name
     }
-
+    console.log("parent : ", parent, ', name : ', name);
     fetch(url, {
       method: "POST",
       headers: {
@@ -177,7 +178,7 @@ export default class CustonFileBrowser extends Component{
           }])
           return state
         })
-        
+        this.props.loadFilesNFolders('', this.props.curFolderID);
     })
     .catch(e=>this.state.notify(e));
   }
@@ -185,6 +186,10 @@ export default class CustonFileBrowser extends Component{
   handleRenameFolder = (oldKey, newKey) => { //폴더 이름 변경
     if(this.isDuplicated(newKey)){
       this.state.notify("현재 폴더 안에 동일한 이름을 가진 폴더가 존재합니다.");
+      return;
+    }
+    if(oldKey=='root/'){
+      this.state.notify("root 폴더의 이름은 변경할 수 없습니다.");
       return;
     }
     let url="", names=newKey.split('/');
@@ -257,7 +262,6 @@ export default class CustonFileBrowser extends Component{
     for(let i in folderKey){
       this.setState(state => {
         state.files = state.files.filter(file=>file.key.substr(0, folderKey[i].length) !== folderKey[i]);
-        console.log("into directory setState, files : ", state.files);
         return state
       });
     }

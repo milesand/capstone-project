@@ -38,17 +38,18 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                             name="withdrawalText"
                             id='withdrawalText'
                             value={withdrawalText} 
-                            onChange={valChange}/>
-                            <InputGroupAddon addonType='append'>
-                                <Button 
-                                    outline 
-                                    className="profile-button"
-                                    onClick={processWithdrawal}
-                                >
-                                입력
-                                </Button>
-                            </InputGroupAddon>
-                        </InputGroup>
+                            onChange={valChange}
+                        />
+                        <InputGroupAddon addonType='append'>
+                            <Button 
+                                outline 
+                                className="profile-button"
+                                onClick={processWithdrawal}
+                            >
+                            입력
+                            </Button>
+                        </InputGroupAddon>
+                    </InputGroup>
                 </ModalBody>
                 <ModalFooter>
                 <Button outline color="primary" onClick={toggle} className="close-button">닫기</Button>
@@ -57,7 +58,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
 
             {/*profile*/}
             {isValueConfirmed ? 
-                    username && nickname &&
+                    username &&
                         <div className='wrapper fadeInDown profile-board info'>
                             <div className='profile-headText'>프로필</div>
                             <hr className='profile-board-hr'></hr>

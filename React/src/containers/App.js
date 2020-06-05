@@ -1,6 +1,6 @@
 import React, { Component, Fragment} from "react";
 import { withRouter } from "react-router-dom"; //로그아웃 했을 때 로그인 화면으로 리다이렉션하기 위해 import
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; //토스트 알림을 위한 css
 import Toast from './Toast';
 
@@ -189,6 +189,18 @@ class App extends Component {
     Toast.info(message);
   };
 
+  showRemainingTime=(flow)=>{
+    console.log('remaining time!!! : ', flow);
+    let msg='';
+    if(flow.files.length==1){
+      msg=flow.files[0].name + ' 다운로드중...';
+    }
+    else{
+      msg='파일 ' + flow.files.length+'개 다운로드중...';
+    }
+    Toast.uploadTimeRemaining(msg, flow.timeRemaining());
+  }
+
   errorCheck=(response, message="서버 에러 발생!")=>{
     console.log("error check, state : ", this.state);
     if(response.status==401){
@@ -217,7 +229,8 @@ class App extends Component {
       toggleLoadingState: this.toggleLoadingState,
       errorCheck: this.errorCheck,
       logout: this.logout,
-      notify: this.notify
+      notify: this.notify,
+      showRemainingTime: this.showRemainingTime
     };
 
     console.log("base test.", baseProps);

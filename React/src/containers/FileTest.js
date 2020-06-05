@@ -215,10 +215,7 @@ export default class FileTest extends Component { //export default : 다른 모�
                                                                    // 거기에서 이름을 가져오면 됨.
       }
 
-      console.log('content : ', content);
       const readableStream=content.body;
-      console.log("start!!!");
-      console.log('readableStream : ', readableStream);
       console.log(window.WritableStream);
       console.log(readableStream.pipeTo);
       if(window.WritableStream && readableStream.pipeTo){

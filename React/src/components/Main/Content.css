@@ -61,6 +61,7 @@
  
   
   .current-items {
+    min-height: 170px;
     margin-left:0px !important;
     margin-right:0px !important;
     margin-bottom: 60px;
@@ -84,11 +85,21 @@
   }
 
   .close-button{
+    background-color: #4f6ad4;
     width : 200px;
    }
 
   .modal-head{
-     margin-left: 0%;
+     margin-left: -15%;
      font-size: 25px;
-     min-width: 1000px;
+     width: 500px;
    }
+
+  .selectable-selectbox {
+      background-color: #7ba9ff !important;
+      opacity: 50% !important;
+  }
+
+  .file-spinner{
+      margin: auto;
+  }

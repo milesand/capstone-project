@@ -78,7 +78,7 @@ export default class Login extends Component { //export default : 다른 모듈�
                                      content.username, 
                                      content.nickname, 
                                      content.email, 
-                                     content.rootDir
+                                     content.root_info.root_dir
                                      );
           this.props.history.push('/');
         }).catch(e=>this.props.notify(e))
@@ -116,7 +116,7 @@ export default class Login extends Component { //export default : 다른 모듈�
                                  content.username, 
                                  content.nickname, 
                                  content.email, 
-                                 content.rootDir
+                                 content.root_info.root_dir
                                  );
       this.props.history.push('/');
     }).catch(e=>this.props.notify(e))

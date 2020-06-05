@@ -103,9 +103,9 @@ export default class Home extends Component {
       }) 
       .then(content => {
         console.log('Name team, content : ', content);
-        nameArr.push(content['data']['teamName']);
-        leaderArr.push(content['data']['teamLeader']);
-        leaderNickArr.push(content['data']['teamLeaderNick']);
+        nameArr.push(content['data']['team_name']);
+        leaderArr.push(content['data']['team_leader']);
+        leaderNickArr.push(content['data']['team_leader_nickname']);
       })
     }
     this.setState({
@@ -171,10 +171,8 @@ export default class Home extends Component {
                            component={ProfileContent}
                            checkUserState={this.checkUserState}
                            props={this.props} />
-       <Route
-        path={`${this.props.match.path}team`}    
-        render={() => <TeamContent props={this.props} />}/>      
-       <Route component={ErrorPage}></Route>
+
+       <AuthenticatedRoute path={`${this.props.match.path}team`}  props={this.props} component={TeamContent }/>
        </Switch>
        {/* <Content /> */}
 
@@ -188,62 +186,3 @@ export default class Home extends Component {
     );
   }
 }
-// import React, { useState, useEffect } from "react";
-// import { BrowserRouter as Router } from "react-router-dom";
-// import "bootstrap/dist/css/bootstrap.min.css";
-
-
-// import SideBar from "../components/sidebar/SideBar/SideBar";
-// import Content from "../components/content/Content";
-// import SubSideBar from "../components/sidebar/SubSideBar/SubSideBar";
-// import MyNavbar from "../components/content/MyNavBar/MyNavbar";
-// import "./Home.css";
-// import {
-//    Container
-// } from "reactstrap";
-
-//  const Home = () => {
-//   const [sidebarIsOpen, setSidebarOpen] = useState(true);
-//   const toggleSidebar = () => setSidebarOpen(!sidebarIsOpen);
-
-//   const [isOpen, setIsOpen] = useState(false);
-//   const toggle = () => setIsOpen(!isOpen);
-
-//   const [profile,setProfile] = useState([]);
-
-//   useEffect(()=> {
-
-//     fetch('http://localhost/api/user', {
-//       method: "GET",
-//       credentials: 'include',
-//     })
-//     .then(res => res.json())
-//     .then(content => {
-//       console.log('json test.');
-//       console.log(content);
-//       setProfile(content);
-//     })
-//     .catch(error => alert(error));
-// });
-//   return (
-      
-//       <div className="App">
-//       <SideBar toggle={toggleSidebar} isOpen={sidebarIsOpen} />
-//       <Container fluid>
-//       <MyNavbar isOpen={sidebarIsOpen}>
-//          {/* { profile['username'] && 
-//           <h3>안녕하세요, {profile['nickname']}님.</h3>} */}
-//       </MyNavbar>
-     
-//       <Container fluid className="content-wrapper" >
-//       <Content toggleSidebar={toggleSidebar} sidebarIsOpen={sidebarIsOpen}/>
-//       <SubSideBar></SubSideBar>
-//       </Container>
-     
-//       </Container>
-    
-//       </div>
-//   );
-// };
-
-// export default Home;
