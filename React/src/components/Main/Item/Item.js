@@ -11,66 +11,55 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile,faFolder } from "@fortawesome/free-solid-svg-icons";
 import {
   Card,
-  CardBody,
-  Button,
-  CardTitle,
   CardText,
-  CardImg,
-  CardDeck,
-  Container,
-  CardGroup,
+  Input,
 } from "reactstrap";
 import "./Item.css";
 import classNames from "classnames";
 import PreviewModal from '../../Modal/PreviewModal/PreviewModal'
 
 const Item = (props) => {
-  const { showFileInfo, pk, thumbnailUrl, isVideo, itemType, name, index, rootPk, loadFilesNFolders} = props;
+  const { showFileInfo, pk, thumbnailUrl, itemType, curName,
+          name, index, loadFilesNFolders, isMultiCheck, isRename, 
+          togglePreviewModal, newName, onChangeNewName, submitNewName} = props;
 
   const { selectableRef, isSelected, isSelecting } = props;
-
   const [toggle, setToggle]=useState(false);
-  console.log("item, pk : ", pk, ', root pk : ', rootPk);
   useEffect(
     () => {
-      if (isSelected) showFileInfo(index);
+      if (isSelected){
+        console.log('rename : ', isRename);
+        showFileInfo(index);
+      }
     },
     [isSelected]
   );
 
-  const togglePreviewModal=()=>{
-      setToggle(!toggle);
+  const openPreviewModal=()=>{
+      console.log("here!!!, host : ", window.location.host);
+
+      togglePreviewModal();
   };
 
   const handleDirDoubleClick=()=> {
-    // console.log("current pk :"+pk);
-    // console.log("root pk :"+rootPk);
     loadFilesNFolders(name, pk);
-    /*if(rootPk==pk)
-      props.history.push('/');
-    else {
-      props.history.push(`/directory/${pk}`,{pk});   
-    }*/
   }
-
+  
   return (
     <div ref={selectableRef} className="tick">
-      {isSelected && <PreviewModal 
-          isOpen={toggle} 
-          toggle={togglePreviewModal} 
-          fileName={name}
-          fileID={pk}
-          hasThumbnail={thumbnailUrl}
-          isVideo={isVideo}
-        />
-      }
-      <ContextMenuTrigger id={itemType=='file' ? "contextMenuFileID" : "contextMenuDirID"}>
+      <ContextMenuTrigger id={isMultiCheck 
+                              ? itemType=='file' 
+                                ? 'contextMenuMultiFileID'
+                                : 'contextMenuMultiFolderID'
+                              : itemType=='file' 
+                                ? "contextMenuFileID" 
+                                : "contextMenuDirID"}>
         <Card
           body
           outline
           onContextMenu={()=>showFileInfo(index)}
           className={classNames("item", { "item-selected": isSelected },{"item-selecting":isSelecting})}
-          onDoubleClick={itemType=='file' ? togglePreviewModal : handleDirDoubleClick}
+          onDoubleClick={itemType=='file' ? openPreviewModal : handleDirDoubleClick}
           tabIndex="0"
         >
           <div className="item-image">
@@ -82,9 +71,19 @@ const Item = (props) => {
            
           </div>
           <span className="item-divider" />
+          {curName==name&&isRename ? 
+              <Input 
+                onKeyPress={submitNewName}
+                className='item-rename-box'
+                value={newName}
+                onChange={onChangeNewName}
+                autoFocus
+              />
+              :
             <div className="item-text">
-              <CardText className="item-name">{name.length>15 ? name.substr(0, 15) + '...' : name}</CardText>
+                <CardText className="item-name">{name.length>15 ? name.substr(0, 15) + '...' : name}</CardText>
             </div>
+            }
         </Card>
       </ContextMenuTrigger>
     </div>

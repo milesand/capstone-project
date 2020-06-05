@@ -17,10 +17,10 @@ import {
     Spinner
   } from "reactstrap";
 
-const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo, handleDownload})=>{
-    let url="http://localhost/api/preview/" + fileID;
+const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo})=>{
+    console.log("preview props : ", isOpen, toggle, fileName, fileID, hasThumbnail, isVideo);
+    let url=`${window.location.origin}/api/preview/${fileID}`;
     //let url='/images/35536e8e-4f0d-4b43-a78a-7c12d8787c5c.jpg';
-    console.log('previewModal, : ', fileName, fileID);
 
     const download=()=>{
         CustomDownload(fileName, fileID);

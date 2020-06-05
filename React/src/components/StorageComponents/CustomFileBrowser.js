@@ -27,7 +27,7 @@ export default class CustonFileBrowser extends Component{
   getDirectoryInfo(key, folderID){
     if(!this.state.isCheck.includes(folderID)){ //폴더 정보 불러온 적이 없을 경우
       console.log("info get, key : ", key, ", folder ID : ", folderID);
-      let url="http://localhost/api/directory/" + folderID;
+      let url=`${window.location.origin}/api/directory/${folderID}`;
 
       let errorCheck=(response)=>{
         console.log("response : ", response);
@@ -94,7 +94,7 @@ export default class CustonFileBrowser extends Component{
     }
   }
 
-  deleteFileOrDirectory=(url, type)=>{
+  deleteFileOrDirectory=(url)=>{
 
     fetch(url, {
       method: "DELETE",
@@ -140,7 +140,7 @@ export default class CustonFileBrowser extends Component{
     }
 
     console.log("here!!!, key : ", key);
-    let url="http://localhost/api/mkdir";
+    let url=`${window.location.origin}/api/mkdir`;
     let folders=key.split('/'); //폴더명에 특문 못쓰게 해야함.
     let name=folders[folders.length-2], parent="/";
 
@@ -162,14 +162,14 @@ export default class CustonFileBrowser extends Component{
       body: JSON.stringify(data)
     })
     .then(this.props.errorCheck)
-    .then(res=>res.json())
+    //.then(res=>res.json()) 개발용
     .then(content=>{
         this.setState({
           currentPath:parent+name+'/'
-        }, ()=>this.props.changeUploadPath(this.state.currentPath));
+        }, ()=>this.props.changePath(this.state.currentPath));
         
         console.log("create complete!, content : ", content);
-        let urlPart=content.Location.split('/');
+        let urlPart=content.headers.get('Location').split('/');
         let id=urlPart[urlPart.length-1];
         this.setState(state => {
           state.files = state.files.concat([{
@@ -200,7 +200,7 @@ export default class CustonFileBrowser extends Component{
     console.log('oldkey : ', oldKey, "newKey : ",names[names.length-2]);  
     for(let i in this.state.files){
       if(this.state.files[i].key===oldKey){
-        url="http://localhost/api/directory/" + this.state.files[i].id;
+        url=`${window.location.origin}/api/directory/${this.state.files[i].id}`;
         break;
       }
     }
@@ -247,7 +247,7 @@ export default class CustonFileBrowser extends Component{
         return;
       }
       console.log("folderKey : ", folderKey, folderKey.length);
-      let url="http://localhost/api/directory/";
+      let url=`${window.location.origin}/api/directory/`;
       this.state.files.map((file) => {
         if(file.key === folderKey[i]){
           console.log("matching here, key : ", file.key);
@@ -255,7 +255,7 @@ export default class CustonFileBrowser extends Component{
         }
       })
 
-      this.deleteFileOrDirectory(url, 'directory');
+      this.deleteFileOrDirectory(url);
     }
 
     //console.log("final new files : ", newFiles);
@@ -274,7 +274,7 @@ export default class CustonFileBrowser extends Component{
     }
     let newFiles = []
     for(let i in fileKey){
-      let url="http://localhost/api/file/";
+      let url=`${window.location.origin}/api/file/`;
       this.state.files.map((file) => {
         if(file.key === fileKey[i]){
           console.log("matching here, key : ", file.key);
@@ -282,7 +282,7 @@ export default class CustonFileBrowser extends Component{
         }
       })
 
-      this.deleteFileOrDirectory(url, 'file');
+      this.deleteFileOrDirectory(url);
     }
 
     /*this.state.files.map((file) => {
@@ -312,7 +312,7 @@ export default class CustonFileBrowser extends Component{
     console.log("files : ", this.state.files);
     let path=e['key'].substr(4);
     console.log("current path : ", path);
-    this.props.changeUploadPath(path); //현재 클릭중인 디렉토리에 맞춰서 업로드 경로 변경
+    this.props.changePath(path); //현재 클릭중인 디렉토리에 맞춰서 업로드 경로 변경
     this.setState({
       currentPath: path
     });
@@ -338,7 +338,7 @@ export default class CustonFileBrowser extends Component{
   }
   
   myMultipleDeletionRenderer=(e)=>{
-    console.log("on delete, e : ", e);
+    console.log("on multi delete, e : ", e);
     return(
       <Fragment>
         <Button outline color='danger ' onClick={e.handleDeleteSubmit} className='delete-button'>삭제</Button>
@@ -364,7 +364,7 @@ export default class CustonFileBrowser extends Component{
                         confirmDeletionRenderer={this.myDeletionRenderer}
                         confirmMultipleDeletionRenderer={this.myMultipleDeletionRenderer}
             />
-            <h5>업로드 경로 : {this.state.currentPath}</h5>
+            <h5>{this.props.guideText} : {this.state.currentPath}</h5>
             </div>
           </Fragment>
       );

@@ -1,9 +1,6 @@
-import React, { Component, Fragment, forwardRef } from "react";
 import streamSaver from 'streamsaver';
 
-//업로드, 다운로드 테스트
 const CustomDownload=(fileName, fileID)=>{
-    console.log("download, fileName : ", fileName, ', id : ', fileID);
     let fileStream=null;
 
     let errorCheck = response =>{
@@ -15,17 +12,13 @@ const CustomDownload=(fileName, fileID)=>{
     }
 
     let data={};
-    let i=1;
     let idSplit=fileID.split(' ');
-    console.log("id : ", fileID, "idSplit : ", idSplit);
     for(let id in idSplit){
-      console.log('id : ', idSplit[id]);
-      data['file' + String(i)] = idSplit[id];
-      i++;
+      data['file' + String(Number(id)+1)] = idSplit[id];
     }
     console.log('data : ', data);
 
-    fetch("http://localhost/api/download", {
+    fetch(`${window.location.origin}/api/download`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',
@@ -34,6 +27,7 @@ const CustomDownload=(fileName, fileID)=>{
       credentials: 'include'
 
     })
+    .then(errorCheck)
     .then(content=>{
       console.log("download, content : ", content);
       if(idSplit.length>1){ // 파일 여러 개, 압축 파일 이름 downloadFiles.zip으로 통일

@@ -84,3 +84,7 @@
   .item-selecting {
     border-color: #6276e9 !important;
   }
+
+  .item-rename-box {
+    height:25px !important;
+  }

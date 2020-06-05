@@ -11,7 +11,7 @@ export default class ThumbTest extends Component { //export default : 다른 모
       videoThumbURL:""
     };
 
-    fetch('http://localhost/api/thumb2', {
+    fetch(`${window.location.origin}/api/thumb2`, {
         method:"GET",
         headers: {
             'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export default class ThumbTest extends Component { //export default : 다른 모
         console.log(this.state)
     })
 
-    fetch('http://localhost/api/v-thumb', {
+    fetch(`${window.location.origin}/api/v-thumb`, {
         method:"GET",
         headers: {
             'Content-Type': 'application/json',

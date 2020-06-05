@@ -34,7 +34,7 @@ class UploadContent extends Component {
     });
   }
 
-  changeUploadPath=(path)=>{ //업로드 경로 변경
+  changePath=(path)=>{ //업로드 경로 변경
     console.log('in upload, change path : ', path);
     this.setState({
       uploadDir: path
@@ -42,7 +42,7 @@ class UploadContent extends Component {
   }
 
   componentDidMount=()=>{
-    let target='http://localhost/api/upload/flow';
+    let target=`${window.location.origin}/api/upload/flow`;
     if(this.state.flow) console.log("isUploading ? : ", this.state.flow.isUploading());
     if(!this.state.flow||!this.state.flow.isUploading()){
       this.state.flow=new Flow({
@@ -97,17 +97,17 @@ class UploadContent extends Component {
             return response;
         };
         console.log("파일 등록!");
-        fetch("http://localhost/api/upload/flow", {
+        fetch(`${window.location.origin}/api/upload/flow`, {
             method: "POST",
             credentials: 'include',
             body: formData,
         })
         .then(errorCheck)
-        .then(res=>res.json())
+        //.then(res=>res.json())
         .then(response=>{ // 실제 서버에서 사용
             console.log("promise 2, response : ", response);
-            //let url = response.headers.get('Location'); //docker로 구동 시에 사용
-            let url=response['Location']; //테스트용, build 할 때 지우기
+            let url = response.headers.get('Location'); //docker로 구동 시에 사용
+            //let url=response['Location']; //테스트용, build 할 때 지우기
             console.log('url : ', url);
             file.targetUrl=url; //여기서 등록 안될때가 있다.
             console.log('end!');
@@ -231,7 +231,7 @@ class UploadContent extends Component {
 
     if(file.targetUrl){
       let id=file.targetUrl.split('/').reverse()[0];
-      let url='http://localhost/api/partial/' + id;
+      let url=`${window.location.origin}/api/partial/${id}`;
       console.log("id : ", id);
 
       fetch(url, {
@@ -274,12 +274,13 @@ class UploadContent extends Component {
                     <CustomFileBrowser 
                       notify={this.props.notify}
                       rootDirID={this.props.rootDirID}
-                      changeUploadPath={this.changeUploadPath}
+                      changePath={this.changePath}
                       errorCheck={this.props.errorCheck}
                       checkUserState={this.props.checkUserState}
                       curFolderID={this.props.curFolderID}
                       curFolderPath={this.props.curFolderPath}
                       loadFilesNFolders={this.props.loadFilesNFolders}
+                      guideText='업로드 경로'
                     />
                     <Button outline className="custom-button" onClick={this.toggleIsPathSet}>결정</Button>
                   </div>

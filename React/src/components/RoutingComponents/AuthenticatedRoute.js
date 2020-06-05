@@ -3,7 +3,7 @@ import { Route, Redirect } from "react-router-dom";
 
 // 인증 필요로하는 컴포넌트 라우팅
 const AuthentiCatedRoute = ({ component: Component, props: baseProps, ...rest }) =>{
-  console.log("auth, component : ", Component, baseProps, rest);
+  console.log("auth, component : ", Component, ', baseProps : ', baseProps, ', rest : ', rest);
   return(
     <Route
       {...rest} render={props =>

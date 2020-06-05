@@ -28,7 +28,7 @@ class MailResend extends Component{
             isLoading: true
         }));
         
-        fetch("http://localhost/api/send-auth-email", { //HTTP GET으로 요청을 보내고, URL뒤에 사용자 식별 ID를 추가하자.
+        fetch(`${window.location.origin}/api/send-auth-email`, { //HTTP GET으로 요청을 보내고, URL뒤에 사용자 식별 ID를 추가하자.
             method: "GET",
             headers: {
                 'Content-Type': 'application/json'

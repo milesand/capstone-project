@@ -12,6 +12,10 @@ class FileSerializer(serializers.ModelSerializer):
         model = File
         fields = ('pk', 'size', 'uploaded_at', 'has_thumbnail', 'is_video')
 
+class FileRenameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=File
+        fields=('name', )
 
 class DirectorySerializer(serializers.ModelSerializer):
     class Meta:
