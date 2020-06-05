@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import threading
 
 from django.db.models import Q
 from django.conf import settings
@@ -16,12 +17,29 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Directory, File, UserStorage, PartialUpload
+from .models import Directory, File, UserStorage, PartialUpload, RecycleEntry
 from .exceptions import NotEnoughCapacityException
-from .serializers import FileSerializer, DirectorySerializer, ChangeDirNameSerializer, PartialSerializer, FileRenameSerializer
+from .serializers import FileSerializer, DirectorySerializer, PartialSerializer
 
 
 logger = logging.getLogger(__name__)
+
+
+# Boolean-y values. Copied from django rest framework's BooleanField.
+TRUE_VALUES = {
+    't', 'T',
+    'y', 'Y', 'yes', 'YES',
+    'true', 'True', 'TRUE',
+    'on', 'On', 'ON',
+    '1', 1, True,
+}
+FALSE_VALUES = {
+    'f', 'F',
+    'n', 'N', 'no', 'NO',
+    'false', 'False', 'FALSE',
+    'off', 'Off', 'OFF',
+    '0', 0, 0.0, False,
+}
 
 
 def valid_dir_entry_name(name):
@@ -44,6 +62,8 @@ def perm_check_entry_with_teams(user, entry):
     Use this to check directory permission if you're treating the directory as an
     entry in some other shared directory.
     '''
+    if entry.in_recycle:
+        return False
     if entry.owner == user:
         return True
     return perm_check_dir_with_teams(user, entry.parent)
@@ -74,6 +94,8 @@ def perm_check_dir_with_teams(user, directory):
         user.leader.all().only("pk")
     )
     while directory is not None:
+        if directory.in_recycle:
+            return False
         # Owner of a directory has access to ALL subdirectories, even to ones
         # owned by someone else. Suppose you own a directory and share it, and
         # someone else creates subdirectories in it. Later you stop sharing it,
@@ -508,24 +530,67 @@ class DirectoryView(APIView):
             status=status.HTTP_200_OK
         )
 
-    def put(self, request, pk): #디렉토리 이름 변경
-        dir=get_object_or_404(Directory, pk=pk)
-        if not perm_check_entry_with_teams(request.user, dir):
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer=ChangeDirNameSerializer(data=request.data)
-        if serializer.is_valid():
-            if not valid_dir_entry_name(request.data['name']):
-                return Response({'error' : '디렉토리 이름은 ".", ".." 일 수 없고 256자 이하여야 하며, / 가 들어갈 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-            try:
-                dir.name=request.data['name']
-                dir.save()
-            except IntegrityError:
-                return Response("다른 디렉터리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요.", status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message' : '디렉토리 이름 변경 완료.'}, status=status.HTTP_200_OK)
+    def put(self, request, pk):
+        data = request.data
+        name = None
+        favorite = None
 
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
         else:
-            return Response({'error': '요청 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not valid_dir_entry_name(name):
+                return Response(
+                    {"message": "유효하지 않은 name 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        try:
+            favorite = data["favorite"]
+        except KeyError:
+            pass
+        else:
+            if favorite in TRUE_VALUES:
+                favorite = True
+            elif favorite in FALSE_VALUES:
+                favorite = False
+            else:
+                return Response(
+                    {"message": "유효하지 않은 favorite 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        if name is None and favorite is None:
+            return Response(
+                {"message": "유효한 필드가 감지되지 않았습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        directory = get_object_or_404(Directory, pk=pk)
+        if not perm_check_entry_with_teams(request.user, directory):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            with transaction.atomic():
+                if name is not None:
+                    directory.name = name
+                if favorite is not None:
+                    if favorite:
+                        request.user.favorites.add(directory)
+                    else:
+                        request.user.favorites.remove(directory)
+                directory.save()
+        except IntegrityError:
+            transaction.rollback()
+            return Response(
+                {"message": "다른 디렉토리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+            
 
     def delete(self, request, pk):
         try:
@@ -537,15 +602,208 @@ class DirectoryView(APIView):
                 {"message": "Directory not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if directory.parent is None:
+        if directory.owner.root_info.root_dir == directory:
             return Response(
                 {"message": "Cannot delete root directory"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        directory.delete()
+        if directory.in_recycle:
+            if RecycleEntry.objects.filter(entry=directory).exists():
+                directory.delete()
+            else:
+                return Response(
+                    {"message": "Directory not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        else:
+            def send_to_recycle(directory):
+                RecycleEntry.objects.create(entry=directory, former_parent=directory.parent)
+                directory.parent = None
+                def send_to_recycle_recur(directory):
+                    directory.in_recycle = True
+                    directory.save()
+                    for child in directory.children.all().select_for_update():
+                        try:
+                            child_dir = child.Directory
+                        except Directory.DoesNotExist:
+                            pass
+                        else:
+                            send_to_recycle_recur(child_dir)
+                            continue
+                        try:
+                            child_pu = child.PartialUpload
+                        except PartialUpload.DoesNotExist:
+                            pass
+                        else:
+                            child_pu.delete()
+                            continue
+                        child.in_recycle = True
+                        child.save()
+                with transaction.atomic():
+                    send_to_recycle_recur(directory)
+            
+            # Spawn a background job that marks all children as in_recycle.
+            # NOTE: Maybe pull in something like Celery and use that instead of bare threading.
+            background_job = threading.Thread(target=send_to_recycle, args=[directory])
+            background_job.setDaemon(True)
+            background_job.start()
 
         return Response(
             status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class FavoriteView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request): 
+        data = {"directories": {}, "files": {}}
+        favorites = request.user.favorites.all()
+        for fav in favorites:
+            if not perm_check_entry_with_teams(request.user, fav):
+                # It's possible for someone to favorite a shared file,
+                # which then becomes inaccessible due to un-sharing.
+                # To keep GET a safe method, we don't delete anything,
+                # just continue. TODO: unfavorite stuff when they are unshared.
+                continue
+            try:
+                directory = fav.Directory
+                data["directories"][directory.name] = str(directory.pk)
+                continue
+            except Directory.DoesNotExist:
+                pass
+            try:
+                file_record = fav.File
+                data["files"][file_record.name] = FileSerializer(file_record).data
+                continue
+            except File.DoesNotExist:
+                pass
+        
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class RecycleBinView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        data = {"directories": {}, "files": {}}
+        queryset = RecycleEntry.objects.filter(entry__owner=request.user)
+        for entry in queryset:
+            try:
+                directory = entry.Directory
+            except Directory.DoesNotExist:
+                pass
+            else:
+                if directory.name not in data["directories"]:
+                    data["directories"][directory.name] = []
+                data["directories"][directory.name].append(str(directory.pk))
+                continue
+            try:
+                file_record = entry.File
+            except File.DoesNotExist:
+                pass
+            else:
+                if file_record.name not in data["files"]:
+                    data["files"][file_record.name] = []
+                data["files"][file_record.name].append(str(file_record.pk))
+                continue
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+    
+    def delete(self, request):
+        # Empty bin.
+        RecycleEntry.objects.filter(entry__owner=request.user).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class RecoverView(APIView):
+    parser_classes = (JSONParser,)
+    permission_classes = (IsAuthenticated,)
+    
+    def post(self, request):
+        if not isinstance(request.data, list) or len(request.data) == 0:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        partial_success = False
+        errors = []
+
+        for req in request.data:
+            if isinstance(req, str):
+                pk = req
+                parent = None
+            if isinstance(req, list) and len(req) == 2:
+                pk = req[0]
+                parent = req[1]
+            else:
+                errors.append({"request": req, "message": "Invalid request"})
+                continue
+                
+            try:
+                recycle_entry = RecycleEntry.objects.get(pk=pk, owner=request.user)
+            except RecycleEntry.DoesNotExist:
+                errors.append(req)
+                continue
+
+            if parent is None:
+                parent = recycle_entry.former_parent
+                if parent is None or not perm_check_dir_with_teams(request.user, parent):
+                    errors.append({"request": req, "message": "Parent directory is inaccessible"})
+                    continue
+            else:
+                try:
+                    parent = Directory.objects.get(pk=parent)
+                    if not perm_check_dir_with_teams(request.user, parent):
+                        raise Directory.DoesNotExist
+                except Directory.DoesNotExist:
+                    errors.append({"request": req, "message": "Parent directory is inaccessible"})
+                    continue
+            entry = recycle_entry.entry
+            entry.parent = parent
+            recycle_entry.delete()
+
+            try:
+                directory = entry.Directory
+            except Directory.DoesNotExist:
+                entry.in_recycle = False
+                entry.save()
+            else:
+                # Again. Celery may be better.
+                def recover_from_recycle(directory):
+                    def recover_from_recycle_recur(directory):
+                        directory.in_recycle = False
+                        directory.save()
+                        for child in directory.children.all().select_for_update():
+                            try:
+                                child_dir = child.Directory
+                            except Directory.DoesNotExist:
+                                pass
+                            else:
+                                recover_from_recycle_recur(child_dir)
+                                continue
+                            child.in_recycle = False
+                            child.save()
+                        recover_from_recycle_recur(directory)
+
+                    with transaction.atomic():
+                        recover_from_recycle_recur(directory)
+                
+                background_job = threading.Thread(target=recover_from_recycle, args=[directory])
+                background_job.setDaemon(True)
+                background_job.start()
+            
+            partial_success = True
+        
+        response_status = status.HTTP_200_OK if partial_success else status.HTTP_400_BAD_REQUEST
+        
+        return Response(
+            {"errors": errors,},
+            status=response_status
         )
 
 
@@ -649,35 +907,83 @@ class FileManagementAPI(generics.GenericAPIView):
         serializer = self.serializer_class(file_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, file_id): # 파일명 변경
-        print("file name change, user : ", request.user)
+
+    def put(self, request, file_id):
+        data = request.data
+        name = None
+        favorite = None
+
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
+        else:
+            if not valid_dir_entry_name(name):
+                return Response(
+                    {"message": "유효하지 않은 name 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        try:
+            favorite = data["favorite"]
+        except KeyError:
+            pass
+        else:
+            if favorite in TRUE_VALUES:
+                favorite = True
+            elif favorite in FALSE_VALUES:
+                favorite = False
+            else:
+                return Response(
+                    {"message": "유효하지 않은 favorite 필드값입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        if name is None and favorite is None:
+            return Response(
+                {"message": "유효한 필드가 감지되지 않았습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         file_record = get_object_or_404(File, pk=file_id)
         if not perm_check_entry_with_teams(request.user, file_record):
-            raise Http404
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            with transaction.atomic():
+                if name is not None:
+                    file_record.name = name
+                if favorite is not None:
+                    if favorite:
+                        request.user.favorites.add(file_record)
+                    else:
+                        request.user.favorites.remove(file_record)
+                file_record.save()
+        except IntegrityError:
+            transaction.rollback()
+            return Response(
+                {"message": "다른 디렉토리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        serializer=FileRenameSerializer(data=request.data)
-        print("req data : ", request.data);
-        if serializer.is_valid():
-            try:
-                with transaction.atomic():
-                    file_record.name=request.data['name']
-                    file_record.save()
-                return Response({'message' : '변경 완료.'}, status=status.HTTP_200_OK)
-            except IntegrityError:
-                return Response("다른 디렉터리 혹은 파일과 이름이 중복됩니다. 다른 이름을 선택해주세요.", status=status.HTTP_400_BAD_REQUEST)
-        else:
-            print("serhere.")
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
 
-    def delete(self, request, file_id): # 파일 삭제
+
+    def delete(self, request, file_id): # 파일 삭
         try:
             file_record = get_object_or_404(File, pk=file_id)
             if not perm_check_entry_with_teams(request.user, file_record):
                 raise Http404
         except(Http404):
             return Response({'error' : '파일이 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        if file_record.in_recycle:
+            file_record.delete()
+        else:
+            RecycleEntry.objects.create(entry=file_record, former_parent=file_record.parent)
+            file_record.in_recycle = True
+            file_record.parent = None
+            file_record.save()
 
-        file_record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 def multi_delete(entryList, user):

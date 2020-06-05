@@ -21,6 +21,15 @@ class DirectoryEntry(models.Model):
         related_name='children',
         null=True  # Root directories have no parent
     )
+    in_recycle = models.BooleanField(default=False)
+
+    # List of users who have favorited this entry.
+    # Due to sharing, it's entirely possible to favorite what
+    # one doesn't own; Thus this can't be a simple boolean flag.
+    favorite_of = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="favorites",
+    )
 
 
     class Meta:
@@ -219,6 +228,21 @@ class PartialUpload(DirectoryEntry):
             ),
         ]
     '''
+
+
+class RecycleEntry(models.Model):
+    entry = models.OneToOneField(
+        DirectoryEntry,
+        related_name='+',
+        primary_key=True,
+        on_delete=models.CASCADE,
+    )
+    former_parent = models.ForeignKey(
+        Directory,
+        related_name='+',
+        null=True,
+        on_delete=models.SET_NULL,
+    )
 
 
 class UserStorage(models.Model):
