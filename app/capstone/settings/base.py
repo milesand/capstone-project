@@ -113,11 +113,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST=[ #react 연동
-    'http://localhost:3000'
-]
-
 ROOT_URLCONF = 'capstone.urls'
 
 TEMPLATES = [
@@ -329,5 +324,3 @@ PARTIAL_UPLOAD_PATH = "/file/partial"
 COMPLETE_UPLOAD_PATH = "/file/complete"
 THUMBNAIL_PATH = "/file/thumbnail"
 THUMBNAIL_SIZE = 128, 128
-
-DOMAIN_NAME='localhost' # 도메인 이름, 도메인 구입 후에 수정
