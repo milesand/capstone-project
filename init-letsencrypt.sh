@@ -54,7 +54,7 @@ fi
 echo "### Creating dummy certificate for $domains ..."
 path="/etc/letsencrypt/live/$domains"
 mkdir -p "$data_path/conf/live/$domains"
-./udco run -f docker-compose.yml -f docker-compose.prod.yml --rm --entrypoint "\
+./udco -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:1024 -days 1\
     -keyout '$path/privkey.pem' \
     -out '$path/fullchain.pem' \
@@ -63,11 +63,11 @@ echo
 
 
 echo "### Starting nginx ..."
-./udco up -f docker-compose.yml -f docker-compose.prod.yml --force-recreate -d nginx
+./udco -f docker-compose.yml -f docker-compose.prod.yml up --force-recreate -d nginx
 echo
 
 echo "### Deleting dummy certificate for $domains ..."
-./udco run -f docker-compose.yml -f docker-compose.prod.yml --rm --entrypoint "\
+./udco -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/live/$domains && \
   rm -Rf /etc/letsencrypt/archive/$domains && \
   rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
@@ -90,7 +90,7 @@ esac
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
-./udco run -f docker-compose.yml -f docker-compose.prod.yml --rm --entrypoint "\
+./udco -f docker-compose.yml -f docker-compose.prod.yml run --rm --entrypoint "\
   certbot certonly --webroot -w /var/www/certbot \
     $staging_arg \
     $email_arg \
@@ -101,4 +101,4 @@ if [ $staging != "0" ]; then staging_arg="--staging"; fi
 echo
 
 echo "### Reloading nginx ..."
-./udco exec -f docker-compose.yml -f docker-compose.prod.yml nginx nginx -s reload
+./udco -f docker-compose.yml -f docker-compose.prod.yml exec nginx nginx -s reload

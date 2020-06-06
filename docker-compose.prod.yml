@@ -1,4 +1,4 @@
-# Development profile. Launch as ./udco up -f docker-compose.yml -f docker-compose.prod.yml
+# Development profile. Launch as ./udco -f docker-compose.yml -f docker-compose.prod.yml up
 version: "3.4"
 
 services:
