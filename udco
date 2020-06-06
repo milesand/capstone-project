@@ -17,4 +17,4 @@ mkdir -p \
     nginx/certbot/www
 
 # Delegate to docker-compose.
-docker-compose $@
+exec docker-compose "$@"
