@@ -3,7 +3,9 @@
 실행방법
 ==================
 1. manage.py가 위치한 폴더(`./app`)에 `googleAccount.txt` 추가 (카톡방에 올려드릴게요)
-2. docker-compose.yml이 위치한 폴더(`.`)에서 `./udco up`
+2. docker-compose.yml이 위치한 폴더(`.`)에서:
+  - 개발 환경이라면 `./udco up`
+  - 배포 환경이라면 `./udco -f docker-compose.yml -f docker-compose.prod.yml up` 
 3. 아래에 적혀있는 URL 사용방법대로 사용하면 됩니다.
 
 6/4 수정사항
