@@ -191,7 +191,6 @@
     color:transparent;
     padding:0px !important;
     max-height: 600px;
-    width:100% !important;
     border-radius: 10px;
     overflow-y: auto;
     box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15)!important;
@@ -219,6 +218,7 @@
     border-color: #dbdbdb;
     min-height: 80px;
     text-align: center;
+    color:#3a3a3a !important;
   }
   .popover {
     border-radius: 10px !important;
@@ -262,6 +262,7 @@
   .invitationNum {
     min-height:20px;
     min-width:250px;
+
   }
 
   

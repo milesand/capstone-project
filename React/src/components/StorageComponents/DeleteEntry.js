@@ -6,7 +6,7 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>
     }
     
     console.log("data : ", data)
-    fetch(`${window.location.origin}/api/multi-entry`, {
+    fetch(`https://${window.location.hostname}/api/multi-entry`, {
       method: 'DELETE',
       headers: {
         'Content-Type' : 'application/json'
@@ -15,7 +15,7 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>
       body: JSON.stringify(data)
     })
     .then(errorCheck)
-    .then(()=>{
+    .then(content=>{
       notify('삭제 완료!');
       loadFilesNFolders('', curFolderID);
     })

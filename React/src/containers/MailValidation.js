@@ -16,7 +16,7 @@ class MailValidation extends Component{
 
     componentDidMount(){
         console.log(document.location.href.split("mail-validation/"));
-        let url=`${window.location.origin}/api/activate/${document.location.href.split("mail-validation/")[1]}`;
+        let url=`https://${window.location.hostname}/api/activate/${document.location.href.split("mail-validation/")[1]}`;
         let isErr=false;
         let errorCheck = response => {
             if(!response.ok){

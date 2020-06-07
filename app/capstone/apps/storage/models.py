@@ -94,7 +94,6 @@ class Directory(DirectoryEntry):
             next(parts)  # discard first item
 
         current_dir = UserStorage.objects.filter(user=user).select_related('root_dir').get().root_dir
-
         for (i, part) in enumerate(parts):
             try:
                 next_dir = current_dir.children.get(name__exact=part).directory

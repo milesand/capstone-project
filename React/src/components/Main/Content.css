@@ -103,3 +103,12 @@
   .file-spinner{
       margin: auto;
   }
+
+  .share-spinner{
+    margin-top : 350%;
+  }
+  .sharing-team-modal{
+    margin: 0 auto;
+    min-height: 300px;
+  }
+

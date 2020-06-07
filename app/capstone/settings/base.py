@@ -168,7 +168,7 @@ DATABASES = {
     },
 }
 
-LOGGING = {
+'''LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
@@ -186,7 +186,7 @@ LOGGING = {
             'level': 'DEBUG',
         }
     },
-}
+}'''
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -235,6 +235,7 @@ except:
     f=open('googleAccount.txt', 'r')
 
 account_info=f.read().split()
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com' # 메일을 호스트하는 서버
 EMAIL_PORT = '587' # gmail과 통신하는 포트
 EMAIL_HOST_USER = account_info[0] # 발신할 이메일

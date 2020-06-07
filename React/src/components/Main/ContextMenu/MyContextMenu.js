@@ -63,9 +63,9 @@ const MyContextMenu = (props) => {
 
       {/*단일 디렉토리*/}
       <ContextMenu onShow={props.onShow} id="contextMenuDirID" className="contextMenu">
-      <MenuItem className="contextMenuItem" onClick={handleClick()}>
+      <MenuItem className="contextMenuItem" onClick={props.handleShare}>
         <FontAwesomeIcon icon={faShare} className="contextMenuIcon" /> 
-          <span className="contextMenuText">공유</span>
+          <span className="contextMenuText">공유 설정 변경</span>
       </MenuItem>
       <MenuItem divider className="contextMenuDivider"/>
       <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>

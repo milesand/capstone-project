@@ -52,7 +52,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                     </InputGroup>
                 </ModalBody>
                 <ModalFooter>
-                <Button outline color="primary" onClick={toggle} className="close-button">닫기</Button>
+                <Button outline color="primary" onClick={toggle} className="withdrawal-close-button">닫기</Button>
                 </ModalFooter>
             </Modal>
 

@@ -18,7 +18,7 @@ export default class FileTest extends Component { //export default : 다른 모�
   }
 
   componentDidMount=()=>{
-    let target=`${window.location.origin}/api/upload/flow`;
+    let target=`https://${window.location.hostname}/api/upload/flow`;
     let flow=new Flow({
         target: function(file, url){
             if(file.targetUrl==null){
@@ -72,17 +72,17 @@ export default class FileTest extends Component { //export default : 다른 모�
             return response;
         };
         console.log("파일 등록!");
-        fetch(`${window.location.origin}/api/upload/flow`, {
+        fetch(`https://${window.location.hostname}/api/upload/flow`, {
             method: "POST",
             credentials: 'include',
             body: formData,
         })
         .then(errorCheck)
-        //.then(res=>res.json())
+        .then(res=>res.json())
         .then(response=>{ // 실제 서버에서 사용
             console.log("promise 2, response : ", response);
-            let url = response.headers.get('Location'); //docker로 구동 시에 사용
-            //let url=response['Location']; //테스트용, build 할 때 지우기
+            //let url = response.headers.get('Location'); //docker로 구동 시에 사용
+            let url=response['Location']; //테스트용, build 할 때 지우기
             console.log('url : ', url);
             file.targetUrl=url; //여기서 등록 안될때가 있다.
             console.log('end!');
@@ -171,7 +171,7 @@ export default class FileTest extends Component { //export default : 다른 모�
   }
 
   DLTest=()=>{
-    let url=`${window.location.origin}/api/file/${this.state.fileID}`;
+    let url=`https://${window.location.hostname}/api/file/${this.state.fileID}`;
     let fileStream=null;
 
     let errorCheck = response =>{
@@ -193,7 +193,7 @@ export default class FileTest extends Component { //export default : 다른 모�
     }
     console.log('data : ', data);
 
-    fetch(`${window.location.origin}/api/download`, {
+    fetch(`https://${window.location.hostname}/api/download`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',
@@ -249,7 +249,7 @@ export default class FileTest extends Component { //export default : 다른 모�
     const idx=this.state.fileList.findIndex((f)=>{return f.uniqueIdentifier==file.uniqueIdentifier})
     let list=this.state.fileList;
     let id=file.targetUrl.split('/').reverse()[0];
-    let url=`${window.location.origin}/api/partial/${id}`;
+    let url=`https://${window.location.hostname}/api/partial/${id}`;
     console.log("id : ", id);
     this.setState({
       fileList: list.slice(0, idx).concat(list.slice(idx+1, list.length))

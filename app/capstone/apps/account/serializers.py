@@ -6,7 +6,7 @@ from rest_framework_jwt.serializers import RefreshJSONWebTokenSerializer, Verify
 from rest_framework_jwt.views import RefreshJSONWebToken, VerifyJSONWebToken
 
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from capstone.storage.serializers import UserStorageSerializer
 
 #jwt 인증 관련 시리얼라이저 오버라이딩

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .models import Team
 from .serializers import CreateTeamSerializer, TeamSerializer, ChangeTeamNameSerializer,\
-                         InvitationSerializer, SharingFolderSerializer, UserSearchSerializer, UserSearchResultSerializer
+                         InvitationSerializer, UserSearchResultSerializer
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.db import IntegrityError
 from django.db.models import Q
+from django.db import transaction
 # Create your views here.
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -97,6 +98,7 @@ class InvitationAPI(generics.GenericAPIView): # 새로운 유저를 팀으로 �
         #request.user는 로그인 헀을 때 해당 사용자를 리턴한다.
         serializer=self.serializer_class(data=request.data)
         User=get_user_model()
+        print("request data : ", request.data)
         if serializer.is_valid():
             try:
                 team=get_object_or_404(Team, _id=teamID)
@@ -163,53 +165,47 @@ class JoinTeamAPI(generics.ListAPIView):
         return Team.objects.filter(member_list__pk=self.request.user.pk)
 
 
-class SharingFolderAPI(generics.GenericAPIView):
-    serializer_class = SharingFolderSerializer
+# 공유폴더를 설정하거나 해제한다.
+# request 형태는 {team1 : 팀 ID, team 2 : 팀 ID, team3 : 팀 ID ...} 형태
+class SharingFolderAPI(APIView):
     permission_classes = (IsAuthenticated, )
 
-    def errorCheck(self, request):
-        user=request.user
-        try:
-            directory = get_object_or_404(Directory, pk=request.data['folderID'])
-        except(Http404):
-            return Response({'error': '요청한 폴더가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-
+    def errorCheck(self, user, pk, team):
+        directory = get_object_or_404(Directory, pk=pk)
         if user != directory.owner:  # 요청자가 해당 폴더의 소유자가 아닐 경우
-            return Response({'error': '해당 폴더에 대한 권한이 없습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return False
 
-        if directory in Team.shareFolders.all():  # 이미 공유 설정이 되어있는 폴더일 경우
-            return Response({'error': '이미 공유 설정 되어있는 폴더입니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        return directory
+        if directory in team.share_folders.all():  # 이미 공유 설정이 되어있는 폴더일 경우
+            return False
+        return True
 
-    def post(self, request, teamID):
-        serializer=self.serializer_class(data=request.data)
-        if serializer.is_valid():
+    def put(self, request, pk):
+        dir=Directory.objects.get(pk=pk)
+        user=request.user
 
-            team=Team.objects.get(pk=teamID)
-            user=request.user
-            directory=self.errorCheck(request)
-            if directory is Response:
-                return directory
+        for teamID in request.data.values():
+            try:
+                team=get_object_or_404(Team, pk=teamID)
+                team.share_folders.add(dir)
+                team.save()
+            except:
+                return Response({'error': '공유 폴더 설정에 오류가 발생했습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            team.share_folders.add(directory)
-            return Response({'message' : '공유폴더 설정 완료.'}, status=status.HTTP_200_OK)
+        return Response({'message' : '공유폴더 설정 완료.'}, status=status.HTTP_200_OK)
 
-        else:
-            return Response({'message' : '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, pk): #공유설정 해제
+        dir = Directory.objects.get(pk=pk)
 
-    def delete(self, request, teamID): #공유설정 해제
-        serializer=self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            team = Team.objects.get(pk=teamID)
-            user = request.user
-            directory = self.errorCheck(request)
-            if directory is Response:
-                return directory
+        for teamID in request.data.values():
+            try:
+                team = get_object_or_404(Team, pk=teamID)
+                team.share_folders.remove(dir)
+                team.save()
+            except:
+                return Response({'error': '공유 폴더 해제에 오류가 발생했습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            team.shareFolders.remove(directory)
-            return Response({'message' : '공유 설정이 해제되었습니다.'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'message': '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': '공유폴더 해제 완료.'}, status=status.HTTP_200_OK)
+
 
 class UserSearchAPI(APIView):
     serializer_class = UserSearchResultSerializer

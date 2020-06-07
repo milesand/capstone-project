@@ -20,7 +20,7 @@ random.seed(datetime.datetime.now())
 # 이메일 인증에 사용하는 모듈
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.core.mail import EmailMessage
+from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 
@@ -61,8 +61,7 @@ def find_user(request):
 
 
 def sendMail(message, mail_title, to_email):
-    email = EmailMessage(mail_title, message, to=[to_email])
-    email.send()
+    send_mail(mail_title, message, settings.EMAIL_HOST_USER, [to_email])
 
 
 # 이메일 전송 API

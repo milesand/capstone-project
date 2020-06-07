@@ -3,7 +3,8 @@ import React, { Component } from "react";
 
 import SideBar from "../components/sidebar/SideBar/SideBar";
 import HomeContent from "../components/Main/HomeContent";
-import TeamContent from "../components/Main/TeamContent";
+import TeamContent from "../components/Main/Team/TeamContent";
+import SharingContent from "../components/Main/Sharing/SharingContent";
 import ProfileContent from "../components/Main/ProfileContent";
 import MyNavbar from "../components/Main/MyNavBar/MyNavbar";
 import ErrorPage from "../components/LoginComponents/ErrorPage";
@@ -48,7 +49,7 @@ export default class Home extends Component {
 
   componentDidMount() {
     console.log("home.js start, props : ", this. props);
-    // fetch(`${window.location.origin}/api/user`, {
+    // fetch(`https://${window.location.hostname}/api/user`, {
     //   method: "GET",
     //   credentials: 'include',
     // })
@@ -76,7 +77,7 @@ export default class Home extends Component {
     return Math.round(((this.maxSpace-getSpace(size))/this.maxSpace) * 100);
   }
   
-  axios.get(`${window.location.origin}/api/user`, this.state.option)
+  axios.get(`https://${window.location.hostname}/api/user`, this.state.option)
   .catch(error=>{
     this.props.errorCheck(error.response);
   }) 
@@ -97,7 +98,7 @@ export default class Home extends Component {
     for(let team in this.state.invitationList){
       let teamID=this.state.invitationList[team]
       console.log("in loop, team : ", teamID);
-      axios.get(`${window.location.origin}/api/team-management/${teamID}`, this.state.option)
+      axios.get(`https://${window.location.hostname}/api/team-management/${teamID}`, this.state.option)
       .catch(error=>{
         this.props.errorCheck(error.response);
       }) 
@@ -161,22 +162,26 @@ export default class Home extends Component {
 
        </MyNavbar>
        <Container fluid className="content-wrapper" >
-       <Switch>
-       <AuthenticatedRoute exact path={this.props.match.path}
-                           component={HomeContent}
-                           checkUserState={this.checkUserState}
-                           props={this.props} />
+        <Switch>
+        <AuthenticatedRoute exact path={this.props.match.path}
+                            component={HomeContent}
+                            checkUserState={this.checkUserState}
+                            props={this.props} />
 
-       <AuthenticatedRoute exact path='/profile'
-                           component={ProfileContent}
-                           checkUserState={this.checkUserState}
-                           props={this.props} />
+        <AuthenticatedRoute exact path='/profile'
+                            component={ProfileContent}
+                            checkUserState={this.checkUserState}
+                            props={this.props} />
 
-       <AuthenticatedRoute path={`${this.props.match.path}team`} 
-                           props={this.props} 
-                           component={TeamContent}/>
-       </Switch>
-       {/* <Content /> */}
+        <AuthenticatedRoute exact path='/sharing'
+                            component={SharingContent}
+                            checkUserState={this.checkUserState}
+                            props={this.props} />
+
+        <AuthenticatedRoute path={`${this.props.match.path}team`} 
+                            props={this.props} 
+                            component={TeamContent}/>
+        </Switch>
 
       </Container>
      

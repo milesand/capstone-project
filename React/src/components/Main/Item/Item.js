@@ -53,7 +53,8 @@ const Item = (props) => {
                                 : 'contextMenuMultiFolderID'
                               : itemType=='file' 
                                 ? "contextMenuFileID" 
-                                : "contextMenuDirID"}>
+                                : name=='...' ? ''
+                                  :"contextMenuDirID"}>
         <Card
           body
           outline

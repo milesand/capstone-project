@@ -192,6 +192,7 @@ class FlowUploadStartView(APIView):
             )
 
         return Response(
+            {"Location": "http://localhost/api/upload/flow/" + str(upload.pk)},  # 테스트용, 꼭 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "{}://{}/api/upload/flow/{}".format(
@@ -464,6 +465,7 @@ class CreateDirectoryView(APIView):
             )
 
         return Response(
+            {"Location": "/api/directory/" + str(directory_record.pk)},  # 로컬 테스트용, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "{}://{}/api/directory/{}".format(
@@ -997,6 +999,13 @@ def multi_delete(entryList, user):
 
         except(Http404):
             with transaction.atomic():
+                print("entryID : ", entryID, "root pk : ", user.root_info.root_dir.pk,  type(entryID), type(user.root_info.root_dir.pk))
+                if entryID==str(user.root_info.root_dir.pk): #루트 디렉토리 삭제 시도
+                    print("here!")
+                    if len(entryList)==1:
+                        return Response({'error' : '루트 디렉토리는 삭제할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        continue
                 directory = get_object_or_404(Directory, pk=entryID)
                 if perm_check_entry_with_teams(user, directory): #권한 체크. 파일 주인이거나, 공유 파일
                     directory.delete()

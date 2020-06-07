@@ -37,7 +37,7 @@ class App extends Component {
       isLoading: false,
       rootDirID: "",
     };
-    console.log('is localhost ? : ', window.location.origin);
+    console.log('is localhost ? : ', window.location.hostname);
   }
 
   toggleLoadingState=()=>{ //현재 fetch 중이라면 isLoading을 true로, 아니면 false로 바꿔준다. 버튼 스피너를 위해 필요함.
@@ -53,6 +53,7 @@ class App extends Component {
   }
 
   getUserInfo=()=>{
+    console.log("check start.");
     let errorCheck = response => {
       console.log("user check, here!!!!, response : ", response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
@@ -80,7 +81,7 @@ class App extends Component {
        return response;
     }
     
-    return fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+    return fetch(`https://${window.location.hostname}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ class App extends Component {
       .then(content=>{
         console.log("login? : ", this.state.isLogin);
         if(this.state.isLogin){ // 사용자가 로그인 중일 때
-          fetch(`${window.location.origin}/api/jwt-refresh`, { //JWT 토큰 재발급
+          fetch(`https://${window.location.hostname}/api/jwt-refresh`, { //JWT 토큰 재발급
               method: "POST", 
               headers: {
                 'Content-Type' : 'application/json',
@@ -145,7 +146,7 @@ class App extends Component {
       return response;
     }
 
-      fetch(`${window.location.origin}/api/logout`, {
+      fetch(`https://${window.location.hostname}/api/logout`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
