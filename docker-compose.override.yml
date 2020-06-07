@@ -1,0 +1,10 @@
+# Development profile. Launch as ./udco up
+version: "3.4"
+
+services:
+  django:
+    environment:
+      DJANGO_SETTINGS_MODULE: capstone.settings.develop
+  nginx:
+    volumes:
+      - ./nginx/app.dev.conf:/etc/nginx/conf.d/app.conf

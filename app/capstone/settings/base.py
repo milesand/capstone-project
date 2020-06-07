@@ -20,11 +20,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'f@q01oyamaq4lh+*y5448h_+ur_7v@dph8fhe055p252i4$_&s'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-
 # Unlimited persistent connection.
 # connect to DB once, reuse that connection until something goes wrong.
 CONN_MAX_AGE = None
