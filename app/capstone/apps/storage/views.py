@@ -624,14 +624,14 @@ class DirectoryView(APIView):
                     directory.save()
                     for child in directory.children.all().select_for_update():
                         try:
-                            child_dir = child.Directory
+                            child_dir = child.directory
                         except Directory.DoesNotExist:
                             pass
                         else:
                             send_to_recycle_recur(child_dir)
                             continue
                         try:
-                            child_pu = child.PartialUpload
+                            child_pu = child.partialupload
                         except PartialUpload.DoesNotExist:
                             pass
                         else:
@@ -668,13 +668,13 @@ class FavoriteView(APIView):
                 # just continue. TODO: unfavorite stuff when they are unshared.
                 continue
             try:
-                directory = fav.Directory
+                directory = fav.directory
                 data["directories"][directory.name] = str(directory.pk)
                 continue
             except Directory.DoesNotExist:
                 pass
             try:
-                file_record = fav.File
+                file_record = fav.file
                 data["files"][file_record.name] = FileSerializer(file_record).data
                 continue
             except File.DoesNotExist:
@@ -692,7 +692,7 @@ class RecycleBinView(APIView):
         queryset = RecycleEntry.objects.filter(entry__owner=request.user)
         for entry in queryset:
             try:
-                directory = entry.Directory
+                directory = entry.directory
             except Directory.DoesNotExist:
                 pass
             else:
@@ -701,7 +701,7 @@ class RecycleBinView(APIView):
                 data["directories"][directory.name].append(str(directory.pk))
                 continue
             try:
-                file_record = entry.File
+                file_record = entry.file
             except File.DoesNotExist:
                 pass
             else:
@@ -768,7 +768,7 @@ class RecoverView(APIView):
             recycle_entry.delete()
 
             try:
-                directory = entry.Directory
+                directory = entry.directory
             except Directory.DoesNotExist:
                 entry.in_recycle = False
                 entry.save()
@@ -780,7 +780,7 @@ class RecoverView(APIView):
                         directory.save()
                         for child in directory.children.all().select_for_update():
                             try:
-                                child_dir = child.Directory
+                                child_dir = child.directory
                             except Directory.DoesNotExist:
                                 pass
                             else:
