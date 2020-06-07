@@ -19,6 +19,9 @@ file
 
 log
 
+# HTTPS 인증서 등
+nginx/certbot
+
 # SSL 테스트용
 app/stunnel/*
 stunnel.*

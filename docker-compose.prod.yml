@@ -1,0 +1,22 @@
+# Development profile. Launch as ./udco -f docker-compose.yml -f docker-compose.prod.yml up
+version: "3.4"
+
+services:
+  django:
+    environment:
+      DJANGO_SETTINGS_MODULE: capstone.settings.deploy
+  nginx:
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/app.prod.conf:/etc/nginx/conf.d/app.conf
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

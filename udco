@@ -1,24 +1,20 @@
 #!/usr/bin/env bash
 
+# Export UID and GID for use in docker-compose.
 export USER_ID=$(id -u)
 export GROUP_ID=$(id -g)
 
-if [ ! -d 'file/partial' ]; then
-    mkdir -p file/partial
-fi
-if [ ! -d 'file/complete' ]; then
-    mkdir file/complete
-fi
-if [ ! -d 'file/thumbnail' ]; then
-    mkdir file/thumbnail
-fi
-if [ ! -d 'db/data' ]; then
-    mkdir -p db/data
-elif [ "$(stat -c '%u %g' db/data)" != "$USER_ID $GROUP_ID" ]; then
-    sudo chown -R $USER_ID:$GROUP_ID db/data
-fi;
-if [ ! -d 'log' ]; then
-    mkdir log
-fi
+# Create directories that will be mounted as volume in containers.
+# docker-compose will create them if we don't, but then they will be owned by
+# root:root, which isn't what we want.
+mkdir -p \
+    file/partial \
+    file/complete \
+    file/thumbnail \
+    db/data \
+    log \
+    nginx/certbot/conf \
+    nginx/certbot/www
 
-docker-compose $@
+# Delegate to docker-compose.
+exec docker-compose "$@"
