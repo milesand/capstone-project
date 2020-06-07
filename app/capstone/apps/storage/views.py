@@ -3,8 +3,9 @@ import os
 from pathlib import Path
 import threading
 
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, Http404
@@ -486,6 +487,11 @@ class DirectoryView(APIView):
                 Directory.objects
                 .filter(pk=pk)
                 .prefetch_related('children')
+                .prefetch_related(Prefetch(
+                    'favorite_of',
+                    queryset=get_user_model().objects.filter(pk=request.user.pk),
+                    to_attr='is_favorite',
+                ))
                 .get()
             )
             if not perm_check_dir_with_teams(request.user, directory):
@@ -496,6 +502,7 @@ class DirectoryView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         data = DirectorySerializer(directory).data
+        data['favorite'] = (len(directory.is_favorite) != 0)
 
         for field_name in ("subdirectories", "files", "partial_uploads"):
             data[field_name] = {}
@@ -510,7 +517,9 @@ class DirectoryView(APIView):
                 pass
             try:
                 child_file = child.file
-                data['files'][child_file.name] = FileSerializer(child_file).data
+                file_data = FileSerializer(child_file).data
+                file_data['favorite'] = child_file.favorite_of.filter(pk=request.user.pk).exists()
+                data['files'][child_file.name] = file_data
                 continue
             except File.DoesNotExist:
                 pass
@@ -898,14 +907,26 @@ class FileManagementAPI(generics.GenericAPIView):
 
     def get(self, request, file_id):
         try:
-            file_record = get_object_or_404(File, pk=file_id)
+            file_record = (
+                File.objects
+                .filter(pk=file_id)
+                .prefetch_related(Prefetch(
+                    'favorite_of',
+                    queryset=get_user_model().objects.filter(pk=request.user.pk),
+                    to_attr='is_favorite',
+                ))
+                .get()
+            )
             if not perm_check_entry_with_teams(request.user, file_record):
-                raise Http404
-        except Http404:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+                raise File.DoesNotExist
+        except File.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.serializer_class(file_record)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        data['favorite'] = (len(file_record.is_favorite) != 0)
+        
+        return Response(data, status=status.HTTP_200_OK)
 
 
     def put(self, request, file_id):
