@@ -20,7 +20,7 @@ const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
     }
     console.log('data : ', data);
 
-    fetch(`https://${window.location.hostname}/api/download`, {
+    fetch(`${window.location.origin}/api/download`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',

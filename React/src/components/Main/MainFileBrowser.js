@@ -197,9 +197,9 @@ const MainFileBrowser = (props) => {
 
     //주어진 dirID를 가진 디렉토리에 들어있는 파일들 불러오기
     setIsLoading(true);
-    axios.get(`https://${window.location.hostname}/api/user`,option)
+    axios.get(`${window.location.origin}/api/user`,option)
      .then((content) => {
-        axios.get(`https://${window.location.hostname}/api/directory/${dirID}`,option)
+        axios.get(`${window.location.origin}/api/directory/${dirID}`,option)
         .then(content2 => { 
             console.log("content2 : ", content2);
             const newFileList=[], newFolderList=[];
@@ -246,7 +246,7 @@ const MainFileBrowser = (props) => {
 
   const showFolderInfo = (index) => {
     console.log(index);
-    axios.get(`https://${window.location.hostname}/api/directory/${props.folderList[index]["pk"]}`,option)
+    axios.get(`${window.location.origin}/api/directory/${props.folderList[index]["pk"]}`,option)
     .then(content => {
       const folderInfo = {
        ...props.folderList[index],
@@ -365,7 +365,7 @@ const MainFileBrowser = (props) => {
     }
 
     if(target.charCode==13){
-      let url=`https://${window.location.hostname}/api/`;
+      let url=`${window.location.origin}/api/`;
       if(currentItemInfo.type=='file'){ //파일
         url+='file/' + currentItemInfo.pk;
       }
@@ -433,7 +433,7 @@ const MainFileBrowser = (props) => {
       console.log("team info : ", teamList[deleteTeam[i]]);
       deleteData['team'+(Number(i)+1)]=teamList[deleteTeam[i]]._id;
     }
-    let url=`https://${window.location.hostname}/api/sharing/${currentItemInfo.pk}`;
+    let url=`${window.location.origin}/api/sharing/${currentItemInfo.pk}`;
     fetch(url, {
       method: 'PUT',
       headers:{
@@ -466,7 +466,7 @@ const MainFileBrowser = (props) => {
   }
   const createDir=()=>{ //홈 화면에서 폴더 생성
     console.log("createDir called!");
-    let url=`https://${window.location.hostname}/api/mkdir`;
+    let url=`${window.location.origin}/api/mkdir`;
     let data={
       "parent" : props.isSharing ? props.curFolderID : props.curFolderPath,
       'name' : newFolderName
@@ -485,14 +485,13 @@ const MainFileBrowser = (props) => {
       console.log("err check complete!");
       return res;
     })
-    .then(res=>res.json()) //개발용
+    //.then(res=>res.json()) //개발용
     .then(content=>{
         props.notify('폴더 생성 완료!');
         toggleMkdirModal();
         setNewFolderName('');
-        console.log("create complete!, content : ", content.headers);
-        //let urlPart=content.headers.get('Location').split('/');
-        let urlPart=content.Location.split('/'); //개발용
+        let urlPart=content.headers.get('Location').split('/');
+        //let urlPart=content.Location.split('/'); //개발용
         let id=urlPart[urlPart.length-1];
         props.loadFilesNFolders('', props.curFolderID);
     })
@@ -587,7 +586,7 @@ const MainFileBrowser = (props) => {
           toggle={togglePreviewModal} 
           fileName={currentItemInfo.name}
           fileID={currentItemInfo.pk}
-          hasThumbnail={currentItemInfo.has_thumbnail && `https://${window.location.hostname}/api/thumbnail/${currentItemInfo.pk}`}
+          hasThumbnail={currentItemInfo.has_thumbnail && `${window.location.origin}/api/thumbnail/${currentItemInfo.pk}`}
           isVideo={currentItemInfo.is_video}
           notify={props.notify}
           loadFilesNFolders={props.loadFilesNFolders}
@@ -699,7 +698,7 @@ const MainFileBrowser = (props) => {
                     pk={item.pk}
                     thumbnailUrl={
                       item.has_thumbnail &&
-                      `https://${window.location.hostname}/api/thumbnail/${item.pk}`
+                      `${window.location.origin}/api/thumbnail/${item.pk}`
                     }
                     itemType="file"
                     curName={currentItemInfo.name}
@@ -819,7 +818,7 @@ const MainFileBrowser = (props) => {
          type={currentItemInfo.type}
          thumbnailUrl={
            currentItemInfo.has_thumbnail &&
-           `https://${window.location.hostname}/api/thumbnail/${currentItemInfo.pk}`
+           `${window.location.origin}/api/thumbnail/${currentItemInfo.pk}`
          }
          subfolderNum={currentItemInfo.subfolderNum}
          fileNum={currentItemInfo.fileNum}

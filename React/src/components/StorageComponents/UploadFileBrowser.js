@@ -27,7 +27,7 @@ export default class UploadFileBrowser extends Component{
   getDirectoryInfo(key, folderID){
     if(!this.state.isCheck.includes(folderID)){ //폴더 정보 불러온 적이 없을 경우
       console.log("info get, key : ", key, ", folder ID : ", folderID);
-      let url=`https://${window.location.hostname}/api/directory/${folderID}`;
+      let url=`${window.location.origin}/api/directory/${folderID}`;
 
       fetch(url, {
               method: "GET",
@@ -135,7 +135,7 @@ export default class UploadFileBrowser extends Component{
     }
 
     console.log("here!!!, key : ", key);
-    let url=`https://${window.location.hostname}/api/mkdir`;
+    let url=`${window.location.origin}/api/mkdir`;
     let folders=key.split('/'); //폴더명에 특문 못쓰게 해야함.
     let name=folders[folders.length-2], parent="/";
     if(this.props.isSharing){
@@ -161,15 +161,15 @@ export default class UploadFileBrowser extends Component{
       body: JSON.stringify(data)
     })
     .then(this.props.errorCheck)
-    .then(res=>res.json()) //개발용
+    //.then(res=>res.json()) //개발용
     .then(content=>{
         this.setState({
           currentPath:parent+name+'/'
         }, ()=>this.props.changePath(this.state.currentPath));
         
         console.log("create complete!, content : ", content);
-        //let urlPart=content.headers.get('Location').split('/');
-        let urlPart=content['Location'].split('/'); //개발용
+        let urlPart=content.headers.get('Location').split('/');
+        //let urlPart=content['Location'].split('/'); //개발용
         let id=urlPart[urlPart.length-1];
         this.setState(state => {
           state.files = state.files.concat([{
@@ -201,7 +201,7 @@ export default class UploadFileBrowser extends Component{
     console.log('oldkey : ', oldKey, "newKey : ",names[names.length-2]);  
     for(let i in this.state.files){
       if(this.state.files[i].key===oldKey){
-        url=`https://${window.location.hostname}/api/directory/${this.state.files[i].id}`;
+        url=`${window.location.origin}/api/directory/${this.state.files[i].id}`;
         break;
       }
     }
@@ -251,7 +251,7 @@ export default class UploadFileBrowser extends Component{
         return;
       }
       console.log("folderKey : ", folderKey, folderKey.length);
-      let url=`https://${window.location.hostname}/api/directory/`;
+      let url=`${window.location.origin}/api/directory/`;
       this.state.files.map((file) => {
         if(file.key === folderKey[i]){
           console.log("matching here, key : ", file.key);
@@ -278,7 +278,7 @@ export default class UploadFileBrowser extends Component{
     }
     let newFiles = []
     for(let i in fileKey){
-      let url=`https://${window.location.hostname}/api/file/`;
+      let url=`${window.location.origin}/api/file/`;
       this.state.files.map((file) => {
         if(file.key === fileKey[i]){
           console.log("matching here, key : ", file.key);

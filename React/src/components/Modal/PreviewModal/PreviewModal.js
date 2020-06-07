@@ -19,7 +19,7 @@ import {
 
 const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo, notify, loadFilesNFolders})=>{
     console.log("preview props : ", isOpen, toggle, fileName, fileID, hasThumbnail, isVideo);
-    let url=`https://${window.location.hostname}/api/preview/${fileID}`;
+    let url=`${window.location.origin}/api/preview/${fileID}`;
     //let url='/images/35536e8e-4f0d-4b43-a78a-7c12d8787c5c.jpg';
 
     const download=()=>{

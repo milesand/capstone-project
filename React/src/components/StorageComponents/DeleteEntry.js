@@ -6,7 +6,7 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>
     }
     
     console.log("data : ", data)
-    fetch(`https://${window.location.hostname}/api/multi-entry`, {
+    fetch(`${window.location.origin}/api/multi-entry`, {
       method: 'DELETE',
       headers: {
         'Content-Type' : 'application/json'

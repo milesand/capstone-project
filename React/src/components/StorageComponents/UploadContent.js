@@ -95,17 +95,17 @@ class UploadContent extends Component {
             return response;
         };
         console.log("파일 등록!");
-        fetch(`https://${window.location.hostname}/api/upload/flow`, {
+        fetch(`${window.location.origin}/api/upload/flow`, {
             method: "POST",
             credentials: 'include',
             body: formData,
         })
         .then(errorCheck)
-        .then(res=>res.json())
+        //.then(res=>res.json()) //개발용
         .then(response=>{ // 실제 서버에서 사용
             console.log("promise 2, response : ", response);
-            //let url = response.headers.get('Location'); //docker로 구동 시에 사용
-            let url=response['Location']; //테스트용, build 할 때 지우기
+            let url = response.headers.get('Location'); //배포용
+            //let url=response['Location']; //개발용
             console.log('url : ', url);
             file.targetUrl=url; //여기서 등록 안될때가 있다.
             console.log('end!');
@@ -229,7 +229,7 @@ class UploadContent extends Component {
 
     if(file.targetUrl){
       let id=file.targetUrl.split('/').reverse()[0];
-      let url=`https://${window.location.hostname}/api/partial/${id}`;
+      let url=`${window.location.origin}/api/partial/${id}`;
       console.log("id : ", id);
 
       fetch(url, {

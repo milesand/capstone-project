@@ -13,7 +13,7 @@ const loadTeamList = (setIsLoading, setTeamList, props, setDefaultCheckTeam=null
     const tempList2 = [];
     setIsLoading(true);
     axios
-      .get(`https://${window.location.hostname}/api/team`, option)
+      .get(`${window.location.origin}/api/team`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
@@ -21,7 +21,7 @@ const loadTeamList = (setIsLoading, setTeamList, props, setDefaultCheckTeam=null
         content["data"].map((team, index) => {
           tempList1.push(team);
         });
-        axios.get(`https://${window.location.hostname}/api/join-team`, option)
+        axios.get(`${window.location.origin}/api/join-team`, option)
           .catch(error=>{
             props.errorCheck(error.response);
           }) 

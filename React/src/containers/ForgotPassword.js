@@ -32,7 +32,7 @@ export default class ForgotPassword extends Component{
 
         this.props.toggleLoadingState();
 
-        fetch(`https://${window.location.hostname}/api/forgot`, {
+        fetch(`${window.location.origin}/api/forgot`, {
           method: "POST",
           headers: {
             'Content-Type' : 'application/json',

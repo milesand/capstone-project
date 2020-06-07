@@ -188,7 +188,7 @@ const TeamContent = (props) => {
       props.notify("이름을 입력하세요.");
       setMyTeamName("");
     } else {
-      axios.post(`https://${window.location.hostname}/api/team`, body, option)
+      axios.post(`${window.location.origin}/api/team`, body, option)
         .catch(error=>{
           props.errorCheck(error.response);
           if(error.response.status>=400) throw Error(error.response.data['error']);
@@ -222,7 +222,7 @@ const TeamContent = (props) => {
     if(name=='') return;
     if(typeof(name)=='object') name=friendName;
     console.log("search name : ", name);
-    axios.get(`https://${window.location.hostname}/api/search-user/${currentTeamId}/${name}`,option) //검색버튼 안눌러도 즉각적으로 결과보여주기
+    axios.get(`${window.location.origin}/api/search-user/${currentTeamId}/${name}`,option) //검색버튼 안눌러도 즉각적으로 결과보여주기
     .then(content => { 
       setFriendList(content.data);
     })
@@ -245,7 +245,7 @@ const TeamContent = (props) => {
       console.log('invite check, ', friendList, friendList[friendChecked[0][i]]["username"]);
       const body = JSON.stringify(userName);
       axios.put(
-          `https://${window.location.hostname}/api/team/${currentTeamId}/invitation`,
+          `${window.location.origin}/api/team/${currentTeamId}/invitation`,
           body,
           option
         )
@@ -298,7 +298,7 @@ const TeamContent = (props) => {
     console.log("팀 id : " + e.target.value);
     console.log("팀 이름 : " + e.target.name);
 
-    axios.get(`https://${window.location.hostname}/api/team-management/${e.target.value}`, option)
+    axios.get(`${window.location.origin}/api/team-management/${e.target.value}`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
@@ -345,7 +345,7 @@ const TeamContent = (props) => {
       credentials: "include",
     };
     console.log("현재 팀 id : " + currentTeamId);
-    axios.put(`https://${window.location.hostname}/api/team/${currentTeamId}/secession`, null, option)
+    axios.put(`${window.location.origin}/api/team/${currentTeamId}/secession`, null, option)
     .catch(error=>{
       props.errorCheck(error.response);
     }) 
@@ -370,7 +370,7 @@ const TeamContent = (props) => {
       withCredentials: true,
       credentials: "include",
     };
-    axios.delete(`https://${window.location.hostname}/api/team-management/${currentTeamId}`, option)
+    axios.delete(`${window.location.origin}/api/team-management/${currentTeamId}`, option)
       .catch(error=>{
         props.errorCheck(error.response);
       }) 
@@ -397,7 +397,7 @@ const TeamContent = (props) => {
     };
 
     axios.put(
-        `https://${window.location.hostname}/api/team-management/${currentTeamId}`,
+        `${window.location.origin}/api/team-management/${currentTeamId}`,
         data,
         option
       )
@@ -418,7 +418,7 @@ const TeamContent = (props) => {
 
   const submitKeyword=()=>{
     console.log("submit keyword, team ID : ", currentTeamId, ', keyword : ', searchKeyword);
-    let url=`https://${window.location.hostname}/api/${currentTeamId}/${searchKeyword}`;
+    let url=`${window.location.origin}/api/${currentTeamId}/${searchKeyword}`;
     axios.get(url, option)
     .catch(error=>{
       props.errorCheck(error.response);

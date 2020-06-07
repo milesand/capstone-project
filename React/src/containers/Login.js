@@ -61,7 +61,7 @@ export default class Login extends Component { //export default : 다른 모듈�
         return response;
       }
       if(token!=null){
-        fetch(`https://${window.location.hostname}/api/social-login`, {
+        fetch(`${window.location.origin}/api/social-login`, {
           method: "POST",
           headers: {
             'Content-Type' : 'application/json',
@@ -99,7 +99,7 @@ export default class Login extends Component { //export default : 다른 모듈�
       return response;
     }
 
-    fetch(`https://${window.location.hostname}/api/social-login`, {
+    fetch(`${window.location.origin}/api/social-login`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',
@@ -133,7 +133,7 @@ export default class Login extends Component { //export default : 다른 모듈�
     
     this.props.toggleLoadingState();
     console.log("isLoading : ", this.state.isLoading);
-    fetch(`https://${window.location.hostname}/api/jwt-login`, {
+    fetch(`${window.location.origin}/api/jwt-login`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',

@@ -35,7 +35,7 @@ const HomeContent=(props)=>{
     
         //주어진 dirID를 가진 디렉토리에 들어있는 파일들 불러오기
         setIsLoading(true);
-            axios.get(`https://${window.location.hostname}/api/directory/${dirID}`,option)
+            axios.get(`${window.location.origin}/api/directory/${dirID}`,option)
             .then(content2 => { 
               console.log("content2 : ", content2);
               const newFileList=[], newFolderList=[];

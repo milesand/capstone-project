@@ -49,7 +49,7 @@ export default class Home extends Component {
 
   componentDidMount() {
     console.log("home.js start, props : ", this. props);
-    // fetch(`https://${window.location.hostname}/api/user`, {
+    // fetch(`${window.location.origin}/api/user`, {
     //   method: "GET",
     //   credentials: 'include',
     // })
@@ -77,7 +77,7 @@ export default class Home extends Component {
     return Math.round(((this.maxSpace-getSpace(size))/this.maxSpace) * 100);
   }
   
-  axios.get(`https://${window.location.hostname}/api/user`, this.state.option)
+  axios.get(`${window.location.origin}/api/user`, this.state.option)
   .catch(error=>{
     this.props.errorCheck(error.response);
   }) 
@@ -98,7 +98,7 @@ export default class Home extends Component {
     for(let team in this.state.invitationList){
       let teamID=this.state.invitationList[team]
       console.log("in loop, team : ", teamID);
-      axios.get(`https://${window.location.hostname}/api/team-management/${teamID}`, this.state.option)
+      axios.get(`${window.location.origin}/api/team-management/${teamID}`, this.state.option)
       .catch(error=>{
         this.props.errorCheck(error.response);
       }) 

@@ -53,7 +53,7 @@ const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitat
     console.log("currentTeamId" + currentTeamId);
     axios
       .put(
-        `https://${window.location.hostname}/api/team/${currentTeamId}/acceptance`,
+        `${window.location.origin}/api/team/${currentTeamId}/acceptance`,
         null,
         option
       )
@@ -74,7 +74,7 @@ const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitat
     const currentTeamId = e.target.value;
 
     axios
-      .delete(`https://${window.location.hostname}/api/team/${currentTeamId}/acceptance`, option)
+      .delete(`${window.location.origin}/api/team/${currentTeamId}/acceptance`, option)
       .catch(error=>{
         errorCheck(error.response);
       }) 

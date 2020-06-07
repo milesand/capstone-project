@@ -81,7 +81,7 @@ class App extends Component {
        return response;
     }
     
-    return fetch(`https://${window.location.hostname}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+    return fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ class App extends Component {
       .then(content=>{
         console.log("login? : ", this.state.isLogin);
         if(this.state.isLogin){ // 사용자가 로그인 중일 때
-          fetch(`https://${window.location.hostname}/api/jwt-refresh`, { //JWT 토큰 재발급
+          fetch(`${window.location.origin}/api/jwt-refresh`, { //JWT 토큰 재발급
               method: "POST", 
               headers: {
                 'Content-Type' : 'application/json',
@@ -146,7 +146,7 @@ class App extends Component {
       return response;
     }
 
-      fetch(`https://${window.location.hostname}/api/logout`, {
+      fetch(`${window.location.origin}/api/logout`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json'

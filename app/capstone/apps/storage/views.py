@@ -192,7 +192,6 @@ class FlowUploadStartView(APIView):
             )
 
         return Response(
-            {"Location": "http://localhost/api/upload/flow/" + str(upload.pk)},  # 테스트용, 꼭 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "{}://{}/api/upload/flow/{}".format(
@@ -465,7 +464,6 @@ class CreateDirectoryView(APIView):
             )
 
         return Response(
-            {"Location": "/api/directory/" + str(directory_record.pk)},  # 로컬 테스트용, 나중에 지우기
             status=status.HTTP_201_CREATED,
             headers={
                 "Location": "{}://{}/api/directory/{}".format(
