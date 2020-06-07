@@ -37,7 +37,7 @@ class App extends Component {
       isLoading: false,
       rootDirID: "",
     };
-    console.log('is localhost ? : ', window.location.hostname);
+    console.log('is localhost ? : ', window.location.origin);
   }
 
   toggleLoadingState=()=>{ //현재 fetch 중이라면 isLoading을 true로, 아니면 false로 바꿔준다. 버튼 스피너를 위해 필요함.
