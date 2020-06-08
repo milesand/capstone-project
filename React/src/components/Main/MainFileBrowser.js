@@ -474,7 +474,7 @@ const handleRecover = () => {
     if(flow) console.log('isLoading ? ', flow.files, flow.isUploading());
     if(flow&&flow.isUploading()){
       console.log("here, check called!!!");
-      props.showRemainingTime(flow);
+      //props.showRemainingTime(flow); 업로드 남은 시간 표기 테스트
     }
   }
 
