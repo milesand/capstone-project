@@ -51,11 +51,11 @@ const MyContextMenu = (props) => {
             <span className="contextMenuText">다운로드</span>
         </MenuItem>
         <MenuItem divider className="contextMenuDivider"/>
-        <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
+        <MenuItem className="contextMenuItem" onClick={props.handleMove}>
           <FontAwesomeIcon icon={faArrowRight} className="contextMenuIcon" /> 
            <span className="contextMenuText">이동</span>
         </MenuItem>
-        <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={props.handleDelete}>
+        <MenuItem className="contextMenuItem" onClick={props.handleDelete}>
           <FontAwesomeIcon icon={faTrash} className="contextMenuIcon" /> 
             <span className="contextMenuText">삭제</span>
         </MenuItem>
@@ -63,12 +63,12 @@ const MyContextMenu = (props) => {
 
       {/*단일 디렉토리*/}
       <ContextMenu onShow={props.onShow} id="contextMenuDirID" className="contextMenu">
-      <MenuItem className="contextMenuItem" onClick={handleClick()}>
+      <MenuItem className="contextMenuItem" onClick={props.handleShare}>
         <FontAwesomeIcon icon={faShare} className="contextMenuIcon" /> 
-          <span className="contextMenuText">공유</span>
+          <span className="contextMenuText">공유 설정 변경</span>
       </MenuItem>
       <MenuItem divider className="contextMenuDivider"/>
-      <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
+      <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={props.handleMove}>
         <FontAwesomeIcon icon={faArrowRight} className="contextMenuIcon" /> 
         <span className="contextMenuText">이동</span>
       </MenuItem>
@@ -84,7 +84,7 @@ const MyContextMenu = (props) => {
 
       {/*두개 이상의 디렉토리*/}
       <ContextMenu id="contextMenuMultiFolderID" className="contextMenu">
-        <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={handleClick()}>
+        <MenuItem className="contextMenuItem" data={{ foo: "bar" }} onClick={props.handleMove}>
           <FontAwesomeIcon icon={faArrowRight} className="contextMenuIcon" /> 
            <span className="contextMenuText">이동</span>
         </MenuItem>

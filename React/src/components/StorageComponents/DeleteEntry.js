@@ -15,7 +15,7 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>
       body: JSON.stringify(data)
     })
     .then(errorCheck)
-    .then(()=>{
+    .then(content=>{
       notify('삭제 완료!');
       loadFilesNFolders('', curFolderID);
     })

@@ -3,10 +3,10 @@ import React, { Component } from "react";
 
 import SideBar from "../components/sidebar/SideBar/SideBar";
 import HomeContent from "../components/Main/HomeContent";
-import TeamContent from "../components/Main/TeamContent";
+import TeamContent from "../components/Main/Team/TeamContent";
+import SharingContent from "../components/Main/Sharing/SharingContent";
 import ProfileContent from "../components/Main/ProfileContent";
 import MyNavbar from "../components/Main/MyNavBar/MyNavbar";
-import ErrorPage from "../components/LoginComponents/ErrorPage";
 import 'bootstrap/dist/css/bootstrap.css';
 import "./Home.css";
 import {
@@ -37,8 +37,16 @@ export default class Home extends Component {
           "Content-Type": "application/json",
         },
         withCredentials:true
-    }
+    },
+    searchKeyword: '',
+    searchRootDirID: this.props.rootDirID,
+    searchRootDirName: '',
 
+    isSearching: false,
+    searchFileList:[],
+    searchFolderList:[],
+    showSearchResult: false,
+    isShowingSearchBar: true,
   };
   this.maxSpace=5; //기가바이트 단위
   console.log("in home, props : ", this.props);
@@ -64,7 +72,9 @@ export default class Home extends Component {
     this.checkUserState();
 }
 
-
+  componentWillUnmount(){
+    console.log("unmount!");
+  }
   checkUserState=()=> {
   console.log("check User staet !!!!");
   let getSpace=(size)=>{
@@ -134,6 +144,77 @@ export default class Home extends Component {
   toProfile=()=>{
     this.props.history.push('/profile');
   }
+
+  changeSearchKeyword=(e)=>{
+    console.log('target : ', e.target, e.target.id, e.target.value);
+    this.setState({
+      searchKeyword: e.target.value
+
+    })
+  }
+
+  submitSearchKeyword=(e)=>{
+    e.preventDefault();
+    if(this.state.searchKeyword.length==0){
+      this.setState(state=>{
+        state.showSearchResult=false;
+        state.searchFileList=[];
+        state.searchFolderList=[];
+        return state;
+      })
+      return;
+    }
+    if(this.state.searchKeyword.length<2){
+      this.props.notify('검색어는 두 글자 이상으로 입력해주세요.');
+      return;
+    }
+    console.log("submit! ID : ", this.state.searchRootDirID);
+    let url=`${window.location.origin}/api/search/${this.state.searchRootDirID}/${this.state.searchKeyword}`;
+    this.toggleIsSearching();
+
+    fetch(url, {
+      method : 'GET',
+      headers : {
+        'Content-Type' : 'application/json',
+      },
+      credentials: 'include'
+    })
+    .then(this.props.errorCheck)
+    .then(res=>res.json())
+    .then(content=>{
+        if(content.hasOwnProperty('error')) throw Error(content['error']);
+        console.log('homeContent start content : ', content);
+        this.setState(state=>{
+          state.searchFileList=content['files'];
+          state.searchFolderList=content['subdirectories'];
+          state.isSearching=false;
+          state.showSearchResult=true;
+          state.searchKeyword='';
+          return state;
+        })
+    })
+    .catch(e=>{
+      this.props.notify(e);
+      this.toggleIsSearching();
+    });
+  }
+
+  switchSearchingRoot=(rootDirID, rootDirName='')=>{
+    console.log("switch! ID : ", rootDirID);
+    this.setState({
+      searchRootDirID: rootDirID,
+      searchRootDirName: rootDirName
+    });
+  }
+
+  toggleIsSearching=()=>{
+    this.setState(state=>{
+      state.isSearching=!state.isSearching;
+      return state;
+    })
+  }
+
+
   render() {
 
     console.log(`${this.props.match.path}team`)
@@ -157,26 +238,46 @@ export default class Home extends Component {
                  checkUserState={this.checkUserState}
                  notify={this.props.notify}
                  errorcheck={this.props.errorCheck}
-                 >
+                 searchKeyword={this.state.searchKeyword}
+                 changeSearchKeyword={this.changeSearchKeyword}
+                 submitSearchKeyword={this.submitSearchKeyword}
+                 isShowingSearchBar={this.state.isShowingSearchBar}
+        >
 
        </MyNavbar>
        <Container fluid className="content-wrapper" >
-       <Switch>
-       <AuthenticatedRoute exact path={this.props.match.path}
-                           component={HomeContent}
-                           checkUserState={this.checkUserState}
-                           props={this.props} />
+        <Switch>
+        <AuthenticatedRoute exact path={this.props.match.path}
+                            component={HomeContent}
+                            checkUserState={this.checkUserState}
+                            showSearchResult={this.state.showSearchResult}
+                            searchRootDirID={this.state.searchRootDirID}
+                            searchRootDirName={this.state.searchRootDirName}
+                            switchSearchingRoot={this.switchSearchingRoot}
+                            searchFileList={this.state.searchFileList}
+                            searchFolderList={this.state.searchFolderList}
+                            props={this.props} />
 
-       <AuthenticatedRoute exact path='/profile'
-                           component={ProfileContent}
-                           checkUserState={this.checkUserState}
-                           props={this.props} />
+        <AuthenticatedRoute exact path='/profile'
+                            component={ProfileContent}
+                            checkUserState={this.checkUserState}
+                            sShowingSearchBar={this.isShowingSearchBar}
+                            props={this.props} />
 
-       <AuthenticatedRoute path={`${this.props.match.path}team`} 
-                           props={this.props} 
-                           component={TeamContent}/>
-       </Switch>
-       {/* <Content /> */}
+        <AuthenticatedRoute exact path='/sharing'
+                            component={SharingContent}
+                            checkUserState={this.checkUserState}
+                            searchRootDirID={this.state.searchRootDirID}
+                            searchRootDirName={this.state.searchRootDirName}
+                            switchSearchingRoot={this.switchSearchingRoot}
+                            searchFileList={this.state.searchFileList}
+                            searchFolderList={this.state.searchFolderList}
+                            props={this.props} />
+
+        <AuthenticatedRoute path={`${this.props.match.path}team`} 
+                            props={this.props} 
+                            component={TeamContent}/>
+        </Switch>
 
       </Container>
      

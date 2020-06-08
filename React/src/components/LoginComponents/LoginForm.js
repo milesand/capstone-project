@@ -25,7 +25,6 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                 callback={facebookLogin} 
                 icon="fa-facebook-square"  
                 cssClass="fadeIn register form-control"
-                size = "medium"
                 textButton = " 페이스북으로 로그인"
                 />
               </Col>     
@@ -34,7 +33,7 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
                   onClick={googleLogin}
                   type="button"
                   id="login-google"
-                  class="fadeIn register form-control"
+                  className="fadeIn register form-control"
                 > 
               </input>
               </Col>    

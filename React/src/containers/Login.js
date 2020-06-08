@@ -9,7 +9,6 @@ export default class Login extends Component { //export default : 다른 모듈�
     this.state = {
       username: "",
       password: "",
-      isLoading: false
     };
   }
 
@@ -98,7 +97,6 @@ export default class Login extends Component { //export default : 다른 모듈�
       console.log(data);
       return response;
     }
-
     fetch(`${window.location.origin}/api/social-login`, {
       method: "POST",
       headers: {
@@ -119,7 +117,9 @@ export default class Login extends Component { //export default : 다른 모듈�
                                  content.root_info.root_dir
                                  );
       this.props.history.push('/');
-    }).catch(e=>this.props.notify(e))
+    }).catch(e=>{
+      this.props.notify('페이스북 로그인에 실패했습니다. 다시 시도해주세요.');
+    })
   }
 
   // 일반 로그인
@@ -132,7 +132,6 @@ export default class Login extends Component { //export default : 다른 모듈�
     }
     
     this.props.toggleLoadingState();
-    console.log("isLoading : ", this.state.isLoading);
     fetch(`${window.location.origin}/api/jwt-login`, {
       method: "POST",
       headers: {
@@ -152,6 +151,10 @@ export default class Login extends Component { //export default : 다른 모듈�
 
         if(!this.validateAllField(this.state.username, this.state.password))
             throw Error('아이디와 비밀번호는 영문자, 숫자를 포함한 8자 이상 15자 이하로 입력해주세요.');
+        
+        else{
+          throw Error('아이디와 비밀번호가 일치하지 않습니다.');
+        }
       }
       console.log("login content : ", content);
       if(isMailAuthenticated)
@@ -171,9 +174,6 @@ export default class Login extends Component { //export default : 다른 모듈�
             ''
           );
       }
-      this.setState({
-        isLoading: true
-      });
       this.props.toggleLoadingState();
       this.props.history.push('/');
     }).catch(e=>{

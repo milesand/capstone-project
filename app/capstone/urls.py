@@ -63,15 +63,18 @@ api = [
 
     # 디렉토리 관련 기능
     path('mkdir', storage.CreateDirectoryView.as_view()), # 디렉토리 생성
-    re_path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()), #리 특정 디렉토리 관
+    re_path('directory/(?P<pk>[0-9a-z-]{36})', storage.DirectoryView.as_view()), #특정 디렉토리 관리
+    re_path('sharing/(?P<pk>[0-9a-z-]{36})', teams.SharingFolderAPI.as_view()),
 
     # 파일 관련 기능
     path('file/<str:file_id>', storage.FileManagementAPI.as_view()), # 파일 정보 출력
-    path('multi-entry', storage.MultipleEntryAPI.as_view()),
+    path('multi-entry', storage.MultipleEntryAPI.as_view()), # 여러 개의 파일이나 디렉토리를 한번에 삭제할 때 사용.
     path('file-list', storage.FileListAPI.as_view()), # 사용자가 저장중인 전체 파일 출력, 테스트용
     path('partial', storage.PartialAPI.as_view()),  # partial file 목록 출력 및 전체 제거, 테스트용
     re_path('partial/(?P<pk>[0-9a-z-]{36})', storage.PartialDeleteAPI.as_view()),  # 특정 partial file 제거, 업로드 중단할 때 사용
     re_path('preview/(?P<pk>[0-9a-z-]{36})', storage.StreamingAPI.as_view()),  # 이미지 및 동영상 미리보기에 사용하는 URL
+    path('replacement', storage.EntryReplacementAPI.as_view()),
+    path('search/<str:pk>/<str:keyword>', storage.ItemSearchAPI.as_view()),
 
     #팀 관련 기능
     path('team', teams.CreateTeamAPI.as_view()),
@@ -79,7 +82,6 @@ api = [
     path('team/<str:teamID>/invitation', teams.InvitationAPI.as_view()),
     path('team/<str:teamID>/acceptance', teams.AcceptInvitationAPI.as_view()),
     path('team/<str:teamID>/secession', teams.SecessionAPI.as_view()),
-    path('team/<str:teamID>/sharing', teams.SharingFolderAPI.as_view()),
     path('join-team', teams.JoinTeamAPI.as_view()), # 현재 가입중인 팀 목록 출력
     path('search-user/<str:team_pk>/<str:name>', teams.UserSearchAPI.as_view()), # 일부 문자열을 통해 사용자 검색
 

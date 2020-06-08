@@ -4,9 +4,9 @@ import {Col} from 'reactstrap';
 import logo from './login4.png';
 
 const MailValidationForm=({guideText, toHome, isValid}) => {
-    console.log("vali test.");
     return(
-        <div className="LS wrapper fadeInDown">
+      <div className='LS Login'>
+        <div className="wrapper fadeInDown">
           <div id="formContent">
             
             <Col xs={12} className="fadeIn">
@@ -17,8 +17,6 @@ const MailValidationForm=({guideText, toHome, isValid}) => {
                     
                 </div>
             <form>
-              {isValid
-                ?
                 <input
                   type="button"
                   className="fadeIn"
@@ -26,11 +24,9 @@ const MailValidationForm=({guideText, toHome, isValid}) => {
                   onClick={toHome}
 
                 />
-                : null
-              }  
             </form>
 
-          
+            </div>
           </div>
         </div>
      

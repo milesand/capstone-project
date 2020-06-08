@@ -31,6 +31,22 @@ class DirectoryEntry(models.Model):
         related_name="favorites",
     )
 
+    def get_browser_path(self):
+        print('here!')
+        path=''
+        parent_dir_id=self.parent.pk
+        print('parent dir id : ', parent_dir_id)
+        while parent_dir_id is not None:
+            try:
+                parent_dir=Directory.objects.get(pk=parent_dir_id)
+            except:
+                return False
+            path=parent_dir.name + '/' + path
+            print("in browser path, path : ", path)
+            if parent_dir.parent is None: break
+            parent_dir_id=parent_dir.parent.pk
+
+        return path
 
     class Meta:
         constraints = [

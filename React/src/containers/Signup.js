@@ -185,7 +185,7 @@ export default class Signup extends Component {
     }).catch(error =>{
         this.props.notify(error);
         this.props.toggleLoadingState(); //fetch 과정에서 에러가 발생했을 때, isLoading state를 false로 돌려놓는다.
-      } );
+      });
   }
 
   render() {

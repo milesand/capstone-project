@@ -134,24 +134,6 @@ WSGI_APPLICATION = 'capstone.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-'''DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'exampledb',
-    }
-}'''
-
-'''DATABASES = { # docker에서 사용할 때 mongoDB 컨테이너와 연결하기 위해 사용한다.
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'exampledb',
-        'CLIENT' : {
-            'host' : 'db',
-            'port' : 27017,
-        }
-    }
-}'''
-
 DATABASES = {
     'default': {
         'ENGINE' : 'django.db.backends.postgresql_psycopg2',
@@ -163,7 +145,7 @@ DATABASES = {
     },
 }
 
-LOGGING = {
+'''LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
@@ -181,7 +163,7 @@ LOGGING = {
             'level': 'DEBUG',
         }
     },
-}
+}'''
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

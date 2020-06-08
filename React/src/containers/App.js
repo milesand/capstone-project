@@ -21,8 +21,6 @@ import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
 import ThumbTest from "./ThumbTest";
-import FileTest from "./FileTest";
-import StreamingTest from "./StreamingTest";
 
 class App extends Component {
   constructor(props) {
@@ -53,6 +51,7 @@ class App extends Component {
   }
 
   getUserInfo=()=>{
+    console.log("check start.");
     let errorCheck = response => {
       console.log("user check, here!!!!, response : ", response);
       if(!response.hasOwnProperty('error')&&!response.hasOwnProperty('detail')){
@@ -207,10 +206,6 @@ class App extends Component {
       this.props.history.push('/login');
       throw Error("로그인 인증시간이 만료되었습니다. 다시 로그인 해주세요.");
     }
-    if(('ok' in response&&!response.ok)){
-      console.log("errchk here!!");
-      throw Error(message);
-    }
     return response;
   }
 
@@ -247,8 +242,6 @@ class App extends Component {
               <NotAuthenticatedRoute path="/forgot-password" exact component={ForgotPassword} props={baseProps} />
               <NotAuthenticatedRoute path="/display-id" exact component={DisplayID} props={baseProps} />
               <NotAuthenticatedRoute path="/return-to-login" exact component={ReturnToLogin} props={baseProps} />
-              <AuthenticatedRoute path="/file-test" exact component={FileTest} props={baseProps} />
-              <AuthenticatedRoute path="/streaming-test" fileID="25d9ddeb-bddf-4f8d-a179-b36697b9a65f" component={StreamingTest} props={baseProps} />
               <AuthenticatedRoute path="/" component={Home} props={baseProps} />
               <Route component={ErrorPage} />
             </Switch>
