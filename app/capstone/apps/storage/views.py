@@ -518,6 +518,9 @@ class DirectoryView(APIView):
             try:
                 child_file = child.file
                 file_data = FileSerializer(child_file).data
+                # Note: This check-favorite routine is kinda duplicate of
+                # that in FileManagement view. Might be nicer if we could put this logic in
+                # the serializer.
                 file_data['favorite'] = child_file.favorite_of.filter(pk=request.user.pk).exists()
                 data['files'][child_file.name] = file_data
                 continue
@@ -699,9 +702,9 @@ class RecycleBinView(APIView):
     def get(self, request):
         data = {"directories": {}, "files": {}}
         queryset = RecycleEntry.objects.filter(entry__owner=request.user)
-        for entry in queryset:
+        for recycle_entry in queryset:
             try:
-                directory = entry.directory
+                directory = recycle_entry.entry.directory
             except Directory.DoesNotExist:
                 pass
             else:
@@ -710,7 +713,7 @@ class RecycleBinView(APIView):
                 data["directories"][directory.name].append(str(directory.pk))
                 continue
             try:
-                file_record = entry.file
+                file_record = recycle_entry.entry.file
             except File.DoesNotExist:
                 pass
             else:
