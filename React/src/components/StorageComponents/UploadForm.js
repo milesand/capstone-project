@@ -19,15 +19,44 @@ const UploadForm = ({myRef, isSubmitted, fileList, resume, stop, remove}) => {
         <ListGroup>
           {fileList && fileList.map(file => {
                 let percent=file.sizeUploaded() / file.size * 100;
+                let uploadSpeed=file.averageSpeed;
+                if(uploadSpeed>Math.pow(1024, 2)){ //MB
+                  uploadSpeed=Math.round(uploadSpeed/(1024*1024)*10)/10 + 'MB';
+                }
+                else if(uploadSpeed>Math.pow(1024, 1)){ //KB
+                  uploadSpeed=Math.round(uploadSpeed/(1024)*10)/10 + 'KB';
+                }
+                else{ //Byte
+                  uploadSpeed=Math.round(uploadSpeed/10)/10 + 'B';
+                }
+                let remainingTime=file.timeRemaining();
+                if (remainingTime>60){
+                  if(remainingTime>3600){
+                    remainingTime=parseInt(remainingTime/3600) + '시간 '
+                                + parseInt((remainingTime%3600)/60) + '분 ' 
+                                + (remainingTime%3600%60) + '초';
+                  }
+                  else{
+                    remainingTime=parseInt((remainingTime)/60) + '분 ' 
+                               + (remainingTime%60) + '초';
+                  }
+                }
+                else{
+                  remainingTime=remainingTime + '초';
+                }
                 return(
                   <ListGroupItem>
                   <div>
                     <Row>
-                      {file.name}
+                      <span className='upload-text'>{file.name}</span>
                     </Row>
                     <Row>
                       <Col md={8}>
                           <Progress animated striped color="success" value={percent} className="bar"/>
+                          <span className='upload-text'>진행도 : {Math.round(percent, 2)}%</span>
+                          {!file.isComplete() && percent!=0 &&                     
+                              <span className='upload-text'> 속도 : {uploadSpeed}  남은 시간 : {remainingTime}</span>
+                          }
                       </Col>
                         <Col md={{span: 1, offset : 2}}>
                           {!file.isComplete()&&file.paused&&

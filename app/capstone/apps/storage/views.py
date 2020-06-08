@@ -413,6 +413,7 @@ class CreateDirectoryView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        print("request : ", request.data)
         fields = {}
         for field in ('parent', 'name'):
             try:
@@ -435,6 +436,7 @@ class CreateDirectoryView(APIView):
                 {"message": "Parent directory does not exist"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        print("parent dir : ", parent)
         try:
             with transaction.atomic():
                 storage = (
@@ -719,7 +721,7 @@ class RecycleBinView(APIView):
             else:
                 if file_record.name not in data["files"]:
                     data["files"][file_record.name] = []
-                data["files"][file_record.name].append(str(file_record.pk))
+                data["files"][file_record.name].append(FileSerializer(file_record).data)
                 continue
         return Response(
             data,
@@ -728,7 +730,15 @@ class RecycleBinView(APIView):
     
     def delete(self, request):
         # Empty bin.
-        RecycleEntry.objects.filter(entry__owner=request.user).delete()
+        #RecycleEntry.objects.filter(entry__owner=request.user).delete()
+        # 연결된 directoryEntry 삭제 안되는 현상 발생. signal을 달아서 연결된 directoryEntry 모델을 제거하는게 편할 것 같지만,
+        # recoverView에서 파일 복구 시 RecycleEntry를 삭제할 때 directoryEntry 모델도 같이 삭제되는 현상이 발생함.
+        # 따라서 직접 순회하며 연결된 모델들 삭제하는 방법으로 수정함.
+        recycle_entry=RecycleEntry.objects.filter(entry__owner=request.user)
+        for element in recycle_entry:
+            element.entry.delete()
+            element.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT,
         )
@@ -739,6 +749,7 @@ class RecoverView(APIView):
     permission_classes = (IsAuthenticated,)
     
     def post(self, request):
+        print("request data : ", request.data)
         if not isinstance(request.data, list) or len(request.data) == 0:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -746,6 +757,7 @@ class RecoverView(APIView):
         errors = []
 
         for req in request.data:
+            print("req : ", req)
             if isinstance(req, str):
                 pk = req
                 parent = None
@@ -757,11 +769,11 @@ class RecoverView(APIView):
                 continue
                 
             try:
-                recycle_entry = RecycleEntry.objects.get(pk=pk, owner=request.user)
+                recycle_entry = RecycleEntry.objects.get(pk=pk, entry__owner=request.user)
             except RecycleEntry.DoesNotExist:
                 errors.append(req)
                 continue
-
+            print('recycle_entry : ', recycle_entry.entry, recycle_entry.former_parent)
             if parent is None:
                 parent = recycle_entry.former_parent
                 if parent is None or not perm_check_dir_with_teams(request.user, parent):
@@ -776,23 +788,30 @@ class RecoverView(APIView):
                     errors.append({"request": req, "message": "Parent directory is inaccessible"})
                     continue
             entry = recycle_entry.entry
+            print("entry : ", entry)
             entry.parent = parent
+            print('entry.parent : ', entry.parent)
+            #recycle_entry.entry=None # post_delete 시그널에 의해 entry 삭제되는 현상 방지
             recycle_entry.delete()
 
             try:
-                directory = entry.directory
-            except Directory.DoesNotExist:
+                directory = entry.directory # 이 부분에서 directory 모델 parent값 none이므로, 다시한번 저장해준다.
+                directory.parent=entry.parent
+            except Directory.DoesNotExist: #파일인 경우
                 entry.in_recycle = False
                 entry.save()
             else:
                 # Again. Celery may be better.
                 def recover_from_recycle(directory):
                     def recover_from_recycle_recur(directory):
+                        print("directory : ", directory, directory.parent)
                         directory.in_recycle = False
                         directory.save()
                         for child in directory.children.all().select_for_update():
+                            print("child : ", child)
                             try:
                                 child_dir = child.directory
+                                print("child_dir : ", child_dir)
                             except Directory.DoesNotExist:
                                 pass
                             else:
@@ -800,10 +819,11 @@ class RecoverView(APIView):
                                 continue
                             child.in_recycle = False
                             child.save()
-                        recover_from_recycle_recur(directory)
 
                     with transaction.atomic():
                         recover_from_recycle_recur(directory)
+
+                recover_from_recycle(directory)
                 
                 background_job = threading.Thread(target=recover_from_recycle, args=[directory])
                 background_job.setDaemon(True)
@@ -1017,18 +1037,31 @@ def multi_delete(entryList, user):
             with transaction.atomic():
                 file=get_object_or_404(File, pk=entryID)
                 if perm_check_entry_with_teams(user, file): #권한 체크. 파일 주인이거나, 공유 파일
-                    file.delete()
+                    if file.in_recycle:
+                        file.delete()
+                    else:
+                        RecycleEntry.objects.create(entry=file, former_parent=file.parent)
+                        file.in_recycle = True
+                        file.parent = None
+                        file.save()
 
         except(Http404):
             with transaction.atomic():
-                print("entryID : ", entryID, "root pk : ", user.root_info.root_dir.pk, type(entryID),
-                      type(user.root_info.root_dir.pk))
+                dir=get_object_or_404(Directory, pk=entryID)
                 if entryID == str(user.root_info.root_dir.pk):  # 루트 디렉토리 삭제 시도
-                    print("here!")
                     if len(entryList) == 1:
                         return Response({'error': '루트 디렉토리는 삭제할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
                     else:
                         continue
+
+                if perm_check_entry_with_teams(user, dir): #권한 체크. 파일 주인이거나, 공유 파일
+                    if dir.in_recycle:
+                        dir.delete()
+                    else:
+                        RecycleEntry.objects.create(entry=dir, former_parent=dir.parent)
+                        dir.in_recycle = True
+                        dir.parent = None
+                        dir.save()
 
     return Response(status=status.HTTP_204_NO_CONTENT)
 

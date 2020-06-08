@@ -79,9 +79,6 @@
      display: inline-table !important; */
 
    }
-   .item{
-
-   }
   }
 
   .close-button{
@@ -120,4 +117,16 @@
   line-height: 3rem;
   color:#66615b;
   font-size: 1.5em;
+}
+
+.sharing-modal-close-button{
+  width : 200px;
+ }
+
+ .trash-remove-modal {
+  margin-top:150px !important;
+  width: 500px !important;
+  text-align: center;
+  color:#464646 !important;
+  font-weight: 500;
 }

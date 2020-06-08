@@ -33,13 +33,13 @@ import Item from "./Item/Item";
 import MyContextMenu from "./ContextMenu/MyContextMenu";
 import SubSideBar from "../sidebar/SubSideBar/SubSideBar";
 import CustomDownload from "../StorageComponents/CustomDownload";
-import UploadFileBrowser from '../StorageComponents/UploadFileBrowser';
 import DeleteEntry from "../StorageComponents/DeleteEntry";
 import PreviewModal from '../Modal/PreviewModal/PreviewModal';
 import loadTeamList from './Team/LoadTeamList';
+import RecoverModal from "./RecoverModal";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from "axios";
-import { SelectableGroup} from "react-selectable-fast";
+import { SelectableGroup } from "react-selectable-fast";
 import styled from "styled-components";
 
 const CustomTable = styled.div`
@@ -140,6 +140,8 @@ const MainFileBrowser = (props) => {
   const [moveModal, setMoveModal] = useState(false);
   const [previewModal, setPreviewModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
+  const [clearModal, setClearModal] = useState(false);
+  const [recoverModal,setRecoverModal] = useState(false);
   const [flow, setFlow] = useState(null);
   const [modalHeadText, setModalHeadText] = useState("업로드 경로 선택");
   const toggleUploadModal = () => setUploadModal(!uploadModal);
@@ -147,6 +149,8 @@ const MainFileBrowser = (props) => {
   const toggleMoveModal = () => setMoveModal(!moveModal);
   const togglePreviewModal = () => setPreviewModal(!previewModal);
   const toggleShareModal =() => setShareModal(!shareModal);
+  const toggleClearModal = () => setClearModal(!clearModal);
+  const toggleRecoverModal = () => setRecoverModal(!recoverModal);
   const [newPath, setNewPath] = useState(''); // 파일 이동 명령에 사옹할 경로, 공유폴더에 접근중일 경우 pk가 저장되며,
                                               // 아닐 경우 경로명이 저장된다. 
   const [newFolderName, setNewFolderName] = useState('');
@@ -190,17 +194,31 @@ const MainFileBrowser = (props) => {
   };
 
   const showFolderInfo = (index) => {
-    console.log(index);
-    axios.get(`${window.location.origin}/api/directory/${props.folderList[index]["pk"]}`,option)
-    .then(content => {
-      const folderInfo = {
-       ...props.folderList[index],
-       subfolderNum:Object.keys(content['data']['subdirectories']).length,
-       fileNum:Object.keys(content['data']['files']).length,
-      }
-      setCurrentItemInfo(folderInfo);
-    })
-    
+    if(props.folderList[index].name=='...') return;
+    if(props.isRecycle)
+      setCurrentItemInfo(props.folderList[index]);
+    else{
+      fetch(`${window.location.origin}/api/directory/${props.folderList[index]["pk"]}`, {
+        method : 'GET',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: 'include',
+      })
+      .then(props.errorCheck)
+      .then(res=>res.json())
+      .then(content => {
+        if(content.hasOwnProperty['error']) throw Error(content['error'])
+        console.log("contetn : ", content);
+        const folderInfo = {
+        ...props.folderList[index],
+        subfolderNum:Object.keys(content['subdirectories']).length,
+        fileNum:Object.keys(content['files']).length,
+        }
+        setCurrentItemInfo(folderInfo);
+      })
+      .catch(e=>props.notify(e))
+    } 
     // setCurrentFileInfo(folderList[index]);
   };
 
@@ -243,12 +261,115 @@ const MainFileBrowser = (props) => {
     }
 
     if(chk) { //파일 및 폴더 여러 개 삭제
-      DeleteEntry(props.notify, props.errorCheck, props.loadFilesNFolders, props.curFolderID, params); 
+      DeleteEntry(props.notify, props.errorCheck, props.loadFilesNFolders, props.curFolderID, params, props.checkUserState); 
     }
     else { // 파일 및 폴더 한개만 삭제하거나, 여러 개 선택해놓고 다른 단일 파일 삭제 시도할 경우
-      DeleteEntry(props.notify, props.errorCheck, props.loadFilesNFolders, props.curFolderID, currentItemInfo.pk);
+      DeleteEntry(props.notify, props.errorCheck, props.loadFilesNFolders, props.curFolderID, currentItemInfo.pk, props.checkUserState);
     }
   }
+
+  const handleFavorite = () => {
+
+    console.log('currentitem info pk'+currentItemInfo.pk);
+      let data = {
+        favorite:currentItemInfo.favorite ? false : true
+    }
+
+
+    axios.put(`${window.location.origin}/api/${currentItemInfo.type=="file" ? "file" : "directory"}/${currentItemInfo.pk}`, JSON.stringify(data), option)
+    .catch(res=>{
+      props.errorCheck(res.response, res.response.data);
+      if(res.response.status>=400) throw Error(res.response.data);
+    })
+    .then(content=> {
+      console.log('favoirte file !!!'+JSON.stringify(content.data));
+      props.notify(currentItemInfo.favorite ? "즐겨찾기에서 삭제되었습니다." : "즐겨찾기에 추가되었습니다.");
+      let newInfo=currentItemInfo;
+      newInfo.favorite=!newInfo.favorite;
+      setCurrentItemInfo(newInfo);
+      if(props.isFavoriteInit)
+        props.loadFilesNFolders();
+      else
+        props.loadFilesNFolders('',props.curFolderID);
+
+  })
+}
+
+const clearTrash = () => {
+  axios.delete(`${window.location.origin}/api/recycle`,option)
+  .catch(res=>{
+    props.errorCheck(res.response, res.response.data);
+    if(res.response.status>=400) throw Error(res.response.data);
+  })
+  .then(content => {
+    console.log(JSON.stringify(content))
+    toggleClearModal();
+    props.notify('휴지통을 성공적으로 비웠습니다.');
+    props.checkUserState();
+    props.loadFilesNFolders();
+  })
+}
+const itemRecover = () => {
+  console.log("item info : ", currentItemInfo, multiItemInfo);
+  if(multiItemInfo.length>1) {
+    if(multiItemInfo[0].itemType == "file") {
+      let data = [];
+      multiItemInfo.map(item=> {
+        data.push([item.itemType == "file" ? item.pk : item.pk[0],props.curFolderID])
+      })
+      axios.post(`${window.location.origin}/api/recover`,JSON.stringify(data),option)
+      .catch(res=>{
+        props.errorCheck(res.response, res.response.data);
+        if(res.response.status>=400) throw Error(res.response.data);
+      })
+      .then(content=> {
+        console.log('multi recover test',JSON.stringify(content));
+        props.notify('복구 완료.');
+        props.loadFilesNFolders();
+      })
+    }
+    else
+    {
+      multiItemInfo.map(item=> {
+        let data=[
+          [item.pk, props.curFolderID]
+        ]
+        axios.post(`${window.location.origin}/api/recover`,JSON.stringify(data),option)
+        .catch(res=>{
+          props.errorCheck(res.response, res.response.data);
+          if(res.response.status>=400) throw Error(res.response.data);
+        })
+        .then(content=> {
+          props.loadFilesNFolders();
+          console.log('multi recover data : ',JSON.stringify(data));
+          props.loadFilesNFolders();
+        })
+      })
+      props.notify('복구 완료.');
+    }
+  }
+  else {
+    let data= [
+      [currentItemInfo.type=="file" ? currentItemInfo.pk : currentItemInfo.pk, props.curFolderID]
+    ]
+    axios.post(`${window.location.origin}/api/recover`,JSON.stringify(data),option)
+    .catch(res=>{
+      console.log('recover data : ',JSON.stringify(data));
+      props.errorCheck(res.response, res.response.data);
+      if(res.response.status>=400) throw Error(res.response.data);
+    })
+    .then(content => {
+      console.log('recover test : ',JSON.stringify(content));
+      props.notify('복구 완료.');
+      props.loadFilesNFolders();
+    })
+  }
+  toggleRecoverModal();
+}
+
+const handleRecover = () => {
+  toggleRecoverModal();
+}
 
   const handleRename=()=>{ //오른쪽 클릭 -> 이름 바꾸기
     setNewName(currentItemInfo.name);
@@ -325,6 +446,7 @@ const MainFileBrowser = (props) => {
   const handlePreview=()=>{ //오른쪽 클릭 -> 미리보기
     togglePreviewModal();
   }
+
   const multiFileCheck=(e)=>{
     toggleRename(false);
     if(e.length>=1){ // 폴더 그룹 클릭했다가 파일 그룸 클릭할 때, 폴더 그룹 선택 해제
@@ -452,7 +574,7 @@ const MainFileBrowser = (props) => {
     .then(response=>{
       if(response.hasOwnProperty('error')) throw Error(response['error']);
       props.notify('공유 설정 변경 완료!');
-      props.loadFilesNFolders('', '');
+      props.loadFilesNFolders();
       toggleShareModal();
     })})
     .catch(e=>{
@@ -461,8 +583,13 @@ const MainFileBrowser = (props) => {
     });
     
   }
+
   const createDir=()=>{ //홈 화면에서 폴더 생성
     console.log("createDir called!");
+    if(newFolderName=='...'){
+      props.notify("error : ...은 폴더 이름으로 할 수 없습니다.");
+      return;
+    }
     let url=`${window.location.origin}/api/mkdir`;
     let data={
       "parent" : props.isSharing ? props.curFolderID : props.curFolderPath,
@@ -636,7 +763,7 @@ const MainFileBrowser = (props) => {
             outline
             color="secondary"
             onClick={submitShareTeam}
-            className="close-button"
+            className="sharing-modal-close-button"
           >
           결정
           </Button>
@@ -644,14 +771,76 @@ const MainFileBrowser = (props) => {
             outline
             color="primary"
             onClick={toggleShareModal}
-            className="close-button"
+            className="sharing-modal-close-button"
           >
           닫기
           </Button>
         </ModalFooter>
       </Modal>
 
-              
+      {/* 휴지통 비우기 modal */}
+      <Modal
+        isOpen={clearModal}
+        toggle={toggleClearModal}
+        size='md'
+        className="trash-remove-modal"
+      >
+        <ModalBody className="team-leave-text">휴지통을 비웁니다. 이 작업은 되돌릴 수 없습니다.</ModalBody>
+        <ModalFooter className="modal-footer">
+          <Button
+            type="submit"
+            color="primary"
+            className="team-invite-button-invite"
+            onClick={clearTrash}>
+            비우기
+          </Button>
+          <Button
+            color="secondary"
+            className="team-invite-button-cancel"
+            onClick={toggleClearModal}
+          >
+            취소
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* 파일 복구 modal */}
+      <Modal
+        isOpen={recoverModal}
+        toggle={toggleRecoverModal}
+        unmountOnClose={false}
+      >
+        <ModalHeader toggle={toggleUploadModal}>
+          <div className="modal-head">{modalHeadText}</div>
+        </ModalHeader>
+        <ModalBody>
+          <RecoverModal     
+            recoverModal={recoverModal}
+            toggleRecoverModal={toggleRecoverModal}
+            changePath={changePath}
+            notify={props.notify}
+            rootDirID={props.rootDirID}
+            changePath={changePath}
+            errorCheck={props.errorCheck}
+            checkUserState={props.checkUserState}
+            curFolderID={props.curFolderID}
+            curFolderPath={props.curFolderPath}
+            loadFilesNFolders={props.loadFilesNFolders} 
+            itemRecover = {itemRecover}
+            changeDirID = {props.changeDirID}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            color="primary"
+            onClick={toggleUploadModal}
+            className="close-button"
+          >
+            닫기
+          </Button>
+        </ModalFooter>
+      </Modal>
+        
       <MyContextMenu
           handlePreview={handlePreview} 
           handleDownload={handleDownload}
@@ -659,42 +848,56 @@ const MainFileBrowser = (props) => {
           handleRename={handleRename}
           handleMove={handleMove}
           handleShare={handleShare}
+          handleFavorite={handleFavorite}
+          handleRecover={handleRecover}
         />
 
       <Container fluid className={classNames("round", "content")} color="light">
-      {!props.isSharingInit && <form onSubmit={submitSearchKeyword} method='GET'> {/*검색 창*/}
-      <InputGroup className="searchbar-group"> 
-        <InputGroupAddon addonType="append" className="searchbar">
-            <Input 
-              className="search-input"
-              id='searchKeyword'
-              value={searchKeyword}
-              onChange={changeSearchKeyword}
-            />
-            <Button 
-              type='submit'
-              className="search-icon-button"
-            >
-            <FontAwesomeIcon icon={faSearch} className="search-icon" />
-            </Button>
-        </InputGroupAddon>
-      </InputGroup>
-      </form>}
+      {!props.isSharingInit && !props.isRecycle && !props.isFavorite && 
+        <form onSubmit={submitSearchKeyword} method='GET'> {/*검색 창*/}
+        <InputGroup className="searchbar-group"> 
+          <InputGroupAddon addonType="append" className="searchbar">
+              <Input 
+                className="search-input"
+                id='searchKeyword'
+                value={searchKeyword}
+                onChange={changeSearchKeyword}
+              />
+              <Button 
+                type='submit'
+                className="search-icon-button"
+              >
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+              </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        </form>
+      }
         <br/><br/><br/>
         {props.showSearchResult && <div className="search-result-header">검색결과</div>}
+        {props.isFavorite && <div className="search-result-header">즐겨찾기</div>}
+
         {/*파일 표시*/}
         {!props.isSharingInit &&
         <div className="current-content">
           
           <span className="content-name">파일</span>
           <div className="add-item">
-            {!props.showSearchResult&& 
+            {!props.isFavorite && !props.isRecycle && !props.showSearchResult && 
               <button
                 className="add-item-label"
                 onClick={toggleUploadModal}
               >
                 업로드
               </button>
+            }
+            {props.isRecycle &&
+               <button
+               className="add-item-label"
+               onClick={toggleClearModal}
+             >
+               휴지통 비우기
+             </button>
             }
           </div>
         </div>
@@ -709,9 +912,9 @@ const MainFileBrowser = (props) => {
               allowClickWithoutSelected={true}
               tolerance={10}
               resetOnStart
-
               onSelectionFinish={multiFileCheck}
               onSelectionClear={renameCheck}
+              isRecycle={props.isRecycle}
             >
               <CardDeck className="current-items">
                 <Progress />
@@ -738,6 +941,8 @@ const MainFileBrowser = (props) => {
                     newName={newName}
                     onChangeNewName={onChangeNewName}
                     submitNewName={submitNewName}
+                    favorite={item.favorite}
+                    isRecycle={props.isRecycle}
                   />
                 ))}
               </CardDeck>
@@ -745,13 +950,17 @@ const MainFileBrowser = (props) => {
             }
             <div className="current-content">
               <span className="content-name">{(props.isSharingInit ? '공유 폴더 목록' : '폴더')}</span> 
-              <span className="content-name browser-path">{(props.isSharingInit || props.showSearchResult) 
+              <span className="content-name browser-path">{( props.isSharingInit 
+                                                          || props.showSearchResult
+                                                          || props.isFavorite 
+                                                          || props.isRecycle
+                                                          ) 
                                                             ?
                                                               '' 
                                                             :
                                                               '현재 경로 : ' + props.curFolderPath}</span>
                 <div className="add-item">
-                {!props.isSharingInit && !props.showSearchResult &&
+                {!props.isSharingInit && !props.showSearchResult && !props.isFavorite && !props.isRecycle &&
                   <button
                     className="add-item-label"
                     onClick={toggleMkdirModal}
@@ -759,6 +968,7 @@ const MainFileBrowser = (props) => {
                   폴더 생성
                 </button>
                 }
+
               {/*폴더 생성 modal*/}
               <Modal
                 isOpen={mkdirModal}
@@ -770,25 +980,25 @@ const MainFileBrowser = (props) => {
                   <div className="modal-head">폴더 생성</div>
                 </ModalHeader>
                 <ModalBody>
-                  <div>새로운 폴더명을 입력해주세요.</div>
-                  <InputGroup>
-                      <Input 
-                          type='text' 
-                          name="withdrawalText"
-                          id='withdrawalText'
-                          value={newFolderName} 
-                          onChange={valChange}
-                      />
-                      <InputGroupAddon addonType='append'>
-                          <Button 
-                              outline 
-                              className="profile-button"
-                              onClick={createDir}
-                          >
-                          입력
-                          </Button>
-                      </InputGroupAddon>
-                  </InputGroup>
+                      <div>새로운 폴더명을 입력해주세요.</div>
+                      <InputGroup>
+                          <Input 
+                              type='text' 
+                              name="withdrawalText"
+                              id='withdrawalText'
+                              value={newFolderName} 
+                              onChange={valChange}
+                          />
+                          <InputGroupAddon addonType='append'>
+                              <Button
+                                  outline 
+                                  className="profile-button"
+                                  onClick={createDir}
+                              >
+                              입력
+                              </Button>
+                          </InputGroupAddon>
+                      </InputGroup>
                 </ModalBody>
                 <ModalFooter>
                   <Button
@@ -834,6 +1044,7 @@ const MainFileBrowser = (props) => {
                       browserPath={currentItemInfo.browser_path}
                       onChangeNewName={onChangeNewName}
                       submitNewName={submitNewName}
+                      isRecycle={props.isRecycle}
                     />
                 ))}
 
@@ -855,7 +1066,9 @@ const MainFileBrowser = (props) => {
          browserPath={currentItemInfo.browser_path}
          searchRootDirName={props.searchRootDirName}
          subfolderNum={currentItemInfo.subfolderNum}
+         favorite = {currentItemInfo.favorite}
          fileNum={currentItemInfo.fileNum}
+         owner={currentItemInfo.owner}
        />  
     </Fragment>
   );

@@ -201,6 +201,7 @@ class App extends Component {
   }
 
   errorCheck=(response, message="서버 에러 발생!")=>{
+    console.log("error response : ", response);
     if(response.status==401){
       this.userStateChange(false, false);
       this.props.history.push('/login');

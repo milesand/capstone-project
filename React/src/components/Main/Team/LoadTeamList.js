@@ -32,7 +32,7 @@ const loadTeamList = (setIsLoading, setTeamList, props, setDefaultCheckTeam=null
             });
             const tempList3 = tempList1.concat(tempList2);
             console.log("teamList result : ", tempList3);
-            tempList3.sort((a, b)=>{
+            tempList3.sort((a, b)=>{  // 팀 이름으로 오름차순 정렬
               return a.team_name>b.team_name;
             })
             setTeamList(tempList3);

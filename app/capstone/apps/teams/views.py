@@ -67,8 +67,12 @@ class TeamAPI(generics.GenericAPIView):
             return Response({'error' : '해당하는 팀이 존재하지 않습니다.'}, status=status.HTTP_404_NOT_FOUND)
 
         data=self.serializer_class(team).data
+        for i in range(0, len(data['share_folders'])):
+            User=get_user_model()
+            user=User.objects.get(pk=data['share_folders'][i]['owner'])
+            data['share_folders'][i]['owner_name']=user.username
 
-        return Response(self.serializer_class(team).data, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
     def delete(self, request, teamID):
         try:

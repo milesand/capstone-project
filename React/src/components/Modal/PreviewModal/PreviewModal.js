@@ -41,38 +41,38 @@ const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo, no
                 {/*upload modal*/}
                 <ModalBody className='preview-modal-body'>
                     <Container>
-                        <Row>
-                        <Col sm="12" md={{ size: 6, offset: 3 }}>
-                        {isVideo ? 
-                            <div className='preview-video'>
-                                <ReactPlayer 
-                                    url={url}
-                                    controls={true}
-                                />
-                            </div>
-                        :
-                            hasThumbnail ?
-                                <div className='inline-wrap'>
-                                    <img src={url} className='preview-image'/>
+                            <Row>
+                            <Col sm="12" md={{ size: 6, offset: 3 }}>     
+                            {isVideo ? 
+                                <div className='preview-video'>
+                                    <ReactPlayer 
+                                        url={url}
+                                        controls={true}
+                                    />
                                 </div>
                             :
-                                <div className='preview-others'>
-                                    <div>미리보기가 지원되지 않는 파일입니다.</div>
-                                </div>
-                        }
-                        </Col>
-                        </Row>
-                        <Row>
-                        <Col sm="12" md={{ size: 6, offset: 3 }}>
-                        <Button 
-                            outline 
-                            className='preview-modal-button' 
-                            onClick={download}
-                        >
-                            다운로드
-                        </Button>
-                        </Col>
-                        </Row>
+                                hasThumbnail ?
+                                    <div className='inline-wrap'>
+                                        <img src={url} className='preview-image'/>
+                                    </div>
+                                :
+                                    <div className='preview-others'>
+                                        <div>미리보기가 지원되지 않는 파일입니다.</div>
+                                    </div>
+                            }
+                            </Col>
+                            </Row>
+                            <Row>
+                            <Col sm="12" md={{ size: 6, offset: 3 }}>
+                            <Button 
+                                outline 
+                                className='preview-modal-button' 
+                                onClick={download}
+                            >
+                                다운로드
+                            </Button>
+                            </Col>
+                            </Row>
                     </Container>
                 </ModalBody>
                 <ModalFooter>

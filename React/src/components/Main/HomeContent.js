@@ -28,29 +28,29 @@ const HomeContent=(props)=>{
         loadFilesNFolders();
       }
     }, []); 
-        // showSearchResult는 검색 결과로 나온 폴더 내부로 이동하기 위해 필요
-        // 파일 리스트 및 폴더 리스트는 검색어 바뀔 때 내용 바뀌게 하기 위해 필요
 
-    const setFileNFolderInfo=(dirID, rootDirID, FileInfoList, FolderInfoList, parent)=>{
+    const setFileNFolderInfo=(dirID, rootDirID, fileInfoList, folderInfoList, parent)=>{
+      console.log("fileInfoList : ", fileInfoList, ', folderInfoList : ', folderInfoList);
       const newFileList=[], newFolderList=[];
-      const fileNameList= Object.keys(FileInfoList)
+      const fileNameList= Object.keys(fileInfoList)
       for(let i=0;i<fileNameList.length;i++) {
-        let date=FileInfoList[fileNameList[i]]['uploaded_at'];
+        let date=fileInfoList[fileNameList[i]]['uploaded_at'];
         const fileInfo = {
-          name:(dirID=='' ? FileInfoList[fileNameList[i]]['name'] : fileNameList[i]),
-          pk: FileInfoList[fileNameList[i]]['pk'],
-          size: FileInfoList[fileNameList[i]]['size'],
+          name:(dirID=='' ? fileInfoList[fileNameList[i]]['name'] : fileNameList[i]),
+          pk: fileInfoList[fileNameList[i]]['pk'],
+          size: fileInfoList[fileNameList[i]]['size'],
           uploaded_at: Moment(date).format('LLL'),
-          has_thumbnail: FileInfoList[fileNameList[i]]['has_thumbnail'],
-          is_video : FileInfoList[fileNameList[i]]['is_video'],
+          has_thumbnail: fileInfoList[fileNameList[i]]['has_thumbnail'],
+          is_video : fileInfoList[fileNameList[i]]['is_video'],
           type : "file",
-          browser_path : FileInfoList[fileNameList[i]]['browser_path'],
+          browser_path : fileInfoList[fileNameList[i]]['browser_path'],
+          favorite : fileInfoList[fileNameList[i]]['favorite']
         }
         newFileList.push(fileInfo);
       }
       setFileList(newFileList);
     
-      const folderNameList= Object.keys(FolderInfoList) // root 하위 폴더불러오기->어차피 root폴더 접근해야해서 파일불러오기와 병행
+      const folderNameList= Object.keys(folderInfoList) // root 하위 폴더불러오기->어차피 root폴더 접근해야해서 파일불러오기와 병행
       if(dirID!=rootDirID) newFolderList.push({
         name: '...',
         pk:parent,
@@ -58,9 +58,9 @@ const HomeContent=(props)=>{
       })
       for(let i=0;i<folderNameList.length;i++){
         const folderInfo = {
-          name: (dirID=='' ? FolderInfoList[folderNameList[i]]['name'] : folderNameList[i]),
-          pk:(dirID=='' ? folderNameList[i] : FolderInfoList[folderNameList[i]]),
-          browser_path : FolderInfoList[folderNameList[i]]['browser_path'],
+          name: (dirID=='' ? folderInfoList[folderNameList[i]]['name'] : folderNameList[i]),
+          pk:(dirID=='' ? folderNameList[i] : folderInfoList[folderNameList[i]]),
+          browser_path : folderInfoList[folderNameList[i]]['browser_path'],
           type:"folder"
         }
         newFolderList.push(folderInfo)
@@ -72,6 +72,7 @@ const HomeContent=(props)=>{
     const loadFilesNFolders = (dirName='', dirID=curFolderID, browserPath='', 
                                isSearching=false, searchFileList=[], searchFolderList=[]) => {
         if(showSearchResult && !isSearching) setShowSearchResult(false);
+        console.log("dir ID : ", dirID);
         props.switchSearchingRoot(dirID, dirName); //검색 범위 변경
         console.log('isSearching ? ', isSearching);
         ///////////////////////////////
@@ -109,25 +110,31 @@ const HomeContent=(props)=>{
           );
         }
         else{
-          console.log("isSearching fail!!!");
           setIsLoading(true);
-            axios.get(`${window.location.origin}/api/directory/${dirID}`,option)
+            fetch(`${window.location.origin}/api/directory/${dirID}`,{
+              method : 'GET',
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: 'include',
+            })
             .then(props.errorCheck)
-            .then(content2 => { 
-              if(content2.hasOwnProperty('error')) throw Error(content2['error']);
+            .then(res=>res.json())
+            .then(content => { 
+              if(content.hasOwnProperty('error')) throw Error(content['error']);
               setFileNFolderInfo(
                                   dirID,
                                   props.rootDirID,
-                                  content2.data.files, 
-                                  content2.data.subdirectories, 
-                                  content2.data.parent, 
+                                  content.files, 
+                                  content.subdirectories, 
+                                  content.parent, 
                                 );
               setIsLoading(false);
             })
             .catch(e=>{
                 props.notify(e);
                 setIsLoading(false);
-              })
+            })
         }
     };
     

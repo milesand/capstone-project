@@ -52,13 +52,19 @@
 .sub-item-name {
   font-size: 20px !important;
   font-weight: 500 !important;
+  line-height: 130%;
 }
 
 .sub-item-info {
   font-size:14.5px !important;
 }
 
-
+.sub-item-favorite {
+  position: absolute;
+  top:5px;
+  right: 5px;
+  color: #6276e9 !important;
+}
 /* @media screen and (max-width: 620px) {
   .sub-sidebar {
     margin-right: -250px;

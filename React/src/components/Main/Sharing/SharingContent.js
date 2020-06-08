@@ -154,7 +154,8 @@ const SharingContent=(props)=>{
                 const folderInfo={
                     name: folderElement.name,
                     pk: folderElement.pk,
-                    type: 'folder'
+                    type: 'folder',
+                    owner: folderElement.owner_name,
                 }
                 newFolderList.push(folderInfo);
             }
@@ -198,6 +199,7 @@ const SharingContent=(props)=>{
           is_video : FileInfoList[fileNameList[i]]['is_video'],
           type : "file",
           browser_path : br_path,
+          favorite : FileInfoList[fileNameList[i]]['favorite'],
         }
         newFileList.push(fileInfo);
       }

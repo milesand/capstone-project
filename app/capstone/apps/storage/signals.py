@@ -3,11 +3,11 @@ import os
 from pathlib import Path
 
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.conf import settings
 from django.dispatch import receiver
 
-from .models import UserStorage, PartialUpload, File, Directory
+from .models import UserStorage, PartialUpload, File, Directory, RecycleEntry, DirectoryEntry
 
 
 logger = logging.getLogger(__name__)
@@ -104,3 +104,15 @@ def setup_user(sender, instance, created, using, update_fields, **kwargs):
         user=instance,
         root_dir=root_dir,
     )
+
+'''@receiver(post_delete, sender=RecycleEntry)
+def delete_file_n_dirctory(sender, instance, using, **kwargs):
+    # RecycleEntry를 삭제할 때 해당 RecycleEntry가 가리키는 파일 및 디렉토리 모델도 같이 삭제한다.
+    if instance.entry is None: #엔트리 복원할 떄
+        return
+
+    entry=instance.entry
+    try:
+        entry.delete()
+    except:
+        return'''

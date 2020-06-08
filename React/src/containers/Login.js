@@ -106,8 +106,8 @@ export default class Login extends Component { //export default : 다른 모듈�
       body: JSON.stringify(data)
     })
     .then(res=>res.json())
-    .then(errorCheck)
     .then(content => {
+      if(content.hasOwnProperty('error')) throw Error(content['error']);
       console.log('facebook content : ', content);
       this.props.userStateChange(true,
                                  true,
@@ -118,7 +118,7 @@ export default class Login extends Component { //export default : 다른 모듈�
                                  );
       this.props.history.push('/');
     }).catch(e=>{
-      this.props.notify('페이스북 로그인에 실패했습니다. 다시 시도해주세요.');
+      this.props.notify(e);
     })
   }
 
@@ -143,13 +143,13 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(res=>res.json())
     .then(content => {
       // 아이디와 비밀번호가 올바른지 확인하고, 맞으면 이메일 인증 여부 확인
-      console.log("content ? : ", content);
+      console.log("content ? : ", content.hasOwnProperty('error'));
       if(content.hasOwnProperty('error')){
         if(content.hasOwnProperty('email')){
            isMailAuthenticated=false;
         }
 
-        if(!this.validateAllField(this.state.username, this.state.password))
+        else if(!this.validateAllField(this.state.username, this.state.password))
             throw Error('아이디와 비밀번호는 영문자, 숫자를 포함한 8자 이상 15자 이하로 입력해주세요.');
         
         else{

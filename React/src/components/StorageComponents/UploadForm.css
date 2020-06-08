@@ -65,3 +65,8 @@
     height: 600px;
     width: 100%;
 }
+
+.upload-text {
+    line-height: 3rem;
+    color:#66615b;
+  }

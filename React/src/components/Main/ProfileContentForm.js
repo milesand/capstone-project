@@ -157,7 +157,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                                     outline 
                                                     className="profile-button"
                                                     onClick={checkConfirmValue}
-                                                    disabled={!isConfirmLoading}
+                                                    disabled={isConfirmLoading}
                                                     >
                                                     {isConfirmLoading 
                                                         ? 

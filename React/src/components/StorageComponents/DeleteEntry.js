@@ -1,4 +1,4 @@
-const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>{
+const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID, checkUserState)=>{
     let data={};
     let idSplit=fileID.split(' ');
     for(let id in idSplit){
@@ -17,6 +17,7 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID)=>
     .then(errorCheck)
     .then(content=>{
       notify('삭제 완료!');
+      checkUserState();
       loadFilesNFolders('', curFolderID);
     })
     .catch(e=>notify(e));
