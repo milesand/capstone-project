@@ -1,0 +1,14 @@
+.replacement-modal-head{
+    margin-left: -15%;
+    font-size: 25px;
+    width: 500px;
+}
+
+.replacement-file-browser{
+    height: 700px;
+    overflow-y: auto;
+}
+
+.replacement-modal-button{
+    width : 200px;
+ }

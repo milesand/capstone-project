@@ -1,0 +1,24 @@
+.sharing-team-table{
+    margin: 0 auto;
+    margin-top : 5%;
+    vertical-align: middle;
+    text-align: center center !important;
+}
+
+.sharing-team-headText{
+    margin-top : 0 auto;
+    margin-left: 1%;
+    font-size: 35px;
+    color: #66615b;
+}
+
+.sharing-layer{
+    position: relative;
+}
+.sharingTeam-body{
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, 400%)
+}
+

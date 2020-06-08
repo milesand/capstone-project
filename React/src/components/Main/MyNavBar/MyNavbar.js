@@ -29,8 +29,9 @@ import {
 import axios from "axios";
 
 const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitationNameList,
-                    leaderList, leaderNickList, checkUserState, notify, errorCheck}) => {
-  console.log("렌더링 시작! 닉네임 : ", nickname, ", invitationList : ", invitationList, invitationNameList);
+                    leaderList, leaderNickList, checkUserState, notify, errorCheck, searchKeyword,
+                    changeSearchKeyword, submitSearchKeyword, isShowingSearchBar}) => {
+  console.log("렌더링 시작! serachkeyword : ", searchKeyword, 'change : ', changeSearchKeyword, 'submit : ', submitSearchKeyword);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [update, setUpdate] = useState();
 
@@ -96,14 +97,25 @@ const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitat
       <NavbarToggler />
       <Collapse navbar>
         <Nav className="mr-auto" navbar />
+        <form onSubmit={submitSearchKeyword} method='GET'>
+        {/*isShowingSearchBar &&
         <InputGroup className="searchbar-group">
           <InputGroupAddon addonType="append" className="searchbar">
-            <Input className="search-input" />
-            <Button className="search-icon-button">
+            <Input 
+              className="search-input"
+              id='searchKeyword'
+              value={searchKeyword}
+              onChange={changeSearchKeyword}
+            />
+            <Button 
+              type='submit'
+              className="search-icon-button"
+            >
               <FontAwesomeIcon icon={faSearch} className="search-icon" />
             </Button>
           </InputGroupAddon>
-        </InputGroup>
+        </InputGroup>*/}
+        </form>
         <Nav className="myNav-icons">
           <UncontrolledDropdown
             nav

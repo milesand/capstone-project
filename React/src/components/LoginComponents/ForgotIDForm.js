@@ -19,7 +19,7 @@ const ForgotIDForm = ({email, changeEmail, sendID}) => {
                     <span className="authFormTextS" >가입했을 때 등록한 이메일을 입력해주세요.</span>        
                     
                 </div>
-            <form onSubmit method="POST">
+            <form onSubmit={sendID} method="POST">
               <input
                 type="text"
                 id="email"
@@ -31,10 +31,9 @@ const ForgotIDForm = ({email, changeEmail, sendID}) => {
                 onChange={changeEmail}
               />
                <input
-                type="button"
+                type="submit"
                 className="fadeIn"
                 value="확인"
-                onClick={sendID}
               />  
             </form>
 

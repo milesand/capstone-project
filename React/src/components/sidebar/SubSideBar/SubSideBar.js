@@ -7,7 +7,8 @@ import {faFile,faFolder} from "@fortawesome/free-solid-svg-icons";
 import "./SubSideBar.css";
 
 const SubSideBar = (props) => {
-  const {uploadDate,size,name,pk,thumbnailUrl,type,subfolderNum,fileNum} = props;
+  const {uploadDate,size,name,pk,thumbnailUrl,type,subfolderNum,fileNum, owner, browserPath} = props;
+  console.log("owner : ", owner);
   const [update,setUpdate]=useState({});
   let sizeText="";
 
@@ -45,18 +46,19 @@ const SubSideBar = (props) => {
              {type=="folder" && <FontAwesomeIcon icon={faFolder} className="sub-item-image-icon"></FontAwesomeIcon>}
            </div>
            <div className="sub-item-text">
-<CardTitle className="sub-item-name">{name}</CardTitle>
-{type=="file" &&
-           <CardText className="sub-item-info">
-           <small className="text-muted">파일 크기 : {sizeText} <br/></small>
-             <small className="text-muted">업로드 시간 : {uploadDate}<br/></small>
-           </CardText>}
+              <CardTitle className="sub-item-name">{name}</CardTitle>
+                {type=="file" &&
+                    <CardText className="sub-item-info">
+                    <small className="text-muted">파일 크기 : {sizeText} <br/></small>
+                      <small className="text-muted">업로드 시간 : {uploadDate}<br/></small>
+                    </CardText>}
 
-             {type=="folder" && 
-                  <CardText className="sub-item-info">
-                  <small className="text-muted">하위 폴더 수 : {subfolderNum} <br/></small>
-                  <small className="text-muted">파일 수 : {fileNum} <br/></small>
-                  </CardText>}
+              {type=="folder" && 
+                    <CardText className="sub-item-info">
+                    <small className="text-muted">하위 폴더 수 : {subfolderNum} <br/></small>
+                    <small className="text-muted">파일 수 : {fileNum} <br/></small>
+                    </CardText>}
+            {browserPath && <small className="text-muted">경로 : {browserPath} <br/></small>}      
            </div>
          </Card>
          </div>

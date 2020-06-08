@@ -15,7 +15,8 @@ export default class ProfileCotnent extends Component{
             social: "",
             newPassword: "",
             withdrawalText : "",
-            withdrawalModal: false
+            withdrawalModal: false,
+            isConfirmLoading: false,
         }
         console.log("profile, props : ", this.props, this.props.username.includes('_'));
     }
@@ -27,6 +28,16 @@ export default class ProfileCotnent extends Component{
           [target_id]: target_val
         });
         console.log(target_id, ' : ', target_val);
+    }
+
+    onEnterPressed=(target)=>{
+        console.log("target : ", target);
+        if(target.charCode==13){
+            if(this.state.withdrawalModal)
+                this.processWithdrawal();
+            else
+                this.checkConfirmValue();
+        }
     }
 
     checkConfirmValue=()=>{
@@ -46,6 +57,9 @@ export default class ProfileCotnent extends Component{
             }
         }
 
+        this.setState({
+            isConfirmLoading : true
+        })
         fetch(url, {
             method: 'POST',
             headers:{
@@ -68,7 +82,16 @@ export default class ProfileCotnent extends Component{
                     isValueConfirmed: true
                 })
             });    
-        }).catch(e=>this.props.notify(e));
+            this.setState({
+                isConfirmLoading : false
+            })
+        })
+        .catch(e=>{
+            this.props.notify(e)
+            this.setState({
+                isConfirmLoading : false
+            })
+        });
     }
 
     changeProfile=(curPassword, newPassword, phone_num, nickname, errMsg)=>{
@@ -148,7 +171,7 @@ export default class ProfileCotnent extends Component{
             });
         }
         else{
-            this.props.notify("정확히 입력해주세요.");
+            this.props.notify("회원탈퇴 문자가 일치하지 않습니다. 다시 입력해주세요.");
         }
     }
     render(){
@@ -176,6 +199,8 @@ export default class ProfileCotnent extends Component{
                     withdrawalModal={this.state.withdrawalModal}
                     processWithdrawal={this.processWithdrawal}
                     toggle={this.toggle}
+                    onEnterPressed={this.onEnterPressed}
+                    isConfirmLoading={this.state.isConfirmLoading}
                 />  
             </Fragment>
         )

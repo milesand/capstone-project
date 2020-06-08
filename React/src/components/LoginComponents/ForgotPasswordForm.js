@@ -21,8 +21,8 @@ const ForgotPasswordForm = ({email, username, isLoading, changeEmail, changeUser
                     <span className="authFormTextS" >입력해주세요.</span>        
                     
                 </div>
-            <form onSubmit method="POST">
-            <input
+            <form onSubmit={sendPassword} method="POST">
+              <input
                 type="text"
                 id="username"
                 className="fadeIn"
@@ -41,9 +41,8 @@ const ForgotPasswordForm = ({email, username, isLoading, changeEmail, changeUser
               />
               
               <button
-                 type="button"
-                 className={'fadeIn'}
-                 onClick={sendPassword}
+                 type="submit"
+                 className='fadeIn'
                  disabled={isLoading}
               >{isLoading ? <Spinner size="sm" color='light'/>:'확인'}</button>
              

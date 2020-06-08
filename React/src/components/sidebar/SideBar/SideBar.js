@@ -7,7 +7,8 @@ import {
   faStar,
   faShareAlt,
   faCloudUploadAlt,
-  faHdd
+  faHdd,
+  faUsers
 } from "@fortawesome/free-solid-svg-icons";
 import { NavItem, NavLink, Nav,Button,Progress } from "reactstrap";
 import classNames from "classnames";
@@ -42,12 +43,12 @@ const SideBar = ({ isOpen, toggle, spaceLeft, percent}) => {
         </NavItem>
         <NavItem className="sidebar-item">
           <NavLink tag={Link} to={"/team"} className={classNames({"is-open": isOpen}, {"is-toggled" : !isOpen})}>
-            <FontAwesomeIcon icon={faShareAlt} className="mr-2" />
+            <FontAwesomeIcon icon={faUsers} className="mr-2" />
             <span>팀</span>
           </NavLink>
         </NavItem>
         <NavItem className="sidebar-item">
-          <NavLink tag={Link} to={"/share"} className={classNames({"is-open": isOpen}, {"is-toggled" : !isOpen})}>
+          <NavLink tag={Link} to={"/sharing"} className={classNames({"is-open": isOpen}, {"is-toggled" : !isOpen})}>
             <FontAwesomeIcon icon={faShareAlt} className="mr-2" />
             <span>공유파일</span>
           </NavLink>

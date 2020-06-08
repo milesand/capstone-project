@@ -19,14 +19,14 @@ import classNames from "classnames";
 import PreviewModal from '../../Modal/PreviewModal/PreviewModal'
 
 const Item = (props) => {
-  const { showFileInfo, pk, thumbnailUrl, itemType, curName,
+  const { showFileInfo, pk, thumbnailUrl, itemType, curPk, browserPath,
           name, index, loadFilesNFolders, isMultiCheck, isRename, 
           togglePreviewModal, newName, onChangeNewName, submitNewName} = props;
 
   const { selectableRef, isSelected, isSelecting } = props;
-  const [toggle, setToggle]=useState(false);
   useEffect(
     () => {
+      console.log("in item, props : ", props)
       if (isSelected){
         console.log('rename : ', isRename);
         showFileInfo(index);
@@ -36,13 +36,11 @@ const Item = (props) => {
   );
 
   const openPreviewModal=()=>{
-      console.log("here!!!, host : ", window.location.host);
-
       togglePreviewModal();
   };
 
   const handleDirDoubleClick=()=> {
-    loadFilesNFolders(name, pk);
+    loadFilesNFolders(name, pk, browserPath);
   }
   
   return (
@@ -53,12 +51,14 @@ const Item = (props) => {
                                 : 'contextMenuMultiFolderID'
                               : itemType=='file' 
                                 ? "contextMenuFileID" 
-                                : "contextMenuDirID"}>
+                                : name=='...' ? ''
+                                  :"contextMenuDirID"}>
         <Card
           body
           outline
+          disable={true}
           onContextMenu={()=>showFileInfo(index)}
-          className={classNames("item", { "item-selected": isSelected },{"item-selecting":isSelecting})}
+          className={classNames("item", { "item-selected": isSelected }, {"item-selecting":isSelecting})}
           onDoubleClick={itemType=='file' ? openPreviewModal : handleDirDoubleClick}
           tabIndex="0"
         >
@@ -71,13 +71,13 @@ const Item = (props) => {
            
           </div>
           <span className="item-divider" />
-          {curName==name&&isRename ? 
+          {curPk==pk&&isRename ? 
               <Input 
                 onKeyPress={submitNewName}
                 className='item-rename-box'
+                autoFocus
                 value={newName}
                 onChange={onChangeNewName}
-                autoFocus
               />
               :
             <div className="item-text">

@@ -107,8 +107,7 @@ class RegistrationAPI(generics.GenericAPIView):
             else:  # 지원하는 소셜 로그인
                 print('here.')
                 try:
-                    User.objects.get(email=request.data['email'])  # 기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
-                    return Response(status=status.HTTP_202_ACCEPTED)
+                    return Response(status=status.HTTP_202_ACCEPTED) # 기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
                 except:
                     request.data['is_mail_authenticated'] = True
 
@@ -458,7 +457,7 @@ class FindIDPasswordAPI(generics.GenericAPIView):
                 except:
                     return Response({"error": "메일 전송이 실패했습니다."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         else:
-            return Response({"error": "입력 형식을 확인해주세요."}, status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "올바른 이메일 주소 형식으로 입력해주세요."}, status.HTTP_400_BAD_REQUEST)
 
 
 #현재 초대받은 팀들의 이름을 출력한다.

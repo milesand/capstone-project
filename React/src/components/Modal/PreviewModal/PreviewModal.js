@@ -17,27 +17,29 @@ import {
     Spinner
   } from "reactstrap";
 
-const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo})=>{
+const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo, notify, loadFilesNFolders})=>{
     console.log("preview props : ", isOpen, toggle, fileName, fileID, hasThumbnail, isVideo);
     let url=`${window.location.origin}/api/preview/${fileID}`;
-    //let url='/images/35536e8e-4f0d-4b43-a78a-7c12d8787c5c.jpg';
+    //let url='/images/photo-1589011352120-510c9fca6d31.png';
 
     const download=()=>{
-        CustomDownload(fileName, fileID);
+        CustomDownload(fileName, fileID, notify, loadFilesNFolders);
     }
     return(
         <Fragment>
             <Modal
                 isOpen={isOpen}
                 toggle={toggle}
-                size="xl"
                 unmountOnClose={false}
+                size='xl'
+                contentClassName='modal-xl'
+                centered={true}
                 >
                 <ModalHeader toggle={toggle} className='modal-header'>
                     <div className="preview-modal-head">미리보기</div>
                 </ModalHeader>
                 {/*upload modal*/}
-                <ModalBody className='test'>
+                <ModalBody className='preview-modal-body'>
                     <Container>
                         <Row>
                         <Col sm="12" md={{ size: 6, offset: 3 }}>
@@ -50,7 +52,9 @@ const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo})=>
                             </div>
                         :
                             hasThumbnail ?
-                                <img src={url} className='preview-image'/>
+                                <div className='inline-wrap'>
+                                    <img src={url} className='preview-image'/>
+                                </div>
                             :
                                 <div className='preview-others'>
                                     <div>미리보기가 지원되지 않는 파일입니다.</div>

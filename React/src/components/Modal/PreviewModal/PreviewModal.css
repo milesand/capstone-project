@@ -1,7 +1,6 @@
 .modal-xl{
-    width : 1200px;
-    max-height: 800px;
     text-align: center;
+    height: 800px;
 }
 
 .preview-modal-head{
@@ -12,7 +11,6 @@
 
 .preview-modal-button{
     width: 170px;
-
 }
 
 .preview-video{
@@ -20,12 +18,12 @@
     margin-top : 5%;
     height: 400px;
 }
-.preview-image{
-    margin: auto;
-    width: auto;
+
+.preview-image{ 
+    width: 100%;
     height: auto;
-    max-width: 1000px;
-    max-height: 650px;
+    max-height: 550px;
+    margin-bottom: 5%;
 }
 
 .preview-others{
@@ -34,6 +32,13 @@
     height : 400px;
 }
 
-.test{
+.preview-modal-body{
+    width : auto;
+    height: 10;
     text-align : center;
+}
+
+.inline-wrap{
+    position: relative;
+    height: 100%;
 }

@@ -12,7 +12,6 @@ class MailResend extends Component{
             nickname: this.props.nickname,
             state: this.props.nickname,
             email : this.props.useremail,
-            isLoading : false
         };
         this.resendAuthEmail=this.resendAuthEmail.bind(this);
         console.log(this.state);
@@ -24,10 +23,6 @@ class MailResend extends Component{
         console.log(this.state);
         this.props.toggleLoadingState();
 
-        this.setState((prevState)=>({
-            isLoading: true
-        }));
-        
         fetch(`${window.location.origin}/api/send-auth-email`, { //HTTP GET으로 요청을 보내고, URL뒤에 사용자 식별 ID를 추가하자.
             method: "GET",
             headers: {
@@ -40,6 +35,10 @@ class MailResend extends Component{
         .then(content=>{
             console.log(content);
             console.log("메일 재발송 완료.");
+            this.props.toggleLoadingState();
+        })
+        .catch(e=>{
+            this.props.notify(e);
             this.props.toggleLoadingState();
         });
     }

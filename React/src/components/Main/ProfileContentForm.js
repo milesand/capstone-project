@@ -4,19 +4,17 @@ import { Input,
          InputGroup,
          InputGroupAddon,
          Button,
-         Form,
          FormGroup,
-         ListGroup,
-         ListGroupItem,
          Label,
          Modal,
          ModalBody,
          ModalHeader,
          ModalFooter,
+         Spinner,
 } from 'reactstrap';
 
-const ProfileContentForm=({username, nickname, email, phone_num, social, newPassword, value, valChange,
-                           isValueConfirmed, isSocialAccount, checkConfirmValue, changeNickname, changePhoneNum,
+const ProfileContentForm=({username, nickname, email, phone_num, social, newPassword, value, valChange, onEnterPressed,
+                           isValueConfirmed, isSocialAccount, checkConfirmValue, changeNickname, changePhoneNum, isConfirmLoading, 
                            changePassword, returnToHome, withdrawalModal, withdrawalText, processWithdrawal, toggle})=>{
     console.log("social : ", social, typeof(social)); 
 
@@ -39,6 +37,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                             id='withdrawalText'
                             value={withdrawalText} 
                             onChange={valChange}
+                            onKeyPress={onEnterPressed}
                         />
                         <InputGroupAddon addonType='append'>
                             <Button 
@@ -52,7 +51,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                     </InputGroup>
                 </ModalBody>
                 <ModalFooter>
-                <Button outline color="primary" onClick={toggle} className="close-button">닫기</Button>
+                <Button outline color="primary" onClick={toggle} className="withdrawal-close-button">닫기</Button>
                 </ModalFooter>
             </Modal>
 
@@ -150,15 +149,23 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                     type={target}
                                     size='lg' 
                                     value={value}
-                                    onChange={valChange}/>
+                                    onChange={valChange}
+                                    onKeyPress={onEnterPressed}
+                                    />
                                     <InputGroupAddon addonType='append'>
-                                        <Button 
-                                            outline 
-                                            className="profile-button"
-                                            onClick={checkConfirmValue}
-                                            >
-                                            확인
-                                        </Button>
+                                                <Button 
+                                                    outline 
+                                                    className="profile-button"
+                                                    onClick={checkConfirmValue}
+                                                    disabled={!isConfirmLoading}
+                                                    >
+                                                    {isConfirmLoading 
+                                                        ? 
+                                                        <Spinner color='secondary' size='md' />
+                                                        :
+                                                        '확인'
+                                                    }
+                                                </Button>
                                     </InputGroupAddon>
                             </InputGroup>
                         </div>

@@ -17,6 +17,7 @@
     "moment": "^2.26.0",
     "react": "next",
     "react-alerts-plus": "^1.0.0",
+    "react-bootstrap-table-next": "^4.0.3",
     "react-bulma-components": "^3.2.0",
     "react-checkmark": "^1.1.2",
     "react-contextmenu": "^2.13.0",

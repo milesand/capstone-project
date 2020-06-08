@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-import threading
+import threading, queue
 
 from django.db.models import Q, Prefetch
 from django.conf import settings
@@ -396,7 +396,7 @@ class FlowUploadChunkView(APIView):
                 file_record.save()
 
             return Response(
-                {'id': str(file_record.pk)},
+                {'id': str(file_record.pk)}, #배포용
                 status=status.HTTP_201_CREATED,
                 headers={
                     "Location": "{}://{}/api/file/{}".format(
@@ -866,10 +866,10 @@ def file_download(data, user):
         response = Response()
         # 서버에 저장되어 있는 파일 경로를 Nginx에게 알려준다.
         print("download url : ", '/media/files/{0}/{1}'.format(
-            str(user.pk), str(file_record.pk)))
+            str(file_record.owner.pk), str(file_record.pk)))
 
         response['X-Accel-Redirect'] = '/media/files/{0}/{1}'.format(
-            str(user.pk), str(file_record.pk)
+            str(file_record.owner.pk), str(file_record.pk)
         )
         return response
     else:  # 파일 여러개
@@ -887,7 +887,7 @@ def file_download(data, user):
                 )
             files.append((
                 file_record.name,
-                '/media/files/{0}/{1}'.format(str(user.pk), str(file_record.pk)),
+                '/media/files/{0}/{1}'.format(str(file_record.owner.pk), str(file_record.pk)),
                 file_record.size
             ))
 
@@ -993,7 +993,7 @@ class FileManagementAPI(generics.GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-    def delete(self, request, file_id): # 파일 삭
+    def delete(self, request, file_id): # 파일 삭제
         try:
             file_record = get_object_or_404(File, pk=file_id)
             if not perm_check_entry_with_teams(request.user, file_record):
@@ -1021,9 +1021,14 @@ def multi_delete(entryList, user):
 
         except(Http404):
             with transaction.atomic():
-                directory = get_object_or_404(Directory, pk=entryID)
-                if perm_check_entry_with_teams(user, directory): #권한 체크. 파일 주인이거나, 공유 파일
-                    directory.delete()
+                print("entryID : ", entryID, "root pk : ", user.root_info.root_dir.pk, type(entryID),
+                      type(user.root_info.root_dir.pk))
+                if entryID == str(user.root_info.root_dir.pk):  # 루트 디렉토리 삭제 시도
+                    print("here!")
+                    if len(entryList) == 1:
+                        return Response({'error': '루트 디렉토리는 삭제할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        continue
 
     return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -1074,3 +1079,124 @@ class PartialDeleteAPI(APIView): # 특정 partial file 제거, 업로드 중단�
 
         partial.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# /api/replacement, 파일 또는 디렉토리 이동시키기
+# body : {type : 'file' or 'directory', parent : 'pk' or 'path', item1 : <pk>, 'item2 : <pk> ...}
+class EntryReplacementAPI(APIView):
+
+    def put(self, request):
+        if request.data['type']=='file' or request.data['type']=='directory':
+            if(request.data['parent'].startswith('/')):
+                print('here!!!!!')
+                n, parent = Directory.get_by_path_or_id(
+                    request.user, request.data['parent'], match_user_on_id=False
+                )
+                if n != 0 or not perm_check_dir_with_teams(request.user, parent):
+                    return Response(
+                        {'error' : '부모 디렉토리 ID가 올바르지 않습니다.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                try:
+                    with transaction.atomic():
+                        parent=Directory.objects.filter(pk=request.data['parent']).select_for_update().get()
+                except:
+                    return Response(
+                        {'error' : '부모 디렉토리 ID가 올바르지 않습니다.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                     )
+
+            type=None
+            with transaction.atomic():
+                for index, value in request.data.items():
+                    if index=='type':
+                        if value=='file':
+                            type='file'
+                        else:
+                            type='directory'
+
+                    elif index=='parent':
+                        continue
+                    else:
+                        if type=='file':
+                            file=File.objects.get(pk=value)
+
+                            if file.parent.pk==parent.pk: #이미 속한 폴더로 다시 이동요청 하는 경우
+                                return Response({'error' : '이미 속한 폴더로는 옮길 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                            file.parent=parent
+                            file.save()
+
+                        else:
+                            directory=Directory.objects.get(pk=value)
+                            if directory.pk==parent.pk: #자기 자신을 parent directory로 설정하려 하는 경우
+                                return Response({'error' : '자기 자신을 부모디렉토리로 할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                            elif directory.parent.pk==parent.pk: #이미 속한 폴더로 다시 이동요청 하는 경우
+                                return Response({'error' : '이미 속한 폴더로는 옮길 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                            directory.parent=parent
+                            directory.save()
+
+                return Response({'message' : '이동이 완료되었습니다.'}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'error' : '엔트리 타입 정보가 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+# 키워드를 통한 파일 및 디렉토리 검색
+# URI : api/search/<root directory ID>/<keyword>
+
+class ItemSearchAPI(APIView):
+    def get(self, request, pk, keyword):
+        if len(keyword)<2:
+            return Response({'error' : '검색어는 두 글자 이상으로 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            root_dir=get_object_or_404(Directory, pk=pk)
+        except(Http404):
+            return Response({'error' : '유효한 디렉토리 ID가 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not perm_check_dir_with_teams(request.user, root_dir):
+            return Response(
+                {"error": "root directory does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        data={}
+        for field_name in ['files', 'subdirectories']:
+            data[field_name]={}
+
+        que=queue.Queue()
+        que.put(root_dir)
+        while not que.empty(): # 하위 디렉토리 없을때까지 BFS 탐색
+            current_dir=que.get()
+
+            for child in current_dir.children.all():
+                try:
+                    child_dir = child.directory
+                    if keyword in child_dir.name:
+                        dir_data={}
+                        browser_path=child_dir.get_browser_path()
+                        print("browser path : ", browser_path)
+                        if browser_path==False:
+                            return Response({'error' : '서버 에러 발생!'}, status=status.HTTP_400_BAD_REQUEST)
+                        dir_data['browser_path']=browser_path
+                        dir_data['name']=child_dir.name
+                        data['subdirectories'][str(child_dir.pk)]=dir_data
+
+                    que.put(child_dir)
+                except Directory.DoesNotExist:
+                    pass
+                try:
+                    child_file = child.file
+                    if keyword in child_file.name:
+                        print("catch! name : ", child_file.name)
+                        file_data = FileSerializer(child_file).data
+                        file_data['favorite'] = child_file.favorite_of.filter(pk=request.user.pk).exists()
+                        browser_path=child_file.get_browser_path()
+                        if browser_path==False:
+                            return Response({'error' : '서버 에러 발생!'}, status=status.HTTP_400_BAD_REQUEST)
+                        file_data['browser_path']=browser_path
+                        file_data['name']=child_file.name
+                        data['files'][str(child_file.pk)] = file_data # 서로 다른 디렉토리에서 중복되는 파일이름이 발생할 수 있기 때문에, 키를 ID로 설정한다.
+                    continue
+                except File.DoesNotExist:
+                    pass
+
+        return Response(data, status=status.HTTP_200_OK)

@@ -22,8 +22,7 @@ export default class ForgotPassword extends Component{
     
     sendPassword(e) {
         e.preventDefault();
-    
-
+        console.log("password send!");
         let emailData={
             IDorPassword:'password',
             username:this.state.username,

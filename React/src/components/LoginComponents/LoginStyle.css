@@ -149,7 +149,7 @@
   .LS input[type=email],
   .LS input[type=phone],
   .LS .register {
-    background-color: #f6f6f6;
+    background-color: #FFFFFF;
     border: none;
     color: #0d0d0d;
     padding: 15px 32px;
@@ -176,7 +176,6 @@
   .LS input[type=email]:focus,
   .LS input[type=phone]:focus, 
   .LS .register:focus {
-    background-color: #fff;
     border-bottom: 2px solid #5fbae9;
     /* border-color: #5fbae9; */
   }
@@ -216,7 +215,7 @@
   }
   .LS input#register-facebook, 
   .LS input#login-facebook {
-    background-color: #6796EB;
+    background-color: #FFFFFF;
   }
   .LS input#register-google, 
   .LS input#login-google {
@@ -343,15 +342,6 @@
 
   .underlineHover:hover:after {
     width: 100%;
-  }
-
-  .facebook-button{
-    font-size: 12px;
-    padding: 7px;
-    background-color: rgba(0, 0, 255, 0.76);
-    color: white;
-    border-width: 2px;
-    border-color: black;
   }
 
   /* OTHERS */

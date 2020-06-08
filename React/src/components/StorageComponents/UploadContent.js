@@ -1,7 +1,7 @@
 import React, { Component, Fragment, forwardRef } from "react";
 import UploadForm from "./UploadForm";
 import Flow from '@flowjs/flow.js';
-import CustomFileBrowser from './CustomFileBrowser'
+import UploadFileBrowser from './UploadFileBrowser'
 import './UploadContent.css';
 import {Button} from 'reactstrap';
 //업로드
@@ -11,7 +11,7 @@ class UploadContent extends Component {
     this.state = {
         fileID: "",
         fileList: [],
-        uploadDir: this.props.curFolderPath,
+        uploadDir: props.isSharing ? this.props.curFolderID : this.props.curFolderPath,
         isSubmitted: false,
         isCompleted: true,
         flow: props.flow,
@@ -42,7 +42,6 @@ class UploadContent extends Component {
   }
 
   componentDidMount=()=>{
-    let target=`${window.location.origin}/api/upload/flow`;
     if(this.state.flow) console.log("isUploading ? : ", this.state.flow.isUploading());
     if(!this.state.flow||!this.state.flow.isUploading()){
       this.state.flow=new Flow({
@@ -69,7 +68,7 @@ class UploadContent extends Component {
     if(!this.state.flow.support) console.log("flow.js 지원 안함.");
 
     this.state.flow.on('fileAdded', function(file){
-        console.log('file size : ', file.size);
+        console.log('uploadDir : ', this.state.uploadDir);
         let data= {
             fileSize: file.size,
             fileName: file.name,
@@ -78,7 +77,6 @@ class UploadContent extends Component {
         console.log("upload path : ", this.state.uploadDir);
         const formData  = new FormData();
         for(const name in data) {
-            console.log("name : ", name, data[name])
             formData.append(name, data[name]);
         }
 
@@ -103,11 +101,11 @@ class UploadContent extends Component {
             body: formData,
         })
         .then(errorCheck)
-        //.then(res=>res.json())
+        //.then(res=>res.json()) //개발용
         .then(response=>{ // 실제 서버에서 사용
             console.log("promise 2, response : ", response);
-            let url = response.headers.get('Location'); //docker로 구동 시에 사용
-            //let url=response['Location']; //테스트용, build 할 때 지우기
+            let url = response.headers.get('Location'); //배포용
+            //let url=response['Location']; //개발용
             console.log('url : ', url);
             file.targetUrl=url; //여기서 등록 안될때가 있다.
             console.log('end!');
@@ -265,15 +263,17 @@ class UploadContent extends Component {
   }
 
   render() {
-    console.log("upload render start, myRef : ", this.myRef, this.state.isPathSet);
-
+    console.log("upload render start, isSharing : ", this.props.isSharing);
+    let pathElements = this.props.curFolderPath.split('/');
     return (
       <Fragment>
                  {!this.state.isPathSet&&
                   <div className='upload-file-browser'>
-                    <CustomFileBrowser 
+                    <UploadFileBrowser 
+                      isSharing={this.props.isSharing}
+                      rootKey={this.props.isSharing ? pathElements[pathElements.length-2] + '/' : 'root/'}
                       notify={this.props.notify}
-                      rootDirID={this.props.rootDirID}
+                      rootDirID={this.props.isSharing ? this.props.curFolderID : this.props.rootDirID}
                       changePath={this.changePath}
                       errorCheck={this.props.errorCheck}
                       checkUserState={this.props.checkUserState}

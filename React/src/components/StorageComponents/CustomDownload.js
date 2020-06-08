@@ -1,10 +1,12 @@
 import streamSaver from 'streamsaver';
 
-const CustomDownload=(fileName, fileID)=>{
+const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
     let fileStream=null;
 
     let errorCheck = response =>{
+      console.log("response : ", response);
       if(!response.ok){
+        loadFilesNFolders('');
         throw Error('파일이 존재하지 않습니다.');
       }
       
@@ -56,7 +58,7 @@ const CustomDownload=(fileName, fileID)=>{
       .then(res => res.done ? writer.close() : writer.write(res.value).then(pump))
     
       pump();
-    }).catch(e=>this.props.notify(e))
+    }).catch(e=>notify(e))
     
 }
 
