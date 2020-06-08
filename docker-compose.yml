@@ -1,0 +1,70 @@
+version : '3.4'
+
+volumes:
+  socket:
+    external: false
+
+secrets:
+  django_secret:
+    file: app/googleAccount.txt
+
+services:
+  db:
+    image : postgres:12.3-alpine
+    container_name: "db"
+    environment:
+      POSTGRES_DB: capstonedb
+      POSTGRES_USER: cs
+      POSTGRES_PASSWORD: 1234  # TODO: Move this into a secret or something
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d/
+      - /etc/passwd:/etc/passwd:ro
+    expose:
+      - 5432
+    user: ${USER_ID:?"Run as './udco ...'"}:${GROUP_ID:?"Run as './udco ...'"}
+
+  django:
+    build:
+      context: ./app
+      network: host #build 속도 향상
+    volumes:
+     - ./app:/app/
+     - socket:/socket/
+     - ./file:/file
+     - ./log:/log
+    secrets:
+      - django_secret
+    expose:
+      - 8000
+    depends_on:
+      - db
+    environment:
+      USER_ID: ${USER_ID:?"Run as './udco ...'"}
+      GROUP_ID: ${GROUP_ID:?"Run as './udco ...'"}
+    #wait-for-it.sh는 db가 켜질 때까지 기다렸다가 django 앱이 켜지게 해줍니다.
+    command: >
+      sh -c "/wait-for-it.sh db:5432 -t 0 &&
+             python manage.py makemigrations &&
+             python manage.py migrate &&
+             uwsgi --uid ${USER_ID} --gid ${GROUP_ID} --ini ./uwsgi/Capstone.ini"
+  nginx:
+    build:
+      context: ./nginx
+    #restart: always 서버가 다운되었을 때 자동으로 재시작하게 해준다.
+    volumes:
+      - socket:/socket/
+      - ./app/static:/static/
+      - ./file/complete:/media/files/ #사용자가 업로한 파일들을 저장하는 장소
+      - ./file/thumbnail:/media/thumbnail/
+      - ./React:/React/
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf #nginx 테스트용입니다. 나중에 지워주세요.
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+    environment:
+      USER_ID: ${USER_ID:?"Run as './udco ...'"}
+      GROUP_ID: ${GROUP_ID:?"Run as './udco ...'"}
+    command: nginx -g "daemon off;"
