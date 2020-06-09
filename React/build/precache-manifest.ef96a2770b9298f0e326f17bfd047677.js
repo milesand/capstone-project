@@ -80,7 +80,7 @@ self.__precacheManifest = [
     "url": "./static/media/moonge_logo.a767566b.png"
   },
   {
-    "revision": "8217930fc0542aed35a69975aa882794",
+    "revision": "fc9790df4781ec114725f90992d9b9d1",
     "url": "./index.html"
   }
 ];
