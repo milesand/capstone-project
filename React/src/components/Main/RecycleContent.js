@@ -58,7 +58,7 @@ const RecycleContent=(props)=>{
                 for(let j=0; j<len; j++){
                   const folderInfo = {
                       name: folderNameList[i],
-                      pk:content2.data.directories[folderNameList[i]][j],
+                      pk:content2.data.directories[folderNameList[i]][j].pk,
                       type:"folder"
                   }
                   newFolderList.push(folderInfo)

@@ -70,13 +70,13 @@ export default class RecoverBrowser extends Component{
     if(this.props.isSharing) path=e['key'];
     else path=e['key'].substr(4);
     console.log("current path : ", path);
-    console.log("current id : ",e['id']['pk']);
+    console.log("current id : ", e['id'], e['id']['pk']);
     this.props.changePath(path); //현재 클릭중인 디렉토리에 맞춰서 업로드 경로 변경
     this.setState({
       currentPath: path,
-      currentFolderID: e['id']['pk']
+      currentFolderID: e['id']
     });
-    this.props.changeDirID(e['id']['pk']);
+    this.props.changeDirID(e['id']);
   }
 
   handleOnFolderOpen=(e)=>{ //폴더 열릴 때, 서버에서 해당 폴더의 정보 받아오기
