@@ -47,7 +47,7 @@ export default class RecoverBrowser extends Component{
           this.setState(state => {
             state.files = state.files.concat([{
               key: key + directory + '/',
-              id: subdirectories[directory]
+              id: subdirectories[directory].pk
             }])
             return state
           })
