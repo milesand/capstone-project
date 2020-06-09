@@ -229,7 +229,7 @@ const SharingContent=(props)=>{
         }
         const folderInfo = {
           name: (dirID=='' ? FolderInfoList[folderNameList[i]]['name'] : folderNameList[i]),
-          pk:(dirID=='' ? folderNameList[i] : FolderInfoList[folderNameList[i]]),
+          pk:(dirID=='' ? folderNameList[i] : FolderInfoList[folderNameList[i]]['pk']),
           browser_path : br_path,
           type:"folder"
         }

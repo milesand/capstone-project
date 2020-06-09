@@ -355,14 +355,17 @@ const itemRecover = () => {
     axios.post(`${window.location.origin}/api/recover`,JSON.stringify(data),option)
     .catch(res=>{
       console.log('recover data : ',JSON.stringify(data));
+      console.log("response data : ", res, res.response);
       props.errorCheck(res.response, res.response.data);
-      if(res.response.status>=400) throw Error(res.response.data);
+      console.log("response data 2 : ", res, res.response);
+      if(res.response.status>=400) throw Error(res.response.data['error']);
     })
     .then(content => {
       console.log('recover test : ',JSON.stringify(content));
       props.notify('복구 완료.');
       props.loadFilesNFolders();
     })
+    .catch(e=>props.notify(e))
   }
   toggleRecoverModal();
 }
@@ -1045,6 +1048,7 @@ const handleRecover = () => {
                       onChangeNewName={onChangeNewName}
                       submitNewName={submitNewName}
                       isRecycle={props.isRecycle}
+                      favorite={folder.favorite}
                     />
                 ))}
 

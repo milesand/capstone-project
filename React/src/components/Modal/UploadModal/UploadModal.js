@@ -37,6 +37,7 @@ const UploadModal=({uploadModal, toggleUploadModal, isSharing, flow, setFlow, se
                     curFolderID={curFolderID}
                     curFolderPath={curFolderPath}
                     loadFilesNFolders={loadFilesNFolders}
+                    toggleUploadModal={toggleUploadModal}
                     check={check}
                   />
                 </ModalBody>

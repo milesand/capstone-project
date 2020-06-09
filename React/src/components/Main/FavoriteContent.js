@@ -20,7 +20,7 @@ const FavoriteContent=(props)=>{
     const [fileList, setFileList] = useState([]);
     const [folderList,setFolderList] = useState([]);
     const [curFolderID, setCurFolderID] = useState(props.rootDirID);
-    const [curFolderPath, setCurFolderPath] = useState('/');
+    const [curFolderPath, setCurFolderPath] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isFavoriteInit, setIsFavoriteInit] = useState(true);
 

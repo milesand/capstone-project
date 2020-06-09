@@ -65,7 +65,7 @@ const Item = (props) => {
           disable={true}
           onContextMenu={()=>showFileInfo(index)}
           className={classNames("item", { "item-selected": isSelected }, {"item-selecting":isSelecting})}
-          onDoubleClick={isRecycle ? '' : itemType=='file' ? openPreviewModal : handleDirDoubleClick}
+          onDoubleClick={isRecycle ? null : itemType=='file' ? openPreviewModal : handleDirDoubleClick}
           tabIndex="0"
         >
           <div className="item-image">
