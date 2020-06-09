@@ -104,7 +104,7 @@ export default class UploadFileBrowser extends Component{
       this.setState({
         currentPath: newPath
       })
-      this.props.loadFilesNFolders('', this.props.curFolderID);
+      this.props.loadFilesNFolders();
     })
     .catch(e=>this.state.notify(e));
   }
@@ -179,7 +179,7 @@ export default class UploadFileBrowser extends Component{
           return state
         })
         this.state.notify('생성 완료!');
-        this.props.loadFilesNFolders('', this.props.curFolderID);
+        this.props.loadFilesNFolders();
     })
     .catch(e=>this.state.notify(e));
   }
@@ -233,7 +233,7 @@ export default class UploadFileBrowser extends Component{
       state.files = newFiles
       return state
     })
-    this.props.loadFilesNFolders('', this.props.curFolderID);
+    this.props.loadFilesNFolders();
     this.props.notify("폴더 이름 변경 완료!");
   }
 

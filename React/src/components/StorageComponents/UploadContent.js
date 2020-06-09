@@ -42,13 +42,13 @@ class UploadContent extends Component {
   }
 
   componentDidMount=()=>{
-    if(this.state.flow) console.log("isUploading ? : ", this.state.flow.isUploading());
-    if(!this.state.flow||!this.state.flow.isUploading()){
+    console.log("did mount. flow : ", this.state.flow);
+    if(!this.state.flow||this.state.flow.getSize()==this.state.flow.sizeUploaded()){
       this.state.flow=new Flow({
           target: function(file, url){
               if(file.targetUrl==null){
                 file.cancel();
-                return "test.";
+                return;
               }
               else
                 console.log('success, file : ', file, ' url : ', file.targetUrl);
@@ -57,7 +57,7 @@ class UploadContent extends Component {
 
           simultaneousUploads : 1,
           withCredentials : true,
-          chunkSize : 5*1024*1024
+          chunkSize : 10*1024*1024
       });
     }
     else{
@@ -192,7 +192,11 @@ class UploadContent extends Component {
 
     this.state.flow.on('complete', function(){
       console.log("업로드 끝!, this : ", this);
-      this.props.loadFilesNFolders('', this.props.curFolderID);
+      this.setState({
+        isPathSet: false,
+        isSubmitted: false
+      })
+      this.props.loadFilesNFolders();
       this.props.checkUserState();
     }.bind(this))
   }
@@ -242,6 +246,9 @@ class UploadContent extends Component {
       .then(this.props.errorCheck)
       .then(()=>{
         this.props.notify(file.name+' 업로드를 중단했습니다.');
+        this.setState({
+          isSubmitted: false
+        })
         this.setUploadAreaEvent();
       })
       .catch(e=>this.props.notify(e))
@@ -254,7 +261,6 @@ class UploadContent extends Component {
   }
 
   toggleIsPathSet=()=>{
-    console.log("giowejoiw");
     this.props.setModalHeadText("업로드");
     this.setState({
       isPathSet: true
@@ -267,7 +273,7 @@ class UploadContent extends Component {
     let pathElements = this.props.curFolderPath.split('/');
     return (
       <Fragment>
-                 {!this.state.isPathSet&&
+                 {!this.state.isPathSet&&!this.state.isSubmitted&&
                   <div className='upload-file-browser'>
                     <UploadFileBrowser 
                       isSharing={this.props.isSharing}
@@ -286,7 +292,7 @@ class UploadContent extends Component {
                   </div>
                  }
 
-                 {this.state.isPathSet&&
+                 {(this.state.isPathSet||this.state.isSubmitted)&&
                   <UploadForm
                       myRef={this.myRef} //이 값을 등록한 버튼을 this.myRef.current를 통해 찾을 수 있다.
                       isSubmitted={this.state.isSubmitted}

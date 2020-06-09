@@ -6,7 +6,7 @@ const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
     let errorCheck = response =>{
       console.log("response : ", response);
       if(!response.ok){
-        loadFilesNFolders('');
+        loadFilesNFolders();
         throw Error('파일이 존재하지 않습니다.');
       }
       

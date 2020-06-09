@@ -98,23 +98,6 @@ const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitat
       <Collapse navbar>
         <Nav className="mr-auto" navbar />
         <form onSubmit={submitSearchKeyword} method='GET'>
-        {/*isShowingSearchBar &&
-        <InputGroup className="searchbar-group">
-          <InputGroupAddon addonType="append" className="searchbar">
-            <Input 
-              className="search-input"
-              id='searchKeyword'
-              value={searchKeyword}
-              onChange={changeSearchKeyword}
-            />
-            <Button 
-              type='submit'
-              className="search-icon-button"
-            >
-              <FontAwesomeIcon icon={faSearch} className="search-icon" />
-            </Button>
-          </InputGroupAddon>
-        </InputGroup>*/}
         </form>
         <Nav className="myNav-icons">
           <UncontrolledDropdown

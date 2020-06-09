@@ -19,8 +19,8 @@
     height: 400px;
 }
 
-.preview-image{ 
-    width: 100%;
+.preview-image{
+    width:100%;
     height: auto;
     max-height: 550px;
     margin-bottom: 5%;
@@ -34,11 +34,12 @@
 
 .preview-modal-body{
     width : auto;
-    height: 10;
+    height: 100%;
     text-align : center;
 }
 
-.inline-wrap{
-    position: relative;
+.preview-helper {
+    display: inline-block;
     height: 100%;
+    vertical-align: middle;
 }

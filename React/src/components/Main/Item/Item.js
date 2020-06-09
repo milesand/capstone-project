@@ -8,7 +8,7 @@ import {
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile,faFolder } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faFolder, faStar } from "@fortawesome/free-solid-svg-icons";
 import {
   Card,
   CardText,
@@ -21,7 +21,7 @@ import PreviewModal from '../../Modal/PreviewModal/PreviewModal'
 const Item = (props) => {
   const { showFileInfo, pk, thumbnailUrl, itemType, curPk, browserPath,
           name, index, loadFilesNFolders, isMultiCheck, isRename, 
-          togglePreviewModal, newName, onChangeNewName, submitNewName} = props;
+          togglePreviewModal, newName, onChangeNewName, submitNewName, favorite ,isRecycle} = props;
 
   const { selectableRef, isSelected, isSelecting } = props;
   useEffect(
@@ -45,21 +45,27 @@ const Item = (props) => {
   
   return (
     <div ref={selectableRef} className="tick">
-      <ContextMenuTrigger id={isMultiCheck 
-                              ? itemType=='file' 
-                                ? 'contextMenuMultiFileID'
-                                : 'contextMenuMultiFolderID'
-                              : itemType=='file' 
-                                ? "contextMenuFileID" 
-                                : name=='...' ? ''
-                                  :"contextMenuDirID"}>
+      <ContextMenuTrigger id={isRecycle 
+                              ? 'contextMenuRecycleID'
+                              : isMultiCheck 
+                                ? itemType=='file' 
+                                  ? 'contextMenuMultiFileID'
+                                  : 'contextMenuMultiFolderID'
+                                : itemType=='file' 
+                                  ? favorite
+                                    ? "contextMenuFavoriteFileID" 
+                                    : "contextMenuFileID" 
+                                  : name=='...' ? ''
+                                    : favorite
+                                      ? "contextMenuFavoriteDirID"
+                                      : "contextMenuDirID"}>
         <Card
           body
           outline
           disable={true}
           onContextMenu={()=>showFileInfo(index)}
           className={classNames("item", { "item-selected": isSelected }, {"item-selecting":isSelecting})}
-          onDoubleClick={itemType=='file' ? openPreviewModal : handleDirDoubleClick}
+          onDoubleClick={isRecycle ? '' : itemType=='file' ? openPreviewModal : handleDirDoubleClick}
           tabIndex="0"
         >
           <div className="item-image">
@@ -68,7 +74,7 @@ const Item = (props) => {
               <FontAwesomeIcon icon={faFile} className="item-image" size="4x" />
             )}
             {itemType=="folder" &&  <FontAwesomeIcon icon={faFolder} className="item-image" size="4x" />}
-           
+            {favorite && <FontAwesomeIcon icon={faStar} className="item-favorite"/>}
           </div>
           <span className="item-divider" />
           {curPk==pk&&isRename ? 

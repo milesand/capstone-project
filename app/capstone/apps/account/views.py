@@ -105,9 +105,10 @@ class RegistrationAPI(generics.GenericAPIView):
                 return Response({'message': '잘못된 접근입니다.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
             else:  # 지원하는 소셜 로그인
-                print('here.')
+                print('hereffff.')
                 try:
-                    return Response(status=status.HTTP_202_ACCEPTED) # 기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
+                    User.objects.get(email=request.data['email']) # 기존 가입 유저중에 동일한 이메일을 사용하는 유저가 있을 경우 해당 계정과 연동
+                    return Response(status=status.HTTP_409_CONFLICT)
                 except:
                     request.data['is_mail_authenticated'] = True
 
@@ -279,10 +280,10 @@ class UserAPI(generics.GenericAPIView):
                 return Response({'error' : '변경값을 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
             user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'message' : '변경 완료.'}, status=status.HTTP_200_OK)
 
         else:
-            return Response({'message': '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': '입력 형식을 확인해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         print("delete call!, request : ", request.data)
@@ -324,43 +325,27 @@ class SocialLoginAPI(RegistrationAPI, LoginAPI, generics.GenericAPIView):
                     'social_auth': social}
         print('userdata : ', userData)
         try:
-            user = get_object_or_404(User, username=data['id'])
+            user = get_object_or_404(User, username=userData['username'])
+            print("user : ", user)
         except:  # 회원 정보 없음, 회원 가입 진행
             request._full_data = userData
             print("registration result.")
             self.response = RegistrationAPI.post(self, request)
-            print(self.response.status_code)  # 해당 이메일로 이미 가입된 아이디가 있을 경우, http code 202 발생
+            if self.response.status_code==409:
+                return Response({'error' : '해당 이메일 주소로 이미 가입한 아이디가 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 로그인 진행
         print(LoginAPI.serializer_class)
         self.serializer_class = LoginAPI.serializer_class  # serializer class 로그인 용으로 전환
-        if self.response is not None and self.response.status_code == 202:
-            user = User.objects.get(email=data['email'])
-            if user.is_mail_authenticated == False:
-                user.is_mail_authenticated = True
-                user.save()
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
-            g = GetJWTToken()
-            token = g.getToken_without_password(user)
-            print('token : ', token)
-            response = Response(UserSerializer(user).data, status=status.HTTP_200_OK)
-            response.set_cookie('jwt', token, domain=None,
-                                expires=datetime.utcnow() + JWT_AUTH['JWT_EXPIRATION_DELTA'],
-                                httponly=True)  # httponly cookie를 통해 JWT 토큰 전송
 
-            print("set complete.")
-            return response
+        userLoginData = {'username': social + '_' + data['id'],
+                        'password': "social"}
 
-        else:
-            userLoginData = {'username': social + '_' + data['id'],
-                             'password': "social"}
-
-            request._full_data = userLoginData
-            try:
-                return LoginAPI.post(self, request)
-            except:
-                return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
+        request._full_data = userLoginData
+        try:
+            return LoginAPI.post(self, request)
+        except:
+            return Response({'error': '소셜 계정 로그인 실패.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -383,7 +368,7 @@ class GoogleLoginAPI(SocialLoginAPI, generics.GenericAPIView):
             return Response({"error": "구글 인증 정보가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
         data = json.loads(r.text)  # response 데이터 JSON으로 변환
-        print(data)
+        print('google data : ', data)
         return self.login_n_registration(request, data, 'google')
 
 

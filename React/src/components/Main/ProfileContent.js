@@ -68,7 +68,13 @@ export default class ProfileCotnent extends Component{
             body: JSON.stringify(data),
             credentials: 'include'
         })
-        .then((response)=>this.props.errorCheck(response, message))
+        .then(this.props.errorCheck)
+        .then(response=>{
+            if(!response.ok){
+                throw Error((this.state.isSocialAccount ? "이메일 주소" : "비밀번호") + '가 일치하지 않습니다.');
+            }
+            return response;
+        })
         .then(()=>{
             this.props.getUserInfo()
             .then(content=>{
@@ -109,9 +115,12 @@ export default class ProfileCotnent extends Component{
             credentials: 'include',
             body: JSON.stringify(data)
         })
-        .then((response)=>this.props.errorCheck(response, errMsg))
-        .then(()=>{
-            this.props.notify("변경 완료!");
+        .then(this.props.errorCheck)
+        .then(res=>res.json())
+        .then(response=>{
+            console.log('response : ', response);
+            if(response.hasOwnProperty('error')) throw Error(response['error']);
+            this.props.notify("변경이 완료되었습니다.");
             this.props.checkUserState();
             this.props.userStateChange(true,
                                        true,

@@ -14,10 +14,8 @@ import { NavItem, NavLink, Nav,Button,Progress } from "reactstrap";
 import classNames from "classnames";
 import { Link } from "react-router-dom";
 import "./SideBar.css";
-import SubMenu from "./SubMenu";
 
 const SideBar = ({ isOpen, toggle, spaceLeft, percent}) => {
-  console.log("sidebar : ", isOpen, toggle, spaceLeft);
   return (
   <div className={classNames("sidebar", {"is-open": isOpen}, {"is-toggled": !isOpen })}>
     <div className="sidebar-header">

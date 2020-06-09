@@ -158,6 +158,39 @@ const TeamContent = (props) => {
     },
     withCredentials: true,
   };
+  
+  //전체유저 불러오기
+  const loadFriendList = () => {
+    console.log("load team.");
+    const tempList = [];
+    const option = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+
+    axios.get(`${window.location.origin}/api/users`, option)
+      .catch(error=>{
+        props.errorCheck(error.response);
+      }) 
+      .then((content) => {
+        content["data"].map((user) => {
+          const userInfo = {
+            pk: user["pk"],
+            username: user["username"],
+            nickname: user["nickname"],
+            email: user["email"],
+          };
+          // console.log("userInfo"+JSON.stringify(userInfo))
+          if (user["username"] != username) tempList.push(userInfo);
+        });
+        setFriendList(tempList);
+        //  console.log(JSON.stringify(tempList));
+      })
+      .catch(e=>props.notify(e))
+  };
+
 
   //팀 생성 modal 열기 
   const teamAddToggle = () => {

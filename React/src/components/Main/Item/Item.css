@@ -88,3 +88,10 @@
   .item-rename-box {
     height:25px !important;
   }
+
+  .item-favorite {
+    position: absolute;
+    top:5px;
+    right: 5px;
+    color: #6276e9 !important;
+  }
