@@ -13,7 +13,7 @@ const RecoverModal=({recoverModal, toggleRecoverModal, notify, changePath, error
 
 
     useEffect(()=>{
-      console.log('curFolderID',curFolderID);
+      console.log('curFolderID', curFolderID);
     },[curFolderID]);
     let pathElements = curFolderPath.split('/');
     return(

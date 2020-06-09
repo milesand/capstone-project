@@ -22,6 +22,7 @@ const RecycleContent=(props)=>{
       
 
     useEffect(() => {
+      console.log("propggjweoigwes rootDirID : ", props.rootDirID)
       },[])
 
     const loadRecycleItems=()=>{

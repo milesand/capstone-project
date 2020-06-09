@@ -125,9 +125,10 @@ const FavoriteContent=(props)=>{
                     type:"folder"
                 })
                 for(let i=0;i<folderNameList.length;i++){
+                    console.log("folderNameList[i] : ", content2.data.subdirectories[folderNameList[i]]);
                     const folderInfo = {
                         name: folderNameList[i],
-                        pk:content2.data.subdirectories[folderNameList[i]],
+                        pk:content2.data.subdirectories[folderNameList[i]].pk,
                         type:"folder"
                     }
                     newFolderList.push(folderInfo)

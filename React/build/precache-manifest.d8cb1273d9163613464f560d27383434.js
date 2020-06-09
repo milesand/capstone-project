@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "99374a15be6446205cc9",
+    "revision": "bb54d6535aae7b10a2f8",
     "url": "./static/css/main.488ae8e5.chunk.css"
   },
   {
-    "revision": "99374a15be6446205cc9",
-    "url": "./static/js/main.99374a15.chunk.js"
+    "revision": "bb54d6535aae7b10a2f8",
+    "url": "./static/js/main.bb54d653.chunk.js"
   },
   {
     "revision": "45a5354b8e9a12d0431d",
@@ -80,7 +80,7 @@ self.__precacheManifest = [
     "url": "./static/media/moonge_logo.a767566b.png"
   },
   {
-    "revision": "660520838184f6b3723d13cd3d892903",
+    "revision": "f730ede8e816c9179fa90939c5daf756",
     "url": "./index.html"
   }
 ];

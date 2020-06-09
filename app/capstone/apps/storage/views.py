@@ -829,14 +829,13 @@ class RecoverView(APIView):
                         recover_from_recycle_recur(directory)
 
                 recover_from_recycle(directory)
-                recycle_entry.delete() # 복구 문제가 생겼을 때, 기존 recycleEntry 모델을 보존하기 위해 아래쪽에서 recycleEntry 삭제하도록 변경
 
                 background_job = threading.Thread(target=recover_from_recycle, args=[directory])
                 background_job.setDaemon(True)
                 background_job.start()
             
             partial_success = True
-        
+            recycle_entry.delete()  # 복구 문제가 생겼을 때, 기존 recycleEntry 모델을 보존하기 위해 아래쪽에서 recycleEntry 삭제하도록 변경
         response_status = status.HTTP_200_OK if partial_success else status.HTTP_400_BAD_REQUEST
         
         return Response(
