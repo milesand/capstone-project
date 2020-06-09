@@ -716,13 +716,14 @@ const handleRecover = () => {
       {/*미리보기 modal*/}
       <PreviewModal 
           isOpen={previewModal} 
-          toggle={togglePreviewModal} 
+          toggle={togglePreviewModal}
           fileName={currentItemInfo.name}
           fileID={currentItemInfo.pk}
           hasThumbnail={currentItemInfo.has_thumbnail && `${window.location.origin}/api/thumbnail/${currentItemInfo.pk}`}
           isVideo={currentItemInfo.is_video}
           notify={props.notify}
           loadFilesNFolders={props.loadFilesNFolders}
+
       />
 
       {/*디렉토리 공유 설정 modal*/}

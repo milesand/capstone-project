@@ -1,7 +1,7 @@
 {
-  "main.css": "./static/css/main.488ae8e5.chunk.css",
-  "main.js": "./static/js/main.9b71466a.chunk.js",
-  "main.js.map": "./static/js/main.9b71466a.chunk.js.map",
+  "main.css": "./static/css/main.7d0127ef.chunk.css",
+  "main.js": "./static/js/main.4daea809.chunk.js",
+  "main.js.map": "./static/js/main.4daea809.chunk.js.map",
   "static/js/1.45a5354b.chunk.js": "./static/js/1.45a5354b.chunk.js",
   "static/js/1.45a5354b.chunk.js.map": "./static/js/1.45a5354b.chunk.js.map",
   "reactPlayerYouTube.js": "./static/js/reactPlayerYouTube.8ce2980c.chunk.js",
@@ -34,9 +34,9 @@
   "static/media/mail.png": "./static/media/mail.fd59186f.png",
   "static/media/moonge_logo_small.png": "./static/media/moonge_logo_small.aa0b3018.png",
   "static/media/moonge_logo.png": "./static/media/moonge_logo.a767566b.png",
-  "static/css/main.488ae8e5.chunk.css.map": "./static/css/main.488ae8e5.chunk.css.map",
+  "static/css/main.7d0127ef.chunk.css.map": "./static/css/main.7d0127ef.chunk.css.map",
   "static/css/13.fb06be69.chunk.css.map": "./static/css/13.fb06be69.chunk.css.map",
   "index.html": "./index.html",
-  "precache-manifest.6ed729cd6731edf9e49913400b154da8.js": "./precache-manifest.6ed729cd6731edf9e49913400b154da8.js",
+  "precache-manifest.5649d176b40588d0189cbd49cd92f32e.js": "./precache-manifest.5649d176b40588d0189cbd49cd92f32e.js",
   "service-worker.js": "./service-worker.js"
 }

@@ -132,7 +132,7 @@ export default class Login extends Component { //export default : 다른 모듈�
     }
     
     this.props.toggleLoadingState();
-    fetch(`${window.location.origin}login`, {
+    fetch(`${window.location.origin}/api/jwt-login`, {
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',
