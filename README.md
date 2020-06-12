@@ -8,6 +8,22 @@
   - 배포 환경이라면 `./udco -f docker-compose.yml -f docker-compose.prod.yml up` 
 3. 아래에 적혀있는 URL 사용방법대로 사용하면 됩니다.
 
+6/12 수정사항
+-----------------
+오늘 작업한 내용은 아래와 같습니다.
+
+    1. 공유설정한 폴더를 다른 사용자가 즐겨찾기 설정 했을 때, 원래 소유자의 파일 브라우저에서 즐겨찾기 표시되던 현상을 수정했습니다.
+    2. 리액트 코드를 정리했습니다.
+    
+       1. Main 폴더의 content들을 Contents 폴더에 묶어서 관리하도록 변경.
+       2. MainFileBrowser.js에 있던 modal들 전부 modal 폴더에 정리함.
+    
+    3. 휴지통에 있는 파일 썸네일 안보이는 문제 -> perm_check_entry_with_teams에서 휴지통 안에 있는 파일들에 대해 false를 리턴해서 발생.
+                                           -> perm_check_entry_with_teams에 is_thumbnail_check=False 파라미터를 설정하고,
+                                              thumbnailAPI에서 perm_check_entry_with_teams를 사용할 때 True 체크하게 하여
+                                              썸네일 정보를 얻을 때는 휴지통에 있는지 여부를 따지지 않도록 설정했습니다.
+    
+    4. 인터넷 탭에 표시되는 favicon을 뭉게드라이브 아이콘으로 수정했습니다.
 6/9 수정사항
 -----------------
 오늘 작업한 내용은 아래와 같습니다.
