@@ -870,7 +870,7 @@ class ThumbnailAPI(APIView):
                 'Content-Disposition': 'inline',
                  # Let nginx handle this
                 'X-Accel-Redirect': '/media/thumbnail/{0}/{1}'.format(
-                    str(user.pk), str(file_record.pk)
+                    str(file_record.owner.pk), str(file_record.pk)
                 )
             },
             content_type='image/jpeg',
@@ -1216,6 +1216,9 @@ class ItemSearchAPI(APIView):
                             return Response({'error' : '서버 에러 발생!'}, status=status.HTTP_400_BAD_REQUEST)
                         dir_data['browser_path']=browser_path
                         dir_data['name']=child_dir.name
+                        dir_data['favorite_of']={}
+                        for team in child_dir.favorite_of.all():
+                            dir_data['favorite_of'].append(team.pk)
                         data['subdirectories'][str(child_dir.pk)]=dir_data
 
                     que.put(child_dir)

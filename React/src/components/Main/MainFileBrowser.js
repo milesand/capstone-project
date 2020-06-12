@@ -645,7 +645,7 @@ const handleRecover = () => {
       props.notify('검색어는 두 글자 이상으로 입력해주세요.');
       return;
     }
-    console.log("submit! val : ", props. searchRootDirID, searchKeyword);
+    console.log("submit! val : ", props.searchRootDirID, searchKeyword);
     let url=`${window.location.origin}/api/search/${props.searchRootDirID}/${searchKeyword}`;
     setIsSearching(true);
 
