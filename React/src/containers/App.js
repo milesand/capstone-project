@@ -20,7 +20,6 @@ import ForgotID from "./ForgotID";
 import ForgotPassword from "./ForgotPassword";
 import DisplayID from "./DisplayID";
 import ReturnToLogin from "./ReturnToLogin";
-import ThumbTest from "./ThumbTest";
 
 class App extends Component {
   constructor(props) {
@@ -236,7 +235,6 @@ class App extends Component {
             <Switch>        
               <NormalRoute path="/login" exact component={Login} props={baseProps} />
               <NormalRoute path="/mail-validation/*" exact component={MailValidation} props={baseProps} />
-              <NormalRoute path="/thumb-test" exact component={ThumbTest} props={baseProps} />
               <MailAuthRoute path="/mail-resend" exact component={MailResend} props={baseProps} />
               <NotAuthenticatedRoute path="/signup" exact component={Signup} props={baseProps} />
               <NotAuthenticatedRoute path="/forgot-id" exact component={ForgotID} props={baseProps} />

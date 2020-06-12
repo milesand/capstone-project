@@ -1,0 +1,14 @@
+.recover-modal-head{
+    margin-left: -15%;
+    font-size: 25px;
+    width: 500px;
+}
+
+.recover-file-browser{
+    height: 700px;
+    overflow-y: auto;
+}
+
+.recover-modal-button{
+    width : 200px;
+ }

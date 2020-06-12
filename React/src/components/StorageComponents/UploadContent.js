@@ -247,17 +247,15 @@ class UploadContent extends Component {
       .then(this.props.errorCheck)
       .then(()=>{
         this.props.notify(file.name+' 업로드를 중단했습니다.');
-        this.setState({
-          isSubmitted: false
-        })
-        this.setUploadAreaEvent();
+        console.log("length : ", this.state.flow, this.state.flow.files, this.state.flow.files.length)
+        if(this.state.flow.files.length==0){
+          this.setState({
+            isSubmitted: false
+          })
+          this.setUploadAreaEvent();
+        }
       })
       .catch(e=>this.props.notify(e))
-    }
-
-    else if(this.state.flow.files.length==0){
-      console.log('here!, ref : ', this.myRef);
-      this.setUploadAreaEvent();
     }
   }
 

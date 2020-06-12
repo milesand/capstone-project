@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.db import transaction
 from .models import UserStorage, Directory, File, PartialUpload
 
 # User 모델에서 루트 디렉터리 및 소유 디렉터리, 파일들의 정보를 참조할 때 사용
@@ -17,7 +16,7 @@ class FileSerializer(serializers.ModelSerializer):
 class DirectorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Directory
-        fields = ('pk', 'owner', 'name', 'parent', 'favorite_of') #favorite_of 필드는 이 폴더가 임의의 사용자에게 즐겨찾기 설정이 되어있는지 여부를 판단한다.
+        fields = ('pk', 'owner', 'name', 'parent') #favorite_of 필드는 이 폴더가 임의의 사용자에게 즐겨찾기 설정이 되어있는지 여부를 판단한다.
 
 
 class PartialSerializer(serializers.ModelSerializer): #테스트용
