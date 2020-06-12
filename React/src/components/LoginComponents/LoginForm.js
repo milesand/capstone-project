@@ -3,6 +3,7 @@ import { Row, Col, Spinner } from "reactstrap";
 import "./LoginStyle.css";
 import { Link } from "react-router-dom";
 import logo from './login4.png'; 
+import moonge_logo from './moonge_logo.png';
 import FacebookLogin from 'react-facebook-login';
 // presentational component, only a stateless function
 // gets props by destructuring the props object
@@ -13,6 +14,7 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
     return (
       <div className="LS Login">
         <div className="wrapper fadeInDown">
+        <img src={moonge_logo} className='moonge-logo' id="moongeLogo" alt="Moonge Drive" />
           <div id="formContent">
           <form method="POST" onSubmit={normalLogin}>
             <div className="register-sns">

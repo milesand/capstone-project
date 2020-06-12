@@ -22,41 +22,47 @@ const RecycleContent=(props)=>{
       
 
     useEffect(() => {
+      console.log("propggjweoigwes rootDirID : ", props.rootDirID)
       },[])
 
     const loadRecycleItems=()=>{
         setIsLoading(true);
         axios.get(`${window.location.origin}/api/recycle`,option)
             .then(content2 => {
+              console.log("content2 : ", content2.data.files)
               const newFileList=[], newFolderList=[];
               const fileNameList= Object.keys(content2.data.files)
               for(let i=0;i<fileNameList.length;i++) {
-                let date=content2.data.files[fileNameList[i]][0]['uploaded_at'];
-                const fileInfo = {
-                    name:fileNameList[i],
-                    pk: content2.data.files[fileNameList[i]][0]['pk'],
-                    size: content2.data.files[fileNameList[i]][0]['size'],
-                    uploaded_at: Moment(date).format('LLL'),
-                    has_thumbnail: content2.data.files[fileNameList[i]][0]['has_thumbnail'],
-                    is_video : content2.data.files[fileNameList[i]][0]['is_video'],
-                    favorite : content2.data.files[fileNameList[i]][0]['favorite'],
-                    type:"file"
+                for (let j=0; j<content2.data.files[fileNameList[i]].length; j++){
+                  let date=content2.data.files[fileNameList[i]][j]['uploaded_at'];
+                  const fileInfo = {
+                      name:fileNameList[i],
+                      pk: content2.data.files[fileNameList[i]][j]['pk'],
+                      size: content2.data.files[fileNameList[i]][j]['size'],
+                      uploaded_at: Moment(date).format('LLL'),
+                      has_thumbnail: content2.data.files[fileNameList[i]][j]['has_thumbnail'],
+                      is_video : content2.data.files[fileNameList[i]][j]['is_video'],
+                      favorite : content2.data.files[fileNameList[i]][j]['favorite'],
+                      type:"file"
+                  }
+                  newFileList.push(fileInfo);
                 }
-                newFileList.push(fileInfo);
-                console.log('file pk : ',content2.data.files[fileNameList[i]][0])
               }
+              console.log("new file list : ", newFileList);
               setFileList(newFileList);
   
+              console.log('content2 : ', content2.data.directories)
               const folderNameList= Object.keys(content2.data.directories) // root 하위 폴더불러오기->어차피 root폴더 접근해야해서 파일불러오기와 병행
               for(let i=0;i<folderNameList.length;i++){
-                console.log('content2 : ', content2.data.directories[folderNameList[i]])
+                let len=content2.data.directories[folderNameList[i]].length;
+                for(let j=0; j<len; j++){
                   const folderInfo = {
                       name: folderNameList[i],
-                      pk:content2.data.directories[folderNameList[i]][0],
-                    //   favorite : true,
+                      pk:content2.data.directories[folderNameList[i]][j].pk,
                       type:"folder"
                   }
                   newFolderList.push(folderInfo)
+                }
               }
               setFolderList(newFolderList);
               setIsLoading(false);

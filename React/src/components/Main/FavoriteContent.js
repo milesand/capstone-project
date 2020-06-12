@@ -20,7 +20,7 @@ const FavoriteContent=(props)=>{
     const [fileList, setFileList] = useState([]);
     const [folderList,setFolderList] = useState([]);
     const [curFolderID, setCurFolderID] = useState(props.rootDirID);
-    const [curFolderPath, setCurFolderPath] = useState('/');
+    const [curFolderPath, setCurFolderPath] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isFavoriteInit, setIsFavoriteInit] = useState(true);
 
@@ -125,9 +125,10 @@ const FavoriteContent=(props)=>{
                     type:"folder"
                 })
                 for(let i=0;i<folderNameList.length;i++){
+                    console.log("folderNameList[i] : ", content2.data.subdirectories[folderNameList[i]]);
                     const folderInfo = {
                         name: folderNameList[i],
-                        pk:content2.data.subdirectories[folderNameList[i]],
+                        pk:content2.data.subdirectories[folderNameList[i]].pk,
                         type:"folder"
                     }
                     newFolderList.push(folderInfo)

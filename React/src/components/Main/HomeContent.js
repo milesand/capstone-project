@@ -50,6 +50,7 @@ const HomeContent=(props)=>{
       }
       setFileList(newFileList);
     
+      console.log('content2 dir : ', folderInfoList);
       const folderNameList= Object.keys(folderInfoList) // root 하위 폴더불러오기->어차피 root폴더 접근해야해서 파일불러오기와 병행
       if(dirID!=rootDirID) newFolderList.push({
         name: '...',
@@ -57,10 +58,12 @@ const HomeContent=(props)=>{
         type:"folder"
       })
       for(let i=0;i<folderNameList.length;i++){
+        console.log("isFavorite ? ",  folderInfoList[folderNameList[i]]['favorite_of'])
         const folderInfo = {
           name: (dirID=='' ? folderInfoList[folderNameList[i]]['name'] : folderNameList[i]),
-          pk:(dirID=='' ? folderNameList[i] : folderInfoList[folderNameList[i]]),
+          pk:(dirID=='' ? folderNameList[i] : folderInfoList[folderNameList[i]]['pk']),
           browser_path : folderInfoList[folderNameList[i]]['browser_path'],
+          favorite : folderInfoList[folderNameList[i]]['favorite_of'].length>0 ? true : false,
           type:"folder"
         }
         newFolderList.push(folderInfo)

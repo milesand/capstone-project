@@ -513,7 +513,7 @@ class DirectoryView(APIView):
             try:
                 child_dir = child.directory
 
-                data['subdirectories'][child_dir.name] = str(child_dir.pk)
+                data['subdirectories'][child_dir.name] = DirectorySerializer(child_dir).data
                 continue
             except Directory.DoesNotExist:
                 pass
@@ -712,7 +712,7 @@ class RecycleBinView(APIView):
             else:
                 if directory.name not in data["directories"]:
                     data["directories"][directory.name] = []
-                data["directories"][directory.name].append(str(directory.pk))
+                data["directories"][directory.name].append(DirectorySerializer(directory).data)
                 continue
             try:
                 file_record = recycle_entry.entry.file
@@ -792,14 +792,19 @@ class RecoverView(APIView):
             entry.parent = parent
             print('entry.parent : ', entry.parent)
             #recycle_entry.entry=None # post_delete 시그널에 의해 entry 삭제되는 현상 방지
-            recycle_entry.delete()
 
             try:
                 directory = entry.directory # 이 부분에서 directory 모델 parent값 none이므로, 다시한번 저장해준다.
                 directory.parent=entry.parent
             except Directory.DoesNotExist: #파일인 경우
-                entry.in_recycle = False
-                entry.save()
+                try:
+                    with transaction.atomic():
+                        entry.in_recycle = False
+                        entry.save()
+                except IntegrityError: #복구하려는 폴더에 동일한 이름의 파일이 존재하는 경우
+                    print("here, integrity error.")
+                    transaction.rollback()
+                    return Response({'error' : '해당 폴더에 이미 동일한 이름의 폴더가 존재합니다.'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # Again. Celery may be better.
                 def recover_from_recycle(directory):
@@ -824,13 +829,13 @@ class RecoverView(APIView):
                         recover_from_recycle_recur(directory)
 
                 recover_from_recycle(directory)
-                
+
                 background_job = threading.Thread(target=recover_from_recycle, args=[directory])
                 background_job.setDaemon(True)
                 background_job.start()
             
             partial_success = True
-        
+            recycle_entry.delete()  # 복구 문제가 생겼을 때, 기존 recycleEntry 모델을 보존하기 위해 아래쪽에서 recycleEntry 삭제하도록 변경
         response_status = status.HTTP_200_OK if partial_success else status.HTTP_400_BAD_REQUEST
         
         return Response(
@@ -865,7 +870,7 @@ class ThumbnailAPI(APIView):
                 'Content-Disposition': 'inline',
                  # Let nginx handle this
                 'X-Accel-Redirect': '/media/thumbnail/{0}/{1}'.format(
-                    str(user.pk), str(file_record.pk)
+                    str(file_record.owner.pk), str(file_record.pk)
                 )
             },
             content_type='image/jpeg',
@@ -1211,6 +1216,9 @@ class ItemSearchAPI(APIView):
                             return Response({'error' : '서버 에러 발생!'}, status=status.HTTP_400_BAD_REQUEST)
                         dir_data['browser_path']=browser_path
                         dir_data['name']=child_dir.name
+                        dir_data['favorite_of']={}
+                        for team in child_dir.favorite_of.all():
+                            dir_data['favorite_of'].append(team.pk)
                         data['subdirectories'][str(child_dir.pk)]=dir_data
 
                     que.put(child_dir)

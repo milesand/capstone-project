@@ -44,7 +44,7 @@
   }
   
   .sidebar-logo {
-    width:150px;
+    width:200px;
     margin-top:11px;
     margin-left:auto;
     margin-right: auto;
@@ -56,7 +56,9 @@
     font-weight: 500 !important;
   }
   .sidebar-logo-icon {
-    color:#7386d5 !important;
+    width: 30%;
+    height: auto;
+    
   }
   .sidebar ul p {
     /* color: #fff; */
@@ -174,4 +176,13 @@
     .sidebar-volume {
       display:none;
     }
+  }
+
+  .sidebar-logo-text{
+    width:70%;
+    height:auto;
+  }
+
+  .sidebar-logo-test{
+    float: left;
   }

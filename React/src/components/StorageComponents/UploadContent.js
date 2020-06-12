@@ -57,7 +57,7 @@ class UploadContent extends Component {
 
           simultaneousUploads : 1,
           withCredentials : true,
-          chunkSize : 10*1024*1024
+          chunkSize : 30*1024*1024
       });
     }
     else{
@@ -198,6 +198,7 @@ class UploadContent extends Component {
       })
       this.props.loadFilesNFolders();
       this.props.checkUserState();
+      this.props.toggleUploadModal();
     }.bind(this))
   }
 

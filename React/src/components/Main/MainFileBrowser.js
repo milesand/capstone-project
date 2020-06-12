@@ -355,14 +355,17 @@ const itemRecover = () => {
     axios.post(`${window.location.origin}/api/recover`,JSON.stringify(data),option)
     .catch(res=>{
       console.log('recover data : ',JSON.stringify(data));
+      console.log("response data : ", res, res.response);
       props.errorCheck(res.response, res.response.data);
-      if(res.response.status>=400) throw Error(res.response.data);
+      console.log("response data 2 : ", res, res.response);
+      if(res.response.status>=400) throw Error(res.response.data['error']);
     })
     .then(content => {
       console.log('recover test : ',JSON.stringify(content));
       props.notify('복구 완료.');
       props.loadFilesNFolders();
     })
+    .catch(e=>props.notify(e))
   }
   toggleRecoverModal();
 }
@@ -642,7 +645,7 @@ const handleRecover = () => {
       props.notify('검색어는 두 글자 이상으로 입력해주세요.');
       return;
     }
-    console.log("submit! val : ", props. searchRootDirID, searchKeyword);
+    console.log("submit! val : ", props.searchRootDirID, searchKeyword);
     let url=`${window.location.origin}/api/search/${props.searchRootDirID}/${searchKeyword}`;
     setIsSearching(true);
 
@@ -713,13 +716,14 @@ const handleRecover = () => {
       {/*미리보기 modal*/}
       <PreviewModal 
           isOpen={previewModal} 
-          toggle={togglePreviewModal} 
+          toggle={togglePreviewModal}
           fileName={currentItemInfo.name}
           fileID={currentItemInfo.pk}
           hasThumbnail={currentItemInfo.has_thumbnail && `${window.location.origin}/api/thumbnail/${currentItemInfo.pk}`}
           isVideo={currentItemInfo.is_video}
           notify={props.notify}
           loadFilesNFolders={props.loadFilesNFolders}
+
       />
 
       {/*디렉토리 공유 설정 modal*/}
@@ -1045,6 +1049,7 @@ const handleRecover = () => {
                       onChangeNewName={onChangeNewName}
                       submitNewName={submitNewName}
                       isRecycle={props.isRecycle}
+                      favorite={folder.favorite}
                     />
                 ))}
 

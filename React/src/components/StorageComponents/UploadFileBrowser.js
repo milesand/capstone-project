@@ -42,10 +42,8 @@ export default class UploadFileBrowser extends Component{
         console.log("initial data load complete! data : ", content, content.files, typeof(content.files));
         let files=content.files; //루트 디렉토리에 들어있는 파일 목록
         let subdirectories=content.subdirectories;
-
         for(let file in files){
           let size=files[file]['size'];
-          console.log('file : ', file, ' size : ', size);
           //표시된 파일 크기를 실제 크기와 맞추기 위해 사용 
           size=size>1024
                 ? size>Math.pow(1024, 2)
@@ -69,7 +67,7 @@ export default class UploadFileBrowser extends Component{
           this.setState(state => {
             state.files = state.files.concat([{
               key: key + directory + '/',
-              id: subdirectories[directory]
+              id: subdirectories[directory].pk
             }])
             return state
           })
@@ -324,7 +322,7 @@ export default class UploadFileBrowser extends Component{
   }
 
   handleOnFolderOpen=(e)=>{ //폴더 열릴 때, 서버에서 해당 폴더의 정보 받아오기
-    console.log("folder open!!, e : ", e);
+    console.log("folder open!!, e : ", e, e.id);
     this.getDirectoryInfo(e.key, e.id);
   }
 

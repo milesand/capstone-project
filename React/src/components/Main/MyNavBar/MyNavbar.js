@@ -92,7 +92,7 @@ const MyNavbar = ({ logout, profile, username, nickname, invitationList, invitat
   return (
     <Navbar className="my-navbar" expand="md">
       <NavbarBrand href="/" className="my-navbar-brand">
-        Moonge
+        Moonge Drive
       </NavbarBrand>
       <NavbarToggler />
       <Collapse navbar>

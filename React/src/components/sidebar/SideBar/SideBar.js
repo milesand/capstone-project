@@ -13,6 +13,8 @@ import {
 import { NavItem, NavLink, Nav,Button,Progress } from "reactstrap";
 import classNames from "classnames";
 import { Link } from "react-router-dom";
+import moonge_logo_small from './moonge_logo_small.png';
+import moonge_logo_text from './moonge_logo_text.png';
 import "./SideBar.css";
 
 const SideBar = ({ isOpen, toggle, spaceLeft, percent}) => {
@@ -24,7 +26,10 @@ const SideBar = ({ isOpen, toggle, spaceLeft, percent}) => {
       </span>
       <div className="sidebar-logo">
         <NavLink tag={Link} to={"/"} className={classNames({"is-open": isOpen}, {"is-toggled" : !isOpen})}>
-          <FontAwesomeIcon icon={faCloudUploadAlt} className="sidebar-logo-icon" /><h3>Moonge</h3>  
+          <div className='sidebar-logo-test'>
+            <img src={moonge_logo_small} alt='moonge_logo_small' className='sidebar-logo-icon'/>
+            <img src={moonge_logo_text} alt='moonge_logo_text' className='sidebar-logo-text'/>
+          </div>  
         </NavLink>
       </div>
       <Button color="blue" onClick={toggle} className="sidebar-toggle-button">

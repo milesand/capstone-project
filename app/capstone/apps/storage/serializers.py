@@ -17,7 +17,7 @@ class FileSerializer(serializers.ModelSerializer):
 class DirectorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Directory
-        fields = ('pk', 'owner', 'name', 'parent')
+        fields = ('pk', 'owner', 'name', 'parent', 'favorite_of') #favorite_of 필드는 이 폴더가 임의의 사용자에게 즐겨찾기 설정이 되어있는지 여부를 판단한다.
 
 
 class PartialSerializer(serializers.ModelSerializer): #테스트용

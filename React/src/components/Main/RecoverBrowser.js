@@ -47,7 +47,7 @@ export default class RecoverBrowser extends Component{
           this.setState(state => {
             state.files = state.files.concat([{
               key: key + directory + '/',
-              id: subdirectories[directory]
+              id: subdirectories[directory].pk
             }])
             return state
           })
@@ -70,7 +70,7 @@ export default class RecoverBrowser extends Component{
     if(this.props.isSharing) path=e['key'];
     else path=e['key'].substr(4);
     console.log("current path : ", path);
-    console.log("current id : ",e['id']);
+    console.log("current id : ", e['id'], e['id']['pk']);
     this.props.changePath(path); //현재 클릭중인 디렉토리에 맞춰서 업로드 경로 변경
     this.setState({
       currentPath: path,
