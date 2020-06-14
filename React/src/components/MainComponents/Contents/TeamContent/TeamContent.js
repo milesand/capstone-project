@@ -14,107 +14,17 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "reactstrap";
-import {
-  BaseTable,
-  Tbody,
-  Tr,
-  Td,
-} from "react-row-select-table";
 import "./TeamContent.css";
 import loadTeamList from './LoadTeamList'
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPen,
-  faSearch
-} from "@fortawesome/free-solid-svg-icons";
 
-const CustomTable = styled.div`
-  table {
-    border-collapse: inherit;
-    border-spacing: 0px;
-    width: 99% !important;
-    /* float: right; */
-    border-radius: 6px;
-    border-width: 1px;
-    border-style: solid;
-    border-color: #c9c9c9;
-    color: #505050 !important;
-  }
-  thead {
-    float: left;
-    width: 100%;
-  }
-  tbody {
-    overflow-y: scroll !important;
-    overflow-x: hidden;
-    float: left;
-    width: 100%;
-    height: 300px;
-  }
-  tbody::-webkit-scrollbar {
-    background-color: transparent !important;
-  }
-  tbody::-webkit-scrollbar-track {
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
-    background-color: transparent !important;
-  }
-  tbody::-webkit-scrollbar-thumb {
-    max-height: 100px !important;
-    min-height: 100px !important;
-    height: 100px;
-    outline-color: transparent !important;
-    outline-width: 0px !important;
-  }
-  tr {
-    display: block;
+/*modal*/
+import TeamAddModal from './Modal/TeamAddModal/TeamAddModal';
+import TeamInviteModal from './Modal/TeamInviteModal/TeamInviteModal';
+import TeamModifyModal from './Modal/TeamModifyModal/TeamModifyModal';
+import TeamLeaveModal from './Modal/TeamLeaveModal/TeamLeaveModal';
+import TeamDeleteModal from "./Modal/TeamDeleteModal/TeamDeleteModal";
 
-    border-width: 0px 0px 1px 0px;
-    border-style: solid;
-    border-color: #c9c9c9;
-    height: 50px;
-    width: 100%;
-  }
-  tr:first-child {
-    border-top-left-radius: 5px !important;
-    border-top-right-radius: 5px !important;
-  }
-  tr:last-child {
-    border-bottom-left-radius: 5px !important;
-    border-bottom-right-radius: 5px !important;
-    border-color: transparent;
-  }
-  tr.tr-body:hover {
-    background-color: #f5f5f5;
-  }
 
-  tr.tr-checked {
-    background-color: #c3d8ff !important;
-  }
-
-  th {
-    width: 100px;
-    padding: 0.5rem;
-    text-align: left;
-  }
-
-  td {
-    padding: 0.5rem;
-    width: 300px;
-    text-align: left;
-  }
-  td:first-child {
-    width: 10px;
-  }
-  tbody input[type="checkbox"] {
-    display: none;
-  }
-  tbody input[type="checkbox"]:checked {
-    color: green !important;
-    background-color: green !important;
-  }
-`;
 const TeamContent = (props) => {
   const nickname=props.nickname; //닉네임, 웹페이지 표시용
   const username=props.username; //로그인 아이디, 서버 요청용
@@ -128,7 +38,7 @@ const TeamContent = (props) => {
 
   const [teamList, setTeamList] = useState([]); //내가만든 팀
  
-  const [myteamName, setMyTeamName] = useState(""); //만들거나 수정할 팀 이름 
+  const [myTeamName, setMyTeamName] = useState(""); //만들거나 수정할 팀 이름 
   const [friendList, setFriendList] = useState([]); //현재는 전체유저리스트
   const [friendName, setFriendName] = useState(""); //검색할 유저 이름 
 
@@ -143,7 +53,6 @@ const TeamContent = (props) => {
   const [isLeader, setIsLeader] = useState(false); //선택한 팀이 자신이 만든팀인지 확인
   const [renameTeamCheck, setRenameTeamCheck] = useState(false); //팀 이름 변경  on/off
   const [isLoading, setIsLoading] = useState(true);
-  const [searchKeyword, setSearchKeyword] = useState('');
 
  
 
@@ -158,45 +67,42 @@ const TeamContent = (props) => {
     },
     withCredentials: true,
   };
-  
-  //전체유저 불러오기
-  const loadFriendList = () => {
-    console.log("load team.");
-    const tempList = [];
-    const option = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    };
-
-    axios.get(`${window.location.origin}/api/users`, option)
-      .catch(error=>{
-        props.errorCheck(error.response);
-      }) 
-      .then((content) => {
-        content["data"].map((user) => {
-          const userInfo = {
-            pk: user["pk"],
-            username: user["username"],
-            nickname: user["nickname"],
-            email: user["email"],
-          };
-          // console.log("userInfo"+JSON.stringify(userInfo))
-          if (user["username"] != username) tempList.push(userInfo);
-        });
-        setFriendList(tempList);
-        //  console.log(JSON.stringify(tempList));
-      })
-      .catch(e=>props.notify(e))
-  };
 
 
-  //팀 생성 modal 열기 
-  const teamAddToggle = () => {
+  /*modal toggle function*/
+
+  //팀 생성 modal on/off
+  const toggleTeamAddModal = () => {
     setTeamAddModal(!teamAddModal);
     setMyTeamName("");
   };
+
+  //팀 초대 modal on/off
+  const toggleTeamInviteModal = () => {
+    setTeamInviteModal(!teamInviteModal);
+  };
+
+  //팀 수정 modal on/off
+  const toggleTeamModifyModal = () => {
+    setTeamModifyModal(!teamModifyModal);
+    setMyTeamName("");
+  };
+
+  //팀 이름변경 on/off
+  const toggleRenameTeam = () => {
+    setRenameTeamCheck(!renameTeamCheck);
+  };
+
+  //팀 탈퇴 modal on/off
+  const toggleTeamLeaveModal = () => {
+    setTeamLeaveModal(!teamLeaveModal);
+  };
+
+  //팀 삭제 modal on/off
+  const toggleTeamDeleteModal = () => {
+    setTeamDeleteModal(!teamDeleteModal);
+  };
+
   //팀명 change
   const onChangeTeamName = (e) => {
     setMyTeamName(e.target.value);
@@ -205,7 +111,7 @@ const TeamContent = (props) => {
   //팀 생성
   const teamAdd = () => {
     const TeamNameData = {
-      team_name: myteamName,
+      team_name: myTeamName,
       team_leader: username,
     };
     console.log("team name data : ", TeamNameData);
@@ -217,7 +123,7 @@ const TeamContent = (props) => {
       withCredentials: true,
     };
 
-    if (myteamName == "") {
+    if (myTeamName == "") {
       props.notify("이름을 입력하세요.");
       setMyTeamName("");
     } else {
@@ -232,22 +138,15 @@ const TeamContent = (props) => {
           if (content.hasOwnProperty("error")) {
             throw Error("error");
           } else {
-            setTeamAddModal(!teamAddModal);
+            toggleTeamAddModal();
             props.notify("팀 생성 완료!");
             loadTeamList(setIsLoading, setTeamList, props);
           }
         })
         .catch(e=>props.notify(e))
       setMyTeamName("");
-      setTeamAddModal(!teamAddModal);
+      toggleTeamAddModal();
     }
-  };
-
-
-  //팀 초대 modal on/off
-  const teamInviteToggle = (e) => {
-    setCurrentTeamID(e.target.value);
-    setTeamInviteModal(!teamInviteModal);
   };
 
   //사용자 키워드 검색
@@ -261,6 +160,12 @@ const TeamContent = (props) => {
     })
   }
 
+  //초대할 팀 선택
+  const setCurrentInviteTeam=(e)=>{
+    setCurrentTeamID(e.target.value);
+    toggleTeamInviteModal();
+  }
+  
   //팀 초대
   const teamInvite = () => {
     console.log("here!, frendChecked : ", friendChecked);
@@ -293,6 +198,7 @@ const TeamContent = (props) => {
             props.notify("error");
           } else {
             props.notify("초대 완료!");
+            toggleTeamInviteModal();
             setFriendName('');
           }
         })
@@ -301,7 +207,7 @@ const TeamContent = (props) => {
         });
     }
 
-    setTeamInviteModal(!teamInviteModal);
+    toggleTeamInviteModal();
   };
 
   const onChangeFriendName = (e) => { //검색용
@@ -317,19 +223,11 @@ const TeamContent = (props) => {
     console.log(friendChecked[0]);
   };
 
- //팀 수정 modal off
-  const teamModifyToggle = () => {
-    setTeamModifyModal(!teamModifyModal);
-    setRenameTeamCheck(false);
-    setMyTeamName("");
-  };
 
-  //팀 수정 modal on
+  //팀 수정
   const teamModify = (e) => {
     setCurrentTeamID(e.target.value);
     setCurrentTeamName(e.target.name);
-    console.log("팀 id : " + e.target.value);
-    console.log("팀 이름 : " + e.target.name);
 
     axios.get(`${window.location.origin}/api/team-management/${e.target.value}`, option)
       .catch(error=>{
@@ -348,24 +246,46 @@ const TeamContent = (props) => {
         setMemberList(nameArr);
         setMemberListNick(nickArr);
         setMemberListId(idArr);
-        console.log("멤버 : " + JSON.stringify(memberList));
         if (content["data"]["team_leader"] == username) {
-          // console.log("isLeader : true");
           setIsLeader(true);
-        } else {
-          // console.log("isLeader : false");
+        } 
+        else {
           setIsLeader(false);
         }
-        setTeamModifyModal(!teamModifyModal);
-        setRenameTeamCheck(false);
-        setMyTeamName("");
+        toggleTeamModifyModal();
       })
       .catch(e=>props.notify(e));
   };
 
-  //팀 탈퇴 modal on/off
-  const teamLeaveToggle = () => {
-    setTeamLeaveModal(!teamLeaveModal);
+  //팀 이름 변경
+  const renameTeam = () => {
+    const data = {
+      _id: currentTeamId,
+      team_name: myTeamName,
+      team_leader: username,
+    };
+
+    axios.put(
+        `${window.location.origin}/api/team-management/${currentTeamId}`,
+        data,
+        option
+      )
+      .catch(error=>{
+        props.errorCheck(error.response);
+        return error.response;
+      }) 
+      .then((content) => {
+        console.log("content : ", content);
+        if(content.status>=400){
+          setMyTeamName('');
+          throw Error(content.data['error']);
+        }
+        props.notify("이름 변경 완료!");
+        setCurrentTeamName(myTeamName);
+        loadTeamList(setIsLoading, setTeamList, props);
+      })
+      .catch(e => props.notify(e));
+    setRenameTeamCheck(!renameTeamCheck);
   };
 
   //팀 탈퇴
@@ -383,17 +303,15 @@ const TeamContent = (props) => {
       props.errorCheck(error.response);
     }) 
     .then(() => {
-      props.notify("탈퇴완료");
-      window.location.reload();
+      props.notify("탈퇴가 완료되었습니다.");
+      loadTeamList(setIsLoading, setTeamList, props);
+      toggleTeamLeaveModal();
+      toggleTeamModifyModal();
     })
     .catch(e=>props.notify(e))
-    setTeamLeaveModal(!teamLeaveModal);
+    toggleTeamLeaveModal();
   };
 
-  //팀 삭제 modal on/off
-  const teamDeleteToggle = () => {
-    setTeamDeleteModal(!teamDeleteModal);
-  };
   //팀 삭제
   const teamDelete = () => {
     const option = {
@@ -408,59 +326,13 @@ const TeamContent = (props) => {
         props.errorCheck(error.response);
       }) 
       .then((content) => {
-        console.log("팀 삭제 : " + content);
-        props.notify("삭제완료.");
+        props.notify("팀 삭제완료.");
         loadTeamList(setIsLoading, setTeamList, props);
       })
       .catch(e=>props.notify(e))
-    setTeamDeleteModal(!teamDeleteModal);
-    setTeamModifyModal(!teamModifyModal);
+    toggleTeamDeleteModal();
+    toggleTeamModifyModal();
   };
-
-  //팀 이름변경 on/off
-  const renameTeamToggle = () => {
-    setRenameTeamCheck(!renameTeamCheck);
-  };
-  //팀 이름 변경
-  const renameTeam = () => {
-    const data = {
-      _id: currentTeamId,
-      team_name: myteamName,
-      team_leader: username,
-    };
-
-    axios.put(
-        `${window.location.origin}/api/team-management/${currentTeamId}`,
-        data,
-        option
-      )
-      .catch(error=>{
-        props.errorCheck(error.response);
-      }) 
-      .then((content) => {
-        props.notify("이름 변경 완료");
-        window.location.reload();
-      })
-      .catch(() => props.notify("올바르지 않은 이름입니다."));
-    setRenameTeamCheck(!renameTeamCheck);
-  };
-
-  const onChangeSearchKeyword=(e)=>{
-    setSearchKeyword(e.target.value);
-  }
-
-  const submitKeyword=()=>{
-    console.log("submit keyword, team ID : ", currentTeamId, ', keyword : ', searchKeyword);
-    let url=`${window.location.origin}/api/${currentTeamId}/${searchKeyword}`;
-    axios.get(url, option)
-    .catch(error=>{
-      props.errorCheck(error.response);
-    }) 
-    .then((content) => {
-      console.log("content : ", content);
-    })
-    .catch((error) => props.notify(error));
-  }
 
   return (
     <Fragment>
@@ -471,256 +343,66 @@ const TeamContent = (props) => {
         <div className="current-content">
 
           {/*--------------- Modal  ---------------*/}
-          {/* 팀 생성 */}
-          <Modal
-            isOpen={teamAddModal}
-            toggle={teamAddToggle}
-            className="team-add-modal"
-          >
-            <ModalHeader className="team-add-header">팀 생성</ModalHeader>
-            <ModalBody className="team-add-body">
-              <span className="team-add-name">팀 이름 : </span>
-              <Input
-                type="text"
-                placeholder=""
-                value={myteamName}
-                onChange={onChangeTeamName}
-                className="team-add-text"/>
-            </ModalBody>
-            <ModalFooter className="team-add-footer">
-              <Button
-                type="submit"
-                onClick={teamAdd}
-                className="team-add-button-create">
-                생성
-              </Button>
-              <Button
-                onClick={teamAddToggle}
-                className="team-add-button-cancel">
-                취소
-              </Button>
-            </ModalFooter>
-          </Modal>
 
-            <Modal
-              isOpen={teamInviteModal}
-              toggle={teamInviteToggle}
-              className="team-invite-modal"
-              backdrop="static">
-            <ModalHeader className="modal-header">사용자 검색</ModalHeader>
-            <ModalBody>
-            <div className="search-friend">
-                  <InputGroup>
-                    <Input
-                      className="search-friend-input"
-                      onChange={onChangeFriendName}
-                      value={friendName}/>
+          {/* 팀 생성 modal*/}
+          <TeamAddModal
+            teamAddModal={teamAddModal}
+            toggleTeamAddModal={toggleTeamAddModal}
+            myTeamName={myTeamName}
+            onChangeTeamName={onChangeTeamName}
+            teamAdd={teamAdd}
+          />
 
-                    <InputGroupAddon>
-                      <Button
-                        className="search-friend-icon-button"
-                        onClick={friendSearch}>
-                        <FontAwesomeIcon icon={faSearch} className="search-friend-icon" />
-                      </Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                  </div>
-                <CustomTable>
-                <BaseTable onCheck={friendOnCheck}>
-                  <Tbody className="friend-list-body">
-                    {friendList.map((friend, index) => (
-                      <Tr key={index} value={friend["name"]}>
-                        <Td>{index + 1}</Td>
-                        <Td>{friend["nickname"]}</Td>
-                        <Td>{friend["email"]}</Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </BaseTable>
-                </CustomTable>
-            </ModalBody>
-            <ModalFooter className="modal-footer">
-              <Button
-                type="submit"
-                color="primary"
-                className="team-invite-button-invite"
-                onClick={teamInvite}>
-                초대
-              </Button>
-              <Button
-                color="secondary"
-                className="team-invite-button-cancel"
-                onClick={teamInviteToggle}>
-                취소
-              </Button>
-            </ModalFooter>
-          </Modal>
+          {/* 팀 초대 modal*/}
+          <TeamInviteModal
+            teamInviteModal={teamInviteModal}
+            toggleTeamInviteModal={toggleTeamInviteModal}
+            friendName={friendName}
+            onChangeFriendName={onChangeFriendName}
+            friendSearch={friendSearch}
+            friendOnCheck={friendOnCheck}
+            teamInvite={teamInvite}
+            friendList={friendList}
+          />
 
-
-
-
-          {/* 팀수정 */}
-          <Modal
-            isOpen={teamModifyModal}
-            toggle={teamModifyToggle}
-            className="team-modify-modal"
-          >
-            <ModalHeader>팀 정보 수정</ModalHeader>
-            <ModalBody>
-              <div className="team-rename ">
-                <span className="team-rename-text ">팀 이름 : </span>
-                {!renameTeamCheck && (
-                  <Fragment>
-                    <Input
-                      className="rename-input rename-disabled"
-                      disabled={!renameTeamCheck}
-                      placeholder={currentTeamName}
-                      onChange={onChangeTeamName}/>
-                    {isLeader && (
-                      <Button
-                        className="rename-icon-button"
-                        onClick={renameTeamToggle}>
-                        <FontAwesomeIcon icon={faPen} className="rename-icon" />
-                      </Button>
-                    )}
-                  </Fragment>
-                )}
-                {renameTeamCheck && (
-                  <Fragment>
-                    <Input
-                      className="rename-input"
-                      disabled={!renameTeamCheck}
-                      placeholder={currentTeamName}
-                      onChange={onChangeTeamName}
-                      value={myteamName}/>
-
-                    <Button
-                      className="rename-icon-button"
-                      onClick={renameTeam}
-                      onChange={onChangeTeamName}>
-                      <FontAwesomeIcon icon={faPen} className="rename-icon" />
-                    </Button>
-                  </Fragment>
-                )}
-              </div>
-
-              <div>
-                <span className="modify-textS">팀장</span>
-              </div>
-              <Table hover className="team-leader">
-                <tbody className="team-leader-body">
-                  <tr className="leader-item">
-                    <th scope="row" />
-                    <td>{teamLeaderNick} ({teamLeader})</td>
-                    <td />
-
-                    <td className="leader-table-button " />
-                  </tr>
-                </tbody>
-              </Table>
-
-              <div className="modify-textS">
-                <span className="modify-textS">멤버</span>
-              </div>
-              <Table hover className="member-list">
-                <tbody className="member-table-body">
-                  {memberListNick.map((member, index) => {
-                    return (
-                      <tr className="member-item" key={index}>
-                        <th scope="row">{index + 1}</th>
-                        <td>{member} ({memberList[index]})</td>
-                        <td />
-
-                        <td className="member-table-button thd-buttons">
-                          {/* <Button
-                        onClick={e => teamInviteToggle(e)}
-                        className="team-invite-button"
-                        value={member}
-                        name=''>
-                        추방
-                      </Button> */}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            </ModalBody>
-            <ModalFooter>
-              {!isLeader && (
-                <Button onClick={teamLeaveToggle} className="leave-team-button">
-                  팀 탈퇴
-                </Button>
-              )}
-              {isLeader && (
-                <Button
-                  onClick={teamDeleteToggle}
-                  className="leave-team-button">
-                  팀 삭제
-                </Button>
-              )}
-              <Button color="secondary" onClick={teamModifyToggle}>
-                취소
-              </Button>
-            </ModalFooter>
-          </Modal>
-
+          {/* 팀수정 modal*/}
+          <TeamModifyModal
+            teamModifyModal={teamModifyModal}
+            toggleTeamModifyModal={toggleTeamModifyModal}
+            renameTeamCheck={renameTeamCheck}
+            isLeader={isLeader}
+            currentTeamName={currentTeamName}
+            onChangeTeamName={onChangeTeamName}
+            toggleRenameTeam={toggleRenameTeam}
+            myTeamName={myTeamName}
+            renameTeam={renameTeam}
+            teamLeaderNick={teamLeaderNick}
+            teamLeader={teamLeader} 
+            memberListNick={memberListNick}
+            memberList={memberList}
+            toggleTeamLeaveModal={toggleTeamLeaveModal}
+            toggleTeamDeleteModal={toggleTeamDeleteModal}
+          />
 
           {/* //팀 탈퇴 */}
-          <Modal
-            isOpen={teamLeaveModal}
-            toggle={teamLeaveToggle}
-            className="team-leave-modal"
-          >
-            <ModalBody className="team-leave-text">팀을 탈퇴합니다</ModalBody>
-            <ModalFooter className="modal-footer">
-              <Button
-                type="submit"
-                color="primary"
-                className="team-invite-button-invite"
-                onClick={teamLeave}>
-                탈퇴
-              </Button>
-              <Button
-                color="secondary"
-                className="team-invite-button-cancel"
-                onClick={teamLeaveToggle}>
-                취소
-              </Button>
-            </ModalFooter>
-          </Modal>
-
-
+          <TeamLeaveModal
+            teamLeaveModal={teamLeaveModal}
+            toggleTeamLeaveModal={toggleTeamLeaveModal}
+            teamLeave={teamLeave}
+          />
 
           {/* //팀삭제 */}
-          <Modal
-            isOpen={teamDeleteModal}
-            toggle={teamDeleteToggle}
-            className="team-leave-modal"
-          >
-            <ModalBody className="team-leave-text">팀을 삭제합니다. </ModalBody>
-            <ModalFooter className="modal-footer">
-              <Button
-                type="submit"
-                color="primary"
-                className="team-invite-button-invite"
-                onClick={teamDelete}>
-                삭제
-              </Button>
-              <Button
-                color="secondary"
-                className="team-invite-button-cancel"
-                onClick={teamDeleteToggle}>
-                취소
-              </Button>
-            </ModalFooter>
-          </Modal>
+          <TeamDeleteModal
+            teamDeleteModal={teamDeleteModal}
+            toggleTeamDeleteModal={toggleTeamDeleteModal}
+            teamDelete={teamDelete}
+          />
 
           <span className="content-name">팀</span>
           <div className="add-item">
-            <Button onClick={teamAddToggle} className="add-team-button">
-              팀 생성
-            </Button>
+              <Button onClick={toggleTeamAddModal} className="add-team-button">
+                팀 생성
+              </Button>
           </div>
         </div>
 
@@ -754,7 +436,7 @@ const TeamContent = (props) => {
                       <td className="team-table-button thd-buttons">
                         {team["team_leader"] == username && (
                           <Button
-                            onClick={(e) => teamInviteToggle(e)}
+                            onClick={(e) => setCurrentInviteTeam(e)}
                             className="team-invite-button"
                             value={team["_id"]}
                             name={team["team_name"]}>

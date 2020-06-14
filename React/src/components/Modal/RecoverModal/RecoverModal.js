@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect} from 'react';
+import React, {Fragment} from 'react';
 import RecoverBrowser from '../../MainComponents/Contents/RecycleContent/RecoverBrowser';
 import './RecoverModal.css';
 import {
@@ -12,10 +12,6 @@ import {
 const RecoverModal=({recoverModal, toggleRecoverModal, notify, changePath, errorCheck, checkUserState, curFolderID,
                     curFolderPath, loadFilesNFolders, isSharing, rootDirID,itemRecover,changeDirID})=>{
 
-
-    useEffect(()=>{
-      console.log('curFolderID', curFolderID);
-    },[curFolderID]);
     let pathElements = curFolderPath.split('/');
     return(
         <Fragment>

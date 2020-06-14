@@ -27,10 +27,8 @@ class TeamSerializer(serializers.ModelSerializer):
         model=Team
         fields = '__all__'
 
-class ChangeTeamNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Team
-        fields=('team_name', )
+class ChangeTeamNameSerializer(serializers.Serializer):
+    team_name=serializers.CharField(min_length=2, max_length=20)
 
 class InvitationSerializer(serializers.Serializer):
     username=serializers.CharField(max_length=100)
