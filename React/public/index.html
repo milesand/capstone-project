@@ -16,8 +16,6 @@
               console.log("gapi 로딩중..");
                 gapi.load('auth2', () => {
                     gapi.auth2.init().then(() => {
-                        // DO NOT ATTEMPT TO RENDER BUTTON UNTIL THE 'Init' PROMISE RETURNS
-                        window.dispatchEvent(new Event('google-loaded'));
                         console.log("gapi 로딩 완료.");
                     });
                 });

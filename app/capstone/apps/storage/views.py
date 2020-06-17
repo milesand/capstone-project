@@ -52,7 +52,7 @@ def valid_dir_entry_name(name):
     )
 
 
-def perm_check_entry_with_teams(user, entry):
+def perm_check_entry_with_teams(user, entry, is_thumbnail_check=False):
     '''
     Check whether given user has access to given entry, accounting for teams the
     user is in.
@@ -62,8 +62,12 @@ def perm_check_entry_with_teams(user, entry):
 
     Use this to check directory permission if you're treating the directory as an
     entry in some other shared directory.
+
+    6/12일 추가
+    is_thumbnail_check는 thumbnailAPI의 권한 체크에서 사용하며, 휴지통에 버려진 파일들의 썸네일이 보이지 않는 문제를
+    해결하기 위해 설정함. 이 값이 True일 경우 is_recycle 체크를 하지 않는다.
     '''
-    if entry.in_recycle:
+    if entry.in_recycle and not is_thumbnail_check:
         return False
     if entry.owner == user:
         return True
@@ -514,6 +518,7 @@ class DirectoryView(APIView):
                 child_dir = child.directory
 
                 data['subdirectories'][child_dir.name] = DirectorySerializer(child_dir).data
+                data['subdirectories'][child_dir.name]['favorite'] = child_dir.favorite_of.filter(pk=request.user.pk).exists()
                 continue
             except Directory.DoesNotExist:
                 pass
@@ -851,7 +856,7 @@ class ThumbnailAPI(APIView):
         user = request.user
         try:
             file_record = get_object_or_404(File, pk=file_id)
-            if not perm_check_entry_with_teams(request.user, file_record):
+            if not perm_check_entry_with_teams(request.user, file_record, is_thumbnail_check=True):
                 raise Http404
         except Http404:
             return Response(

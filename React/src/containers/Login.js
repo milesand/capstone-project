@@ -5,7 +5,6 @@ import LoginForm from "../components/LoginComponents/LoginForm";
 export default class Login extends Component { //export default : 다른 모듈에서 이 모듈을 import할 때 내보낼 대표 값
   constructor(props) {
     super(props);
-    console.log('login props : ', props);
     this.state = {
       username: "",
       password: "",
@@ -14,7 +13,6 @@ export default class Login extends Component { //export default : 다른 모듈�
 
   //유저 로그인 상태 체크
   componentDidMount() {
-    console.log("login check.");
     if (this.props.isLogin) {
       this.props.history.push("/");
     }
@@ -26,27 +24,22 @@ export default class Login extends Component { //export default : 다른 모듈�
     this.setState({
       [target_id]: target_val
     });
-    console.log('change!');
-    console.log(target_id, " : ", target_val);
   }
 
   validateAllField(username, password){
-     console.log('username : ', username, ' password : ', password);
      let val=true;
      const idPasswordTest=/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
      if(!username||!idPasswordTest.test(username)) val=false;
      if(!password||!idPasswordTest.test(password)) val=false;
-     console.log("validate val : ", val);
      return val;
   }
-  //구글 로그인 구현하기
 
+  //구글 로그인
   googleLogin(){
     let auth2=window.gapi.auth2.getAuthInstance();
     Promise.resolve(auth2.signIn())
     .then(googleUser => {
       let token=googleUser.getAuthResponse(true).access_token;
-      console.log("token : ", token);
 
       let data={
         access_token: token,
@@ -71,7 +64,6 @@ export default class Login extends Component { //export default : 다른 모듈�
         .then(res=>res.json())
         .then(errorCheck)
         .then(content => {
-          console.log("google content : ", content);
           this.props.userStateChange(true,
                                      true,
                                      content.username, 
@@ -87,14 +79,12 @@ export default class Login extends Component { //export default : 다른 모듈�
 
   //페이스북 로그인
   facebookLogin = (response) => {
-    console.log("facebook profile : ", response);
     let data={
       access_token: response.accessToken,
       social_auth: "facebook"
     }
 
     let errorCheck = (response) =>{
-      console.log(data);
       return response;
     }
     fetch(`${window.location.origin}/api/social-login`, {
@@ -108,7 +98,6 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(res=>res.json())
     .then(content => {
       if(content.hasOwnProperty('error')) throw Error(content['error']);
-      console.log('facebook content : ', content);
       this.props.userStateChange(true,
                                  true,
                                  content.username, 
@@ -143,7 +132,6 @@ export default class Login extends Component { //export default : 다른 모듈�
     .then(res=>res.json())
     .then(content => {
       // 아이디와 비밀번호가 올바른지 확인하고, 맞으면 이메일 인증 여부 확인
-      console.log("content ? : ", content.hasOwnProperty('error'));
       if(content.hasOwnProperty('error')){
         if(content.hasOwnProperty('email')){
            isMailAuthenticated=false;
@@ -156,7 +144,6 @@ export default class Login extends Component { //export default : 다른 모듈�
           throw Error('아이디와 비밀번호가 일치하지 않습니다.');
         }
       }
-      console.log("login content : ", content);
       if(isMailAuthenticated)
         this.props.userStateChange(true,
                                   isMailAuthenticated, 

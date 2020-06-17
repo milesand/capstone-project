@@ -2,13 +2,13 @@ import React, { Component } from "react";
 // import "bootstrap/dist/css/bootstrap.min.css";
 
 import SideBar from "../components/sidebar/SideBar/SideBar";
-import HomeContent from "../components/Main/HomeContent";
-import TeamContent from "../components/Main/Team/TeamContent";
-import SharingContent from "../components/Main/Sharing/SharingContent";
-import ProfileContent from "../components/Main/ProfileContent";
-import FavoriteContent from "../components/Main/FavoriteContent";
-import RecycleContent from "../components/Main/RecycleContent"
-import MyNavbar from "../components/Main/MyNavBar/MyNavbar";
+import HomeContent from "../components/MainComponents/Contents/HomeContent/HomeContent";
+import TeamContent from "../components/MainComponents/Contents/TeamContent/TeamContent";
+import SharingContent from "../components/MainComponents/Contents/SharingContent/SharingContent";
+import ProfileContent from "../components/MainComponents/Contents/ProfileContent/ProfileContent";
+import FavoriteContent from "../components/MainComponents/Contents/FavoriteContent/FavoriteContent";
+import RecycleContent from "../components/MainComponents/Contents/RecycleContent/RecycleContent";
+import MyNavbar from "../components/MainComponents/MyNavBar/MyNavbar";
 import 'bootstrap/dist/css/bootstrap.css';
 import "./Home.css";
 import {

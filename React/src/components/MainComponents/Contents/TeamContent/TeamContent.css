@@ -1,0 +1,138 @@
+
+.team-content {
+    overflow-y: hidden !important;
+
+}
+
+
+/* 팀생성 버튼 */
+.add-team-button {
+    background-color:#5f73c4 !important;
+    border-width: 0px !important;
+    margin-top:5px !important;
+    margin-right: 10px;
+    border-radius: .25em;
+
+}
+.add-team-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.add-team-button:active {
+    box-shadow: 0.1px 0.1px 5px #c2c2c2 !important;
+}
+.add-team-button:hover {
+    background-color: #4b6ae6 !important;
+}
+
+/* 팀 리스트 */
+.team-table {
+
+    min-height: 650px !important;
+    max-height: 650px !important;
+    border-radius: 10px  !important;
+    background-color: white;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15) !important;
+    font-size: 15px;
+    word-break:break-all;
+}
+
+.team-list {
+    border-collapse: collapse;
+    width:99% !important;
+    margin-right: 5px;
+    float: right;
+}
+
+.team-list  tbody,
+.team-list thead{
+    overflow-y:auto; 
+    overflow-x:hidden; 
+    float:left;
+     width:100%; 
+     height:640px;
+}
+.team-list  tbody::-webkit-scrollbar {
+
+    background-color: transparent !important;
+}
+.team-list  tbody::-webkit-scrollbar-track {
+
+    margin-top:5px !important;
+    margin-bottom: 5px !important;
+    background-color: transparent !important;
+}
+.team-list  tbody::-webkit-scrollbar-thumb {
+    max-height: 100px !important;
+    min-height: 100px !important;
+    height: 100px;
+}
+
+.team-list  tbody tr{
+    max-height: 40px !important;
+    min-height: 40px !important;
+     width:100%;
+     outline-color: transparent;
+     border-radius: 10px;
+
+    }
+.team-list tr:last-child {
+    min-width: 200px !important;
+}
+.team-list tbody td{
+    height: 40px !important;
+    min-width:60px;
+    width:309px;
+    color:#4d4d4d;
+}
+.thd-share {
+    min-width:100px;
+}
+.thd-buttons {
+    min-width:150px;
+}
+
+.team-list tbody th {
+
+    width:100px;
+    color:#5f73c4;
+}
+
+.team-table-body:first-child th{
+    width:300px !important;
+}
+
+.team-table-button {
+    min-width: 150px;
+    text-align: center;
+}
+
+
+.team-modify-button {
+    background-color:#5f73c4 !important;
+    border-color: transparent !important;
+
+}
+.team-modify-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-modify-button:hover {
+    background-color:#4867e0 !important;
+}
+
+.team-invite-button {
+    margin-right: 10px;
+    background-color:#5f73c4 !important;
+    border-color: transparent !important;
+}
+.team-invite-button:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-invite-button:hover {
+    background-color:#4867e0 !important;
+}
+
+.team-spinner{
+    margin-left:50%;
+    margin-top:17%;
+}
+   

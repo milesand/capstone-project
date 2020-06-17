@@ -21,7 +21,7 @@ const LoginForm = ({username, password, isLoading, changeUsername,  changePasswo
 
               <Col xs={6}>
                 <FacebookLogin
-                appId="240402274007270"
+                appId="278190399969016"
                 autoLoad={true}
                 fields="name,email,picture"
                 callback={facebookLogin} 
