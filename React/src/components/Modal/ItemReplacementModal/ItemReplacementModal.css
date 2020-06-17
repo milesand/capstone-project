@@ -1,0 +1,17 @@
+.replacement-modal-head{
+    /* margin-left: -15%; */
+    font-size: 1.2rem;
+    width: 500px;
+}
+
+.replacement-file-browser{
+    height: 500px;
+    overflow-y: auto;
+}
+
+.replacement-modal-button{
+    width : 120px;
+    margin-right: 10px;
+    margin-left: 10px;
+ }
+

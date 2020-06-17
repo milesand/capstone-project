@@ -1,0 +1,82 @@
+.profile-headText {
+    margin-top: 3%;
+    margin-left: 3%;
+    font-size: 25px;
+    line-height: 2rem;
+    color:#66615b;
+}
+
+.profile-board {
+    margin-top : -100%;
+    background-color: white;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15) !important;
+    font-size: 15px;
+    word-break:break-all;
+   
+    position: relative !important;
+    margin-left: 0;
+    height: calc(100vh - 100px);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+.profile-board-hr{
+    width:93%;
+    margin-left:2%;
+}
+
+.confirm-password{
+    margin-left: 25%;
+    margin-top: 20%;
+    height: 200px;
+    max-height: 650px !important;
+    border-radius: 10px  !important;
+    width: 50%;
+}
+
+.info {
+    margin-left: 0%;
+    margin-top: 5%;
+    max-height: 600px !important;
+    border-radius: 10px  !important;
+    width: 100%;
+}
+
+.profile-confirm-password{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    width: 60%;
+}
+
+.profile-confirm-headText{
+    margin-top: 5%;
+    text-align: center;
+    color:#66615b;
+    font-size: 17px;
+}
+
+.profile-button{
+    width: 70px;
+}
+
+.withdrawal-close-button{
+    width: 130px;
+    background-color: #5f73c4;
+}
+.info-list{
+    margin-top: 0%;
+    margin-left: 5%;
+    width: 90%;
+}
+
+.profile-return-button{
+    width: 100px;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+.profile-bottom-button{
+    margin-top: 2%;
+    text-align: center;
+}

@@ -1,0 +1,264 @@
+/* ---------------------------------------------------
+    NAVBAR STYLE
+----------------------------------------------------- */
+
+
+.my-navbar {
+  border-bottom-width: 1px !important;
+  border-bottom-color: #dddddd !important;
+  border-bottom-style: solid !important;
+  margin-left:10px !important;
+  color:gray ;
+  background-color: transparent !important;
+  min-height:46px !important;
+}
+
+.my-navbar-brand {
+  color:#66615b !important;
+  font-size: 1.5rem !important;
+  min-height:46px !important;
+}
+
+
+
+.searchbar-group {
+  width:300px !important;
+  float:right !important;
+
+}
+
+.searchbar{
+  margin-bottom: auto;
+  margin-top: auto;
+  background-color: #f4f3ef !important;
+  /* background-color: transparent !important; */
+  height:38px !important;
+  }
+ 
+  .search-input{
+
+  border-color:#ced4da;
+  border-right:0px;
+  border-bottom-left-radius: 30px !important;
+  border-top-left-radius: 30px !important;
+  color:#707070 !important;
+  }
+
+
+ .search-input:focus{
+  box-shadow:none !important;
+  border-width: 2px 0px 2px 2px !important;
+  border-color:#929292 !important;
+  color:#707070 !important;
+    }
+
+  .search-icon-button{
+  width: 40px !important;
+  float: right !important;
+  display: flex;
+  border-color:#ced4da !important;
+  border-left:0px !important;
+  justify-content: center;
+  align-items: center;
+  border-top-right-radius: 30px !important;
+  border-bottom-right-radius: 30px !important;
+  margin-left:-2px !important;
+  background-color: white !important;
+  text-decoration:none !important;
+
+  }
+
+  .search-input:focus ~ .search-icon-button{
+    border-width: 2px !important;
+   border-color:#929292 !important;
+  }
+
+  .search-icon-button:hover,
+  .search-icon-button:focus {
+    background-color: #929292 !important;
+    border-color: #929292 !important;
+    color:white !important;
+  }
+  .search-icon-button:hover,
+  .search-icon-button:focus {
+    box-shadow: none !important;
+  }
+  .search-icon-button:active {
+    box-shadow: 0.1px 0.1px 3px gray !important;
+  }
+
+
+  .search-icon {
+    color:gray !important;
+  }
+  .search-icon-button:hover  .search-icon,
+  .search-icon-button:focus  .search-icon {
+    color:#ffffff !important;
+  }
+
+  .myNav-icons {
+    margin-right: 10px;
+  }
+
+  .myNav-item:hover {
+    background-color: transparent;
+  }
+  
+  .login-icon {
+    padding:0px !important;
+    margin:0px !important;
+  }
+
+
+  .login-dropdown-toggle::after {
+    margin-left:-5px !important;
+  
+  }
+ 
+  .login-dropdown-menu {
+    z-index:1002 !important;
+    border-radius: 10px !important;
+    border-width: 0px!important;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15)!important;
+    padding:0px !important;
+    /* margin:0px !important; */
+    min-width:10rem !important;
+    text-align: center !important;
+
+  }
+  .login-dropdown-menu:focus,
+  .login-dropdown-menu:active {
+
+    outline:none;
+    min-width: 250px !important;
+  }
+
+  .login-dropdown-item {
+    border-radius: 9px !important;
+    height: 35px;
+    color:#494949 !important;
+  }
+  .login-dropdown-item:focus,
+  .login-dropdown-item:active {
+    outline: none !important;
+    background-color:#8d8d8d !important;
+    color:white !important;
+    /* border-width: 0px !important; */
+  }
+  .login-dropdown-profile div {
+    margin-left:auto;
+    margin-right: auto;
+    text-align: center !important;
+  }
+  .login-dropdown-profile {
+    height:130px;
+    display:flex !important;
+    flex-direction: column !important;
+    pointer-events: none;
+  }
+  .profile-img {
+    padding-top:10px;
+    width:75px !important;
+    height: 75px !important;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:auto;
+    margin-bottom: 5px;
+
+  }
+  .invitation-icon {
+    margin-left:-5px;
+  }
+
+  .invitation-pop-list {
+    transition-duration: 0.1s !important;
+    animation-duration: 0.1s !important;
+    -webkit-font-smoothing: subpixel-antialiased ;
+    /* transform: perspective(1px) translateZ(0) !important; */
+    filter: blur(0);
+    -webkit-filter: blur(0) !important;
+    backface-visibility: hidden !important;
+    image-rendering: optimizeSpeed;             /*                     */
+    image-rendering: -moz-crisp-edges;          /* Firefox             */
+    image-rendering: -o-crisp-edges;            /* Opera               */
+    image-rendering: -webkit-optimize-contrast;
+
+    background: transparent !important;
+
+  }
+  .invitation-pop-body {
+    color:transparent;
+    padding:0px !important;
+    max-height: 600px;
+    border-radius: 10px;
+    overflow-y: auto;
+    box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15)!important;
+    background: transparent !important;
+  }
+
+  .invitation-pop-body::-webkit-scrollbar {
+    margin-top:0px !important;
+    background-color: transparent !important;
+  }
+  .invitation-pop-body::-webkit-scrollbar-track {
+    margin-top:0px !important;
+    background-color: transparent !important;
+  }
+  .invitation-pop-body::-webkit-scrollbar-thumb {
+    min-height: 50px !important;
+    background-color: transparent !important;
+  }
+
+  .invitation-pop-item {
+    margin-top:5px;
+    padding-bottom: 10px;
+    border-bottom-style: solid;
+    border-width: 1px;
+    border-color: #dbdbdb;
+    min-height: 80px;
+    text-align: center;
+    color:#3a3a3a !important;
+  }
+  .popover {
+    border-radius: 10px !important;
+    border-style: none !important;
+    border-width: 0px !important;
+    border-color: transparent !important;
+
+    
+  }
+  .invitation-pop-text {
+    margin-left:5px;
+    margin-right: 5px;
+    color:#3a3a3a !important;
+  }
+  
+  .invitation-pop-team {
+    color:#5775fc !important;
+    font-weight: 500;
+  }
+  .invitation-pop-buttons {
+    margin-top:10px;
+    text-align: center;
+    width:100%;
+  }
+  .invitation-pop-button {
+    margin-left:5px;;
+    margin-right: 5px;
+    background-color: #5f73c4 !important;
+    border-color: transparent !important;
+  }
+  .invitation-pop-button:focus {
+    box-shadow:0px 0px transparent !important;
+  }
+  .invitation-pop-button span {
+    margin-bottom: 1px !important;
+  }
+  .noinvitation {
+    vertical-align: middle;
+    min-width: 220px !important;
+  }
+  .invitationNum {
+    min-height:20px;
+    min-width:250px;
+  }

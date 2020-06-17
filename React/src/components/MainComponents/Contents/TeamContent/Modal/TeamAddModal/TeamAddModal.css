@@ -1,0 +1,61 @@
+.team-add-modal {
+    color:#6e6e6e;
+}
+.team-add-from {
+    text-align: center;
+}
+.team-add-header h5 {
+    color:#4d4d4d;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+.team-add-body {
+    display: flex;
+    border-width: 0px !important;
+    /* float:left; */
+}
+.team-add-name {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.team-add-text{
+    margin-left:auto;
+    margin-right: auto;
+    width:350px !important;
+    border-color:#ced4da;
+    border-radius: 5px !important;
+    color:#707070 !important;
+}
+.team-add-text:hover {
+    box-shadow:none !important;
+    border-width: 2px !important;
+    border-color:#929292 !important;
+    color:#707070 !important;
+}
+.team-add-text:focus {
+    box-shadow:none !important;
+    border-width: 2px !important;
+    border-color:#929292 !important;
+}
+.team-add-footer {
+    display:inline !important;
+    text-align: center !important;
+}
+.team-add-button-create {
+    background-color: #5f73c4 !important;
+    border-width: 0px !important;
+}
+.team-add-button-create:focus {
+     box-shadow:0px 0px transparent !important;
+}
+.team-add-button-create:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}
+.team-add-button-cancel:focus {
+    box-shadow:0px 0px transparent !important;
+}
+.team-add-button-create:active {
+    box-shadow: 0.1px 0.1px 5px #afafaf !important;
+}

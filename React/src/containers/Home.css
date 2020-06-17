@@ -1,0 +1,76 @@
+/* .App {
+  display: flex;
+  width: 100% !important;
+  align-items: stretch;
+  position:fixed;
+  font-family: "Poppins", sans-serif;
+  background: #f4f3ef;
+} */
+
+.Home {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  position:fixed;
+  font-family: "Poppins", sans-serif;
+  background: #f4f3ef;
+  overflow-x: hidden !important;
+}
+
+
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+/* body {
+  font-family: "Poppins", sans-serif;
+  background: #f4f3ef;
+} */
+
+.Home a,
+.Home a:hover,
+.Home a:focus {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.content-wrapper {
+  display:flex;
+}
+
+  /* SCROLLBAR STYLE */
+  
+  ::-webkit-scrollbar-track
+  {
+    margin-top:70px;
+    margin-bottom: 20px !important;
+  }
+  
+  ::-webkit-scrollbar
+  {
+    width: 9px;
+    background-color:transparent !important;
+  }
+  
+  ::-webkit-scrollbar-thumb
+  {
+    max-height: 300px !important;
+    min-height: 200px;
+      border-radius: 20px !important;
+  
+      background-color: #acacac !important;
+  }
+
+  .toast-style{
+    color: #000000;
+    text-align: center;
+    background: #b3a7a7a6;
+    border: solid;
+    border-color: #9c9c9c;
+    border-width: 2px;
+    border-radius: 10px;
+    width: 100%;
+  }
+
+  .bar{
+    width: 50px;
+  }

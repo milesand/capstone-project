@@ -1,0 +1,10 @@
+.upload-modal-head{
+    margin-left: -15%;
+    font-size: 25px;
+    width: 500px;
+  }
+
+.upload-modal-close-button{
+   width : 150px;
+   background-color: #5f73c4 !important;
+}

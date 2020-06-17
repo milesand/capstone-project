@@ -1,0 +1,45 @@
+.modal-xl{
+    text-align: center;
+    height: 710px;
+}
+
+.preview-modal-head{
+    font-size: 25px;
+    width:1000px;
+    text-align: left;
+}
+
+.preview-modal-button{
+    width: 170px;
+}
+
+.preview-video{
+    margin-left: -13%;
+    margin-top : 5%;
+    height: 400px;
+}
+
+.preview-image{
+    width:100%;
+    height: auto;
+    max-height: 550px;
+    margin-bottom: 5%;
+}
+
+.preview-others{
+    font-size: 30px;
+    margin-top : 30%;
+    height : 400px;
+}
+
+.preview-modal-body{
+    width : auto;
+    height: 100%;
+    text-align : center;
+}
+
+.preview-helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}

@@ -1,0 +1,13 @@
+.upload-file-browser{
+    height: 500px;
+    overflow-y: auto;
+}
+
+.custom-button{
+  width : 100px;
+}
+
+.delete-button{
+    width: 70px;
+    height: 35px;
+}
