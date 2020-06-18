@@ -27,9 +27,23 @@
     12.초대 클릭시 x축 스크롤 없애기
     13.길이가 너무 긴 modal들 길이 조정
     
-    
-    
-    
+ 수정한 파일은 다음과 같습니다. 
+    loginstyle.css
+    favoritecontent.js
+    profilecontent.css
+    profilecontentForm.js
+    sharingcontent
+    teamaddmodal.js /css
+    teaminvitemodal js /css
+    mynavbar.css
+    content.css
+    mainfilebrowser.js
+    ItemReplacementModal.css
+    PreviewModal.css
+    RecoverModal.css
+    ShareModal.css
+    UploadModal.css
+    UploadContent.css
     
 6/14 수정사항
 -----------------
