@@ -45,7 +45,7 @@ const UploadModal=({uploadModal, toggleUploadModal, isSharing, flow, setFlow, se
                   <Button
                     color="primary"
                     onClick={toggleUploadModal}
-                    className="upload-modal-close-button"
+                    className="upload-modal-close-button content-button"
                   >
                     닫기
                   </Button>{" "}

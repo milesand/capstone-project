@@ -5,5 +5,6 @@
   }
 
 .upload-modal-close-button{
-   width : 200px;
+   width : 150px;
+   background-color: #5f73c4 !important;
 }

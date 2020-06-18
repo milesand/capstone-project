@@ -677,7 +677,8 @@ const handleRecover = () => {
         />
 
       <Container fluid className={classNames("round", "content")} color="light">
-      {!props.isSharingInit && !props.isRecycle && !props.isFavorite && 
+      {!props.isSharingInit && !props.isRecycle && !props.isFavorite &&
+      <div className="searchbar-wrapper"> 
         <form onSubmit={submitSearchKeyword} method='GET'> {/*검색 창*/}
         <InputGroup className="searchbar-group"> 
           <InputGroupAddon addonType="append" className="searchbar">
@@ -696,10 +697,12 @@ const handleRecover = () => {
           </InputGroupAddon>
         </InputGroup>
         </form>
+        </div>
       }
-        <br/><br/><br/>
+        
         {props.showSearchResult && <div className="search-result-header">검색결과</div>}
         {props.isFavorite && <div className="search-result-header">즐겨찾기</div>}
+        {props.isRecycle && <div className="search-result-header">휴지통</div>}
 
         {/*파일 표시*/}
         {!props.isSharingInit &&
@@ -797,7 +800,7 @@ const handleRecover = () => {
               <Modal
                 isOpen={mkdirModal}
                 toggle={toggleMkdirModal}
-                size="lg"
+                
                 unmountOnClose={false}
               >
                 <ModalHeader toggle={toggleMkdirModal}>
@@ -805,18 +808,19 @@ const handleRecover = () => {
                 </ModalHeader>
                 <ModalBody>
                       <div>새로운 폴더명을 입력해주세요.</div>
-                      <InputGroup>
+                      <InputGroup className="content-input-group">
+                      <InputGroupAddon addonType='append'>
                           <Input 
                               type='text' 
                               name="withdrawalText"
                               id='withdrawalText'
                               value={newFolderName} 
                               onChange={valChange}
+                              className="content-input"
                           />
-                          <InputGroupAddon addonType='append'>
                               <Button
                                   outline 
-                                  className="profile-button"
+                                  className="content-input-button"
                                   onClick={createDir}
                               >
                               입력
@@ -828,7 +832,7 @@ const handleRecover = () => {
                   <Button
                     color="primary"
                     onClick={toggleMkdirModal}
-                    className="close-button"
+                    className="close-button content-button"
                   >
                     닫기
                   </Button>{" "}

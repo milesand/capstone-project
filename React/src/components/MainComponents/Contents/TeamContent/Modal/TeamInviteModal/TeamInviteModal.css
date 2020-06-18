@@ -93,8 +93,6 @@
 .search-friend {
     display: flex !important;
     margin-bottom: 15px !important;
-    width:99% !important;
-
 }
 .search-friend-input{
     float:left;
@@ -107,6 +105,7 @@ border-top-right-radius: 0px !important;
 border-bottom-right-radius: 0px !important;
 color:#707070 !important;
 /* z-index: 2000 !important; */
+width: 91%;
 }
 
 .search-friend-input:focus{
@@ -118,7 +117,7 @@ color:#707070 !important;
 
 .search-friend-icon-button{
 width: 40px !important;
-/* float: right !important; */
+float: right;
 display: flex;
 border-color:#ced4da !important;
 border-left:0px !important;

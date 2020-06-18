@@ -398,7 +398,7 @@ const TeamContent = (props) => {
             teamDelete={teamDelete}
           />
 
-          <span className="content-name">팀</span>
+          <span className="content-name search-result-header">팀</span>
           <div className="add-item">
               <Button onClick={toggleTeamAddModal} className="add-team-button">
                 팀 생성

@@ -12,9 +12,12 @@
     box-shadow: 0 .125rem 0.45rem rgba(0,0,0,0.15) !important;
     font-size: 15px;
     word-break:break-all;
-    width: 99%;
-    overflow-y: scroll !important;
+   
     position: relative !important;
+    margin-left: 0;
+    height: calc(100vh - 100px);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 .profile-board-hr{
@@ -34,17 +37,16 @@
 .info {
     margin-left: 0%;
     margin-top: 5%;
-    height: 700px;
-    max-height: 700px !important;
+    max-height: 600px !important;
     border-radius: 10px  !important;
     width: 100%;
-    overflow-y: scroll;
 }
 
 .profile-confirm-password{
-    margin-left: 25%;
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 30px;
-    width: 50%;
+    width: 60%;
 }
 
 .profile-confirm-headText{
@@ -60,20 +62,21 @@
 
 .withdrawal-close-button{
     width: 130px;
+    background-color: #5f73c4;
 }
 .info-list{
     margin-top: 0%;
     margin-left: 5%;
     width: 90%;
-    overflow-y: scroll;
 }
 
 .profile-return-button{
     width: 100px;
-    margin-left: 25%;
+    margin-left: 30px;
+    margin-right: 30px;
 }
 
 .profile-bottom-button{
-    margin-left: 10%;
     margin-top: 2%;
+    text-align: center;
 }
