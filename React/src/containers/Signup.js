@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import SignupForm from "../components/LoginComponents/SignupForm";
 
-// 회원가입할 때 사용하는 컴포넌트
+// 회원가입
 export default class Signup extends Component {
   constructor(props) {
     super(props);
