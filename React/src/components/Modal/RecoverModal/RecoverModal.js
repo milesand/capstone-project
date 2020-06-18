@@ -45,14 +45,14 @@ const RecoverModal=({recoverModal, toggleRecoverModal, notify, changePath, error
                 <Button
                     color="primary"
                     onClick={itemRecover}
-                    className="recover-modal-button"
+                    className="recover-modal-button content-button"
                   >
                     복구
                   </Button>
                   <Button
                     color="secondary"
                     onClick={toggleRecoverModal}
-                    className="recover-modal-button"
+                    className="recover-modal-button content-button"
                   >
                     닫기
                   </Button>

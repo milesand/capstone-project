@@ -152,18 +152,15 @@ const ShareModal=({shareModal, toggleShareModal, isTeamLoading, shareTeamOnCheck
             </ModalBody>
             <ModalFooter>
             <Button
-                outline
-                color="secondary"
                 onClick={submitShareTeam}
-                className="sharing-modal-close-button"
+                className="sharing-modal-close-button content-button-y"
             >
             결정
             </Button>
             <Button
-                outline
-                color="primary"
+                color="secondary"
                 onClick={toggleShareModal}
-                className="sharing-modal-close-button"
+                className="sharing-modal-close-button content-button"
             >
             닫기
             </Button>

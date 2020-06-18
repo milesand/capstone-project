@@ -79,7 +79,7 @@ const PreviewModal=({isOpen, toggle, fileName, fileID, hasThumbnail, isVideo, no
                   <Button
                     color="primary"
                     onClick={toggle}
-                    className="close-button"
+                    className="close-button content-button"
                       >
                     닫기
                   </Button>{" "}

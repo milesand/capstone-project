@@ -123,13 +123,12 @@ const TeamInviteModal=({teamInviteModal, toggleTeamInviteModal, friendName, onCh
             <ModalHeader className="modal-header">사용자 검색</ModalHeader>
             <ModalBody>
             <div className="search-friend">
-                  <InputGroup>
+                  <InputGroup >
+                  <InputGroupAddon addonType='append' className="content-input-group">
                     <Input
                       className="search-friend-input"
                       onChange={onChangeFriendName}
                       value={friendName}/>
-
-                    <InputGroupAddon>
                       <Button
                         className="search-friend-icon-button"
                         onClick={friendSearch}>

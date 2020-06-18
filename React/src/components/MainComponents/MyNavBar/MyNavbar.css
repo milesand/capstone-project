@@ -23,7 +23,6 @@
 
 .searchbar-group {
   width:300px !important;
-  margin-right: 50px !important;
   float:right !important;
 
 }
@@ -43,6 +42,7 @@
   border-bottom-left-radius: 30px !important;
   border-top-left-radius: 30px !important;
   color:#707070 !important;
+  width: 260px;
   }
 
 
@@ -131,7 +131,7 @@
   .login-dropdown-menu:active {
 
     outline:none;
-    
+    min-width: 250px !important;
   }
 
   .login-dropdown-item {
@@ -170,6 +170,7 @@
   .invitation-icon {
     margin-left:-5px;
   }
+
   .invitation-pop-list {
     transition-duration: 0.1s !important;
     animation-duration: 0.1s !important;
@@ -187,7 +188,6 @@
 
   }
   .invitation-pop-body {
-    margin-right: -9px !important;
     color:transparent;
     padding:0px !important;
     max-height: 600px;
@@ -257,12 +257,9 @@
   }
   .noinvitation {
     vertical-align: middle;
-    width:200px;
+    min-width: 220px !important;
   }
   .invitationNum {
     min-height:20px;
     min-width:250px;
-
   }
-
-  

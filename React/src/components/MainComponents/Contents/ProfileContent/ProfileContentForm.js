@@ -27,10 +27,11 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
         <Fragment>
             {/*회원 탈퇴 modal*/}
             <Modal isOpen={withdrawalModal} toggle={toggle} size='lg'>
-                <ModalHeader toggle={toggle}><div className='modal-head'>회원탈퇴</div></ModalHeader>
+                <ModalHeader toggle={toggle}  className='modal-header'>회원탈퇴</ModalHeader>
                 <ModalBody>
                     <h5>정말로 탈퇴하시겠습니까? 탈퇴하시려면 '지금탈퇴'를 입력해주세요.</h5>
-                    <InputGroup>
+                    <InputGroup className="content-input-group">
+                    <InputGroupAddon addonType='append'>
                         <Input 
                             type='text' 
                             name="withdrawalText"
@@ -38,11 +39,12 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                             value={withdrawalText} 
                             onChange={valChange}
                             onKeyPress={onEnterPressed}
+                            className='content-input'
                         />
-                        <InputGroupAddon addonType='append'>
+
                             <Button 
-                                outline 
-                                className="profile-button"
+                                outline
+                                className="content-input-button"
                                 onClick={processWithdrawal}
                             >
                             입력
@@ -51,7 +53,7 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                     </InputGroup>
                 </ModalBody>
                 <ModalFooter>
-                <Button outline color="primary" onClick={toggle} className="withdrawal-close-button">닫기</Button>
+                <Button color="primary" onClick={toggle} className="withdrawal-close-button content-button">닫기</Button>
                 </ModalFooter>
             </Modal>
 
@@ -72,17 +74,18 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                 </FormGroup>
                                 <FormGroup>
                                     <Label for="exampleEmail">닉네임</Label>
-                                    <InputGroup>
+                                    <InputGroup className="content-input-group">
+                                    <InputGroupAddon addonType='append' >
                                         <Input 
                                             type='text' 
                                             name="nickname"
                                             id='nickname'
                                             value={nickname} 
-                                            onChange={valChange}/>
-                                            <InputGroupAddon addonType='append'>
+                                            onChange={valChange}
+                                            className='content-input'/>  
                                                 <Button 
                                                     outline 
-                                                    className="profile-button"
+                                                    className="content-input-button"
                                                     onClick={changeNickname}
                                                     >
                                                     변경
@@ -92,12 +95,14 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                 </FormGroup>
                                 <FormGroup>
                                     <Label for="exampleEmail">전화번호</Label>
-                                    <InputGroup>
-                                        <Input type='text' name="phone_num" id='phone_num' value={phone_num} onChange={valChange}/>
-                                            <InputGroupAddon addonType='append'>
+                                    <InputGroup className="content-input-group">
+                                            <InputGroupAddon addonType='append' >
+                                        <Input type='text' name="phone_num" id='phone_num' value={phone_num} onChange={valChange}
+                                        className="content-input"/>
+                                    
                                                 <Button 
                                                     outline 
-                                                    className="profile-button"
+                                                    className="content-input-button"
                                                     onClick={changePhoneNum}
                                                     >
                                                     변경
@@ -112,17 +117,18 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                 {!isSocialAccount && 
                                     <FormGroup>
                                         <Label for="exampleEmail">비밀번호 변경</Label>
-                                        <InputGroup>
+                                        <InputGroup className="content-input-group">
+                                        <InputGroupAddon addonType='append'>
                                         <Input 
                                             type='password' 
                                             name="nickname"
                                             id='newPassword'
                                             value={newPassword} 
                                             onChange={valChange}/>
-                                            <InputGroupAddon addonType='append'>
+                                           className="content-input"
                                                 <Button 
                                                     outline 
-                                                    className="profile-button"
+                                                    className="content-input"
                                                     onClick={changePassword}
                                                     >
                                                     변경
@@ -143,7 +149,8 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                             사용자 확인을 위해 {isSocialAccount? "소셜 계정 이메일 주소" : "비밀번호"}를 입력해주세요.
                         </div>
                         <div  className='profile-confirm-password'>
-                            <InputGroup>
+                            <InputGroup className="content-input-group">
+                            <InputGroupAddon addonType='append'>
                                 <Input 
                                     id={target}
                                     type={target}
@@ -151,11 +158,12 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                     value={value}
                                     onChange={valChange}
                                     onKeyPress={onEnterPressed}
+                                    className="content-input"
                                     />
-                                    <InputGroupAddon addonType='append'>
+                                   
                                                 <Button 
                                                     outline 
-                                                    className="profile-button"
+                                                    className="profile-button content-input-button"
                                                     onClick={checkConfirmValue}
                                                     disabled={isConfirmLoading}
                                                     >

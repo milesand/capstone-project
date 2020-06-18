@@ -14,7 +14,7 @@
   position:fixed;
   font-family: "Poppins", sans-serif;
   background: #f4f3ef;
-
+  overflow-x: hidden !important;
 }
 
 

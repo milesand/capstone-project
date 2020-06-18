@@ -39,14 +39,15 @@ const UploadModal=({moveModal, toggleMoveModal, notify, changePath, errorCheck, 
                       rootKey={isSharing ? pathElements[pathElements.length-2] + '/' : 'root/'}
                       guideText='이동 경로'
                     />
-                    <Button outline className="replacement-modal-button" onClick={submitReplace}>결정</Button>
+
                   </div>
                 </ModalBody>
                 <ModalFooter>
+                <Button className="replacement-modal-button content-button-y" onClick={submitReplace}>결정</Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={toggleMoveModal}
-                    className="replacement-modal-button"
+                    className="replacement-modal-button content-button "
                   >
                     닫기
                   </Button>

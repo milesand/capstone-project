@@ -8,5 +8,7 @@
 }
 
 .sharing-modal-close-button{
-    width : 200px;
+    width : 100px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
