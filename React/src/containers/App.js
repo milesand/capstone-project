@@ -78,35 +78,34 @@ class App extends Component {
        return response;
     }
     
-    return fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      })
-      .then(res=>res.json())
-      .then(errorCheck)
-      .then(content=>{
-        console.log("login? : ", this.state.isLogin);
-        if(this.state.isLogin){ // 사용자가 로그인 중일 때
-          fetch(`${window.location.origin}/api/jwt-refresh`, { //JWT 토큰 재발급
-              method: "POST", 
-              headers: {
-                'Content-Type' : 'application/json',
-              },
-              credentials: 'include',
-          })
-          .then(jwtErrorCheck)
-          .then(res=>res.json())
-          .then(content=>{
-              console.log("토큰이 재발급되었습니다.");
-              console.log(content);
-              console.log(this.state);
-          }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
-        }
-        return content;
-      }).catch(error=>console.log('로그인 체크 에러!'));
+    fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+    .then(res=>res.json())
+    .then(errorCheck)
+    .then(content=>{
+      console.log("login? : ", this.state.isLogin);
+      if(this.state.isLogin){ // 사용자가 로그인 중일 때
+        fetch(`${window.location.origin}/api/jwt-refresh`, { //JWT 토큰 재발급
+            method: "POST", 
+            headers: {
+              'Content-Type' : 'application/json',
+            },
+            credentials: 'include',
+        })
+        .then(jwtErrorCheck)
+        .then(res=>res.json())
+        .then(content=>{
+            console.log("토큰이 재발급되었습니다.");
+            console.log(content);
+            console.log(this.state);
+        }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
+      }
+    }).catch(error=>console.log('로그인 체크 에러!'));
   }
 
   userStateChange = (authenticated, mailAuthenticated, username="", nickname="", email="", root_dir="") => {
@@ -176,7 +175,6 @@ class App extends Component {
     })
     .then(() => {
       this.props.history.push("/login");
-      console.log('Log out to login page.', this.state);
     });  
   }
 
@@ -227,7 +225,6 @@ class App extends Component {
       showRemainingTime: this.showRemainingTime
     };
 
-    console.log("base test.", baseProps);
     return (   
        <Fragment>
           <ToastContainer />
