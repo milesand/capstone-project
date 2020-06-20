@@ -37,8 +37,7 @@ class App extends Component {
     console.log('is localhost ? : ', window.location.origin);
   }
 
-  toggleLoadingState=()=>{ //현재 fetch 중이라면 isLoading을 true로, 아니면 false로 바꿔준다. 버튼 스피너를 위해 필요함.
-    console.log("toggle!");
+  toggleLoadingState=()=>{ //현재 서버와 통신 중이라면 isLoading을 true로, 아니면 false로 바꿔준다. 버튼 스피너를 위해 필요함.
     this.setState((prevState)=>({
       isLoading: !this.state.isLoading
     }));
@@ -78,7 +77,7 @@ class App extends Component {
        return response;
     }
     
-    fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
+    return fetch(`${window.location.origin}/api/user`, { // JWT 토큰이 저장되어 있는지, 그리고 저장되어 있다면 해당 JWT 토큰이 유효한지 확인
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
@@ -105,6 +104,8 @@ class App extends Component {
             console.log(this.state);
         }).catch(error=>console.log('JWT 토큰 재발급 에러!'));
       }
+      console.log("content return!, content : ", content);
+      return content;
     }).catch(error=>console.log('로그인 체크 에러!'));
   }
 

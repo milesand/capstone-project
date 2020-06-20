@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import MailResendForm from "../components/LoginComponents/MailResendForm"
 import { withRouter } from 'react-router-dom';
+import axios from 'axios';
 
 class MailResend extends Component{
     constructor(props){
@@ -23,16 +24,17 @@ class MailResend extends Component{
         console.log(this.state);
         this.props.toggleLoadingState();
 
-        fetch(`${window.location.origin}/api/send-auth-email`, { //HTTP GET으로 요청을 보내고, URL뒤에 사용자 식별 ID를 추가하자.
-            method: "GET",
+        const option = {
             headers: {
-                'Content-Type': 'application/json'
-              },
-            credentials: 'include',
-        })
+            "Content-Type": "application/json",
+            },
+            withCredentials: true,
+        };
+        
+        axios.get(`${window.location.origin}/api/send-auth-email`, option)
         .then(this.props.errorCheck)
-        .then(res=>res.json())
         .then(content=>{
+            content=content.data;
             console.log(content);
             console.log("메일 재발송 완료.");
             this.props.toggleLoadingState();

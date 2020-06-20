@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import ProfileContentForm from './ProfileContentForm.js';
+import axios from 'axios';
 
 export default class ProfileCotnent extends Component{
     constructor(props){
@@ -41,7 +42,16 @@ export default class ProfileCotnent extends Component{
     }
 
     checkConfirmValue=()=>{
+        console.log('check confirm value.');
         let message="", url="", data={};
+
+        const option = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          };
+
         if(this.state.isSocialAccount){
             message="이메일주소가 일치하지 않습니다.";
             url=`${window.location.origin}/api/check-email`;
@@ -60,22 +70,16 @@ export default class ProfileCotnent extends Component{
         this.setState({
             isConfirmLoading : true
         })
-        fetch(url, {
-            method: 'POST',
-            headers:{
-                'Content-Type' : 'application/json',
-            },
-            body: JSON.stringify(data),
-            credentials: 'include'
-        })
-        .then(this.props.errorCheck)
-        .then(response=>{
-            if(!response.ok){
+
+        axios.post(url, data, option)
+        .catch(error=>{
+            this.props.errorCheck(error.response);
+            if(error.response.status){
                 throw Error((this.state.isSocialAccount ? "이메일 주소" : "비밀번호") + '가 일치하지 않습니다.');
             }
-            return response;
         })
         .then(()=>{
+            console.log("here!");
             this.props.getUserInfo()
             .then(content=>{
                 console.log("content : ", content);
@@ -107,17 +111,21 @@ export default class ProfileCotnent extends Component{
             phone_num: phone_num,
             nickname: nickname
         }
-        fetch(`${window.location.origin}/api/user`, {
-            method: "PUT",
+
+        const option = {
             headers: {
-                'Content-Type' : 'application/json',
+              "Content-Type": "application/json",
             },
-            credentials: 'include',
-            body: JSON.stringify(data)
+            withCredentials: true,
+          };
+
+
+        axios.put(`${window.location.origin}/api/user`, data, option)
+        .catch(error=>{
+            this.props.errorCheck(error.response);
         })
-        .then(this.props.errorCheck)
-        .then(res=>res.json())
         .then(response=>{
+            response=response.data;
             console.log('response : ', response);
             if(response.hasOwnProperty('error')) throw Error(response['error']);
             this.props.notify("변경이 완료되었습니다.");
@@ -164,15 +172,15 @@ export default class ProfileCotnent extends Component{
             'password' : this.state.password
         }
         if(this.state.withdrawalText=='지금탈퇴'){
-            fetch(`${window.location.origin}/api/user`, {
-                method: "DELETE",
-                headers:{
-                    'Content-Type' : 'application/json'
+            axios.delete(`${window.location.origin}/api/user`, {
+                data: data,
+                headers: {
+                    "Content-Type": "application/json",
                 },
-                credentials: 'include',
-                body: JSON.stringify(data)
+                withCredentials: true,       
             })
             .then(content=>{
+                content=content.data;
                 console.log("withdrawal content : ", content);
                 this.props.notify("회원 탈퇴가 완료되었습니다.");
                 this.props.userStateChange(false, false);

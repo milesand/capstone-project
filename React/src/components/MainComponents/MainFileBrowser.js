@@ -102,16 +102,12 @@ const MainFileBrowser = (props) => {
     if(props.isRecycle)
       setCurrentItemInfo(props.folderList[index]);
     else{
-      fetch(`${window.location.origin}/api/directory/${props.folderList[index]["pk"]}`, {
-        method : 'GET',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: 'include',
+      axios.get(`${window.location.origin}/api/directory/${props.folderList[index]["pk"]}`, option)
+      .catch(error=>{
+        props.errorCheck(error.response);
       })
-      .then(props.errorCheck)
-      .then(res=>res.json())
       .then(content => {
+        content=content.data;
         if(content.hasOwnProperty['error']) throw Error(content['error'])
         console.log("contetn : ", content);
         const folderInfo = {
@@ -324,18 +320,13 @@ const handleRecover = () => {
       data['file1']=currentItemInfo.pk;
     }
     
-    fetch(`${window.location.origin}/api/replacement`,{
-      method: "PUT",
-      headers: {
-        'Content-Type' : 'application/json',
-      },
-      body: JSON.stringify(data),
-      credentials: 'include'
+    axios.put(`${window.location.origin}/api/replacement`, data, option)
+    .catch(error=>{
+      props.errorCheck(error.response);
     })
-    .then(props.errorCheck)
-    .then(res=>res.json())
     .then(content=>{
-      console.log('content : ', content);
+      content=content.data;
+      console.log('content : ', content.data);
       if(content.hasOwnProperty('error')){
         console.log("here err!!!!!");
         throw Error(content['error']);
@@ -456,34 +447,27 @@ const handleRecover = () => {
       deleteData['team'+(Number(i)+1)]=teamList[deleteTeam[i]]._id;
     }
     let url=`${window.location.origin}/api/sharing/${currentItemInfo.pk}`;
-    fetch(url, {
-      method: 'PUT',
-      headers:{
-        'Content-Type' : 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(newData)
-    })
-    .then(res=>res.json())
+    axios.put(url, newData, option)
     .then(response=>{
+      response=response.data;
       if(response.hasOwnProperty('error')) throw Error(response['error']);
     })
     .then(()=>{
-    fetch(url, {
-      method: 'DELETE',
-      headers:{
-        'Content-Type' : 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(deleteData)
+      axios.delete(url, {
+        data: deleteData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true
+      })
+      .then(response=>{
+        response=response.data;
+        if(response.hasOwnProperty('error')) throw Error(response['error']);
+        props.notify('공유 설정 변경 완료!');
+        props.loadFilesNFolders();
+        toggleShareModal();
+      })
     })
-    .then(res=>res.json())
-    .then(response=>{
-      if(response.hasOwnProperty('error')) throw Error(response['error']);
-      props.notify('공유 설정 변경 완료!');
-      props.loadFilesNFolders();
-      toggleShareModal();
-    })})
     .catch(e=>{
       props.notify(e);
       toggleShareModal();
@@ -502,27 +486,19 @@ const handleRecover = () => {
       "parent" : props.isSharing ? props.curFolderID : props.curFolderPath,
       'name' : newFolderName
     }
-    fetch(url, {
-      method: "POST",
-      headers: {
-        'Content-Type' : 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data)
-    })
-    .then(res=>{
-      if(res.status==400) throw Error('이미 동일한 이름의 폴더가 존재합니다.');
-      props.errorCheck(res);
+    axios.post(url, data, option)
+    .catch(error=>{
+      console.log("error : ", error);
+      if(error.response.status==400) throw Error('이미 동일한 이름의 폴더가 존재합니다.');
+      props.errorCheck(error.response);
       console.log("err check complete!");
-      return res;
     })
-    //.then(res=>res.json()) //개발용
     .then(content=>{
+        console.log("content : ", content);
         props.notify('폴더 생성 완료!');
         toggleMkdirModal();
         setNewFolderName('');
-        let urlPart=content.headers.get('Location').split('/'); //배포용
-        //let urlPart=content.Location.split('/'); //개발용
+        let urlPart=content.headers['location'].split('/');
         let id=urlPart[urlPart.length-1];
         props.loadFilesNFolders('', props.curFolderID);
     })
@@ -553,16 +529,12 @@ const handleRecover = () => {
     let url=`${window.location.origin}/api/search/${props.searchRootDirID}/${searchKeyword}`;
     setIsSearching(true);
 
-    fetch(url, {
-      method : 'GET',
-      headers : {
-        'Content-Type' : 'application/json',
-      },
-      credentials: 'include'
+    axios.get(url, option)
+    .catch(error=>{
+      props.errorCheck(error.response);
     })
-    .then(props.errorCheck)
-    .then(res=>res.json())
     .then(content=>{
+        content=content.data;
         if(content.hasOwnProperty('error')) throw Error(content['error']);
         console.log("content : ", content);
         setIsSearching(false);

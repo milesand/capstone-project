@@ -4,6 +4,8 @@ import Flow from '@flowjs/flow.js';
 import UploadFileBrowser from './UploadFileBrowser'
 import './UploadContent.css';
 import {Button} from 'reactstrap';
+import axios from 'axios';
+
 //업로드
 class UploadContent extends Component {
   constructor(props) {
@@ -80,7 +82,7 @@ class UploadContent extends Component {
             formData.append(name, data[name]);
         }
 
-        console.log('formData : ', formData);
+
         let errorCheck = response => {
             if(response.status==400){
                 console.log("this : ", this);
@@ -101,11 +103,9 @@ class UploadContent extends Component {
             body: formData,
         })
         .then(errorCheck)
-        //.then(res=>res.json()) //개발용
         .then(response=>{ // 실제 서버에서 사용
             console.log("promise 2, response : ", response);
             let url = response.headers.get('Location'); //배포용
-            //let url=response['Location']; //개발용
             console.log('url : ', url);
             file.targetUrl=url; //여기서 등록 안될때가 있다.
             console.log('end!');

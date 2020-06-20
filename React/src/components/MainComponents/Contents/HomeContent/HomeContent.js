@@ -114,16 +114,12 @@ const HomeContent=(props)=>{
         }
         else{
           setIsLoading(true);
-            fetch(`${window.location.origin}/api/directory/${dirID}`,{
-              method : 'GET',
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: 'include',
+            axios.get(`${window.location.origin}/api/directory/${dirID}`, option)
+            .catch(error=>{
+              props.errorCheck(error.response);
             })
-            .then(props.errorCheck)
-            .then(res=>res.json())
-            .then(content => { 
+            .then(content => {
+              content=content.data;
               if(content.hasOwnProperty('error')) throw Error(content['error']);
               setFileNFolderInfo(
                                   dirID,

@@ -1,3 +1,6 @@
+import axios from 'axios';
+
+//다중 파일 삭제
 const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID, checkUserState)=>{
     let data={};
     let idSplit=fileID.split(' ');
@@ -6,16 +9,17 @@ const DeleteEntry=(notify, errorCheck, loadFilesNFolders, curFolderID, fileID, c
     }
     
     console.log("data : ", data)
-    fetch(`${window.location.origin}/api/multi-entry`, {
-      method: 'DELETE',
+    axios.delete(`${window.location.origin}/api/multi-entry`, {
+      data: data,
       headers: {
-        'Content-Type' : 'application/json'
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
-      body: JSON.stringify(data)
+      withCredentials: true
     })
-    .then(errorCheck)
-    .then(content=>{
+    .catch(error=>{
+      errorCheck(error.response);
+    })
+    .then(()=>{
       notify('삭제 완료!');
       checkUserState();
       loadFilesNFolders('', curFolderID);
