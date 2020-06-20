@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import LoginForm from "../components/LoginComponents/LoginForm";
-
+import axios from 'axios';
 //로그인
 export default class Login extends Component { //export default : 다른 모듈에서 이 모듈을 import할 때 내보낼 대표 값
   constructor(props) {
@@ -46,6 +46,13 @@ export default class Login extends Component { //export default : 다른 모듈�
         social_auth: "google"
       }
 
+      const option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      };
+
       let errorCheck= response =>{
         if(response.hasOwnProperty('error')){
           throw Error(response['error'])
@@ -53,17 +60,10 @@ export default class Login extends Component { //export default : 다른 모듈�
         return response;
       }
       if(token!=null){
-        fetch(`${window.location.origin}/api/social-login`, {
-          method: "POST",
-          headers: {
-            'Content-Type' : 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(data)
-        })
-        .then(res=>res.json())
+        axios.post(`${window.location.origin}/api/social-login`, data, option)
         .then(errorCheck)
         .then(content => {
+          content=content.data;
           this.props.userStateChange(true,
                                      true,
                                      content.username, 
@@ -84,19 +84,16 @@ export default class Login extends Component { //export default : 다른 모듈�
       social_auth: "facebook"
     }
 
-    let errorCheck = (response) =>{
-      return response;
-    }
-    fetch(`${window.location.origin}/api/social-login`, {
-      method: "POST",
+    const option = {
       headers: {
-        'Content-Type' : 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
-      body: JSON.stringify(data)
-    })
-    .then(res=>res.json())
+      withCredentials: true,
+    };
+
+    axios.post(`${window.location.origin}/api/social-login`, data, option)
     .then(content => {
+      content=content.data;
       if(content.hasOwnProperty('error')) throw Error(content['error']);
       this.props.userStateChange(true,
                                  true,
@@ -115,23 +112,24 @@ export default class Login extends Component { //export default : 다른 모듈�
   normalLogin(e) {
     e.preventDefault();
     let isMailAuthenticated=true;
+
     let data={
       username: this.state.username,
       password: this.state.password
     }
     
     this.props.toggleLoadingState();
-    fetch(`${window.location.origin}/api/jwt-login`, {
-      method: "POST",
+    const option = {
       headers: {
-        'Content-Type' : 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
-      body: JSON.stringify(data)
-    })
-    .then(res=>res.json())
+      withCredentials: true,
+    };
+  
+    axios.post(`${window.location.origin}/api/jwt-login`, data, option)
     .then(content => {
       // 아이디와 비밀번호가 올바른지 확인하고, 맞으면 이메일 인증 여부 확인
+      content=content.data;
       if(content.hasOwnProperty('error')){
         if(content.hasOwnProperty('email')){
            isMailAuthenticated=false;
@@ -163,7 +161,8 @@ export default class Login extends Component { //export default : 다른 모듈�
       }
       this.props.toggleLoadingState();
       this.props.history.push('/');
-    }).catch(e=>{
+    })
+    .catch(e=>{
           this.props.notify(e);
           this.props.toggleLoadingState();
     });

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import SignupForm from "../components/LoginComponents/SignupForm";
-
+import axios from 'axios';
 // 회원가입
 export default class Signup extends Component {
   constructor(props) {
@@ -132,28 +132,31 @@ export default class Signup extends Component {
       social_auth: "",
       is_mail_authenticated: false,
     };
-    this.props.toggleLoadingState(); // App.js의 isLoading state를 true로 변경
-    fetch(`${window.location.origin}/api/registration`, {
-      method: 'POST',
+
+    const option = {
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(content => {
-      console.log(content);
-      if (content.hasOwnProperty('username')) {
+      withCredentials: true,
+    };
+    this.props.toggleLoadingState(); // App.js의 isLoading state를 true로 변경
+
+    axios.post(`${window.location.origin}/api/registration`, data, option)
+    .catch(error=>{
+      error=error.response.data;
+      if (error.hasOwnProperty('username')) {
         throw Error("이미 존재하는 아이디입니다.");
       }
 
-      else if(content.hasOwnProperty('email')){
+      else if(error.hasOwnProperty('email')){
         throw Error("이미 가입된 이메일입니다.");
       }
+    })
+    .then(content => {
+      content=content.data;
+      console.log("content : ", content);
 
-      console.log("user : ", content.user);
       if (content.user.username) {
-        console.log("registration here!!!");
         this.props.userStateChange(true,
                                    false, 
                                    content.user.username, 
@@ -167,25 +170,17 @@ export default class Signup extends Component {
           password: this.state.password
         }
         // 서버로부터 새로운 access token 발급받아 로그인 상태로 전환
-        fetch(`${window.location.origin}/api/jwt-login`, {
-          //보통 fetch는 쿠키를 보내거나 받지 않는다. 쿠키를 전송하거나 받기 위해서는 credentials 옵션을 반드시 설정해야 한다.
-          method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            credentials : 'include', //서버에 실을 때 수정
-            body: JSON.stringify(loginData)
-          })
-        .then(res => res.json())
-        .then(mailPage =>{
+        axios.post(`${window.location.origin}/api/jwt-login`, loginData, option)
+        .then(() =>{
           this.props.toggleLoadingState(); 
           this.props.history.push('/mail-resend');
         })
       }
-    }).catch(error =>{
-        this.props.notify(error);
-        this.props.toggleLoadingState(); //fetch 과정에서 에러가 발생했을 때, isLoading state를 false로 돌려놓는다.
-      });
+    })
+    .catch(error =>{
+      this.props.notify(error);
+      this.props.toggleLoadingState(); //axios 과정에서 에러가 발생했을 때, isLoading state를 false로 돌려놓는다.
+    });
   }
 
   render() {

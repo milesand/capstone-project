@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ForgotPasswordForm from "../components/LoginComponents/ForgotPasswordForm";
+import axios from 'axios';
 
 export default class ForgotPassword extends Component{
     constructor(props){

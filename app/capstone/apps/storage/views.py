@@ -1221,9 +1221,7 @@ class ItemSearchAPI(APIView):
                             return Response({'error' : '서버 에러 발생!'}, status=status.HTTP_400_BAD_REQUEST)
                         dir_data['browser_path']=browser_path
                         dir_data['name']=child_dir.name
-                        dir_data['favorite_of']={}
-                        for team in child_dir.favorite_of.all():
-                            dir_data['favorite_of'].append(team.pk)
+                        dir_data['favorite']=child_dir.favorite_of.filter(pk=request.user.pk).exists()
                         data['subdirectories'][str(child_dir.pk)]=dir_data
 
                     que.put(child_dir)

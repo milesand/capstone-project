@@ -22,14 +22,14 @@
 .preview-image{
     width:100%;
     height: auto;
-    max-height: 550px;
+    max-height: 400px;
     margin-bottom: 5%;
 }
 
 .preview-others{
     font-size: 30px;
     margin-top : 30%;
-    height : 400px;
+    height : 300px;
 }
 
 .preview-modal-body{

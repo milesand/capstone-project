@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-// import "bootstrap/dist/css/bootstrap.min.css";
 
 import SideBar from "../components/sidebar/SideBar/SideBar";
 import HomeContent from "../components/MainComponents/Contents/HomeContent/HomeContent";
@@ -58,19 +57,6 @@ export default class Home extends Component {
 
   componentDidMount() {
     console.log("home.js start, props : ", this. props);
-    // fetch(`${window.location.origin}/api/user`, {
-    //   method: "GET",
-    //   credentials: 'include',
-    // })
-    // .then(res => res.json())
-    // .then(content => {
-    //   console.log('json test.');
-    //   console.log("profile"+ content[0]);
-    //   this.setState({
-    //     profile: content
-    //   });
-    // })
-    // .catch(error => alert(error));
     this.checkUserState();
   }
 
@@ -171,16 +157,17 @@ export default class Home extends Component {
     let url=`${window.location.origin}/api/search/${this.state.searchRootDirID}/${this.state.searchKeyword}`;
     this.toggleIsSearching();
 
-    fetch(url, {
-      method : 'GET',
-      headers : {
-        'Content-Type' : 'application/json',
-      },
-      credentials: 'include'
-    })
+    const option = {
+        headers: {
+        "Content-Type": "application/json",
+        },
+        withCredentials: true,
+    };
+
+    axios.get(url, option)
     .then(this.props.errorCheck)
-    .then(res=>res.json())
     .then(content=>{
+        content=content.data;
         if(content.hasOwnProperty('error')) throw Error(content['error']);
         console.log('homeContent start content : ', content);
         this.setState(state=>{

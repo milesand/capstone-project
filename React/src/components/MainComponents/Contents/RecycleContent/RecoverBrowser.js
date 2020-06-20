@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import FileBrowser, { Icons } from 'react-keyed-file-browser';
-
+import axios from 'axios';
 
 export default class RecoverBrowser extends Component{
   constructor(props){
@@ -24,17 +24,19 @@ export default class RecoverBrowser extends Component{
     if(!this.state.isCheck.includes(folderID)){ //폴더 정보 불러온 적이 없을 경우
       console.log("info get, key : ", key, ", folder ID : ", folderID);
       let url=`${window.location.origin}/api/directory/${folderID}`;
-
-      fetch(url, {
-              method: "GET",
-              headers: {
-                'Content-Type' : 'application/json',
-              },
-              credentials: 'include',
+      const option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      };
+      
+      axios.get(url, option)
+      .catch(error=>{
+        this.props.errorCheck(error.response);
       })
-      .then(this.props.errorCheck)
-      .then(res=>res.json())
       .then(content=>{
+        content=content.data;
         console.log("initial data load complete! data : ", content, content.files, typeof(content.files));
         let files=content.files; //루트 디렉토리에 들어있는 파일 목록
         let subdirectories=content.subdirectories;

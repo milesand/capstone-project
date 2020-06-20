@@ -133,8 +133,6 @@ const TeamContent = (props) => {
           if(error.response.status>=400) throw Error(error.response.data['error']);
         }) 
         .then((content) => {
-          console.log(content);
-          console.log(JSON.stringify(TeamNameData));
           if (content.hasOwnProperty("error")) {
             throw Error("error");
           } else {

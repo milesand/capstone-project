@@ -124,11 +124,12 @@ const ProfileContentForm=({username, nickname, email, phone_num, social, newPass
                                             name="nickname"
                                             id='newPassword'
                                             value={newPassword} 
-                                            onChange={valChange}/>
-                                           className="content-input"
+                                            onChange={valChange}
+                                            className="content-input"
+                                            />
                                                 <Button 
                                                     outline 
-                                                    className="content-input"
+                                                    className="profile-button content-input-button"
                                                     onClick={changePassword}
                                                     >
                                                     변경

@@ -18,9 +18,8 @@ const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
     for(let id in idSplit){
       data['file' + String(Number(id)+1)] = idSplit[id];
     }
-    console.log('data : ', data);
 
-    fetch(`${window.location.origin}/api/download`, {
+    fetch(`${window.location.origin}/api/download`, { //axios에서 stream 지원을 하지 않으므로 대신 fetch 사용
       method: "POST",
       headers: {
         'Content-Type' : 'application/json',
@@ -31,7 +30,7 @@ const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
     })
     .then(errorCheck)
     .then(content=>{
-      console.log("download, content : ", content);
+      console.log("download, content : ", content, content.body);
       if(idSplit.length>1){ // 파일 여러 개, 압축 파일 이름 downloadFiles.zip으로 통일
         fileStream=streamSaver.createWriteStream('downloadFiles.zip');
       }
@@ -45,8 +44,6 @@ const CustomDownload=(fileName, fileID, notify, loadFilesNFolders)=>{
       }
 
       const readableStream=content.body;
-      console.log(window.WritableStream);
-      console.log(readableStream.pipeTo);
       if(window.WritableStream && readableStream.pipeTo){
         return readableStream.pipeTo(fileStream)
           .then(()=>console.log("finish writing."));
