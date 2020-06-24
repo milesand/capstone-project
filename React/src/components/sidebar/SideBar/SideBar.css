@@ -58,7 +58,10 @@
   .sidebar-logo-icon {
     width: 30%;
     height: auto;
-    
+    max-height: 50px;
+  }
+  .sidebar-logo-text {
+    max-height: 50px;
   }
   .sidebar ul p {
     /* color: #fff; */
