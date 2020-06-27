@@ -102,7 +102,7 @@
   }
   .selectable-selectbox {
       background-color: #7ba9ff !important;
-      opacity: 50% !important;
+      opacity: 0.5 !important;
   }
 
   .file-spinner{
