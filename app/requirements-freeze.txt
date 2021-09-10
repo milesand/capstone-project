@@ -9,7 +9,7 @@ django-cors-headers==3.3.0
 django-rest-auth==0.9.5
 django-sslserver==0.22
 -e git+https://github.com/travcunn/django-zip-stream.git@a6f2318de3f1d64c00a4a328d464ee37747e2a23#egg=django_zip_stream
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangorestframework-jwt==1.11.0
 idna==2.9
 imageio==2.8.0
